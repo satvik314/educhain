@@ -38,6 +38,11 @@ print(lesson_plan)
 
 ## Next Steps
 
-Will be releasing Educ
+Will be releasing more features for MCQ Generation
+- Bulk Generation
+- Outputs in JSON format
+- Export questions to CSV
+- Generate questions from text/pdf file
+
 
 

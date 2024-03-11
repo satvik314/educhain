@@ -25,7 +25,8 @@ def generate_mcq(topic, level, llm = ChatOpenAI()):
 
     return mcq
 
-    
+
+
 
 
 
