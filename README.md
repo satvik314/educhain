@@ -2,7 +2,7 @@
 
 A Python package for generating educational content using Generative AI.
 
-## Installation (coming soon!)
+## Installation
 
 ```shell
-pip install educhain
+pip install git+https://github.com/satvik314/educhain.git
