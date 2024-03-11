@@ -21,7 +21,7 @@ def generate_mcq(topic, level, llm = ChatOpenAI()):
     mcq_chain = LLMChain(llm=llm, prompt=prompt)
 
     # Generate the MCQ
-    mcq = mcq_chain.run(topic=topic, level=level)
+    mcq = mcq_chain.predict(topic=topic, level=level)
 
     return mcq
 
