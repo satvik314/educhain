@@ -13,12 +13,12 @@ pip install git+https://github.com/satvik314/educhain.git
 ### Use it to Generate MCQs
 
 ```shell
-from educhain import qa_engine
+from educhain import qna_engine
 
 topic = "Quantum Entanglement"
 level = "Intermediate"
 
-mcq = qa_engine.generate_mcq(topic, level)
+mcq = qna_engine.generate_mcq(topic, level)
 print(mcq)
 ```
 
