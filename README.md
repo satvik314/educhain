@@ -12,6 +12,8 @@ pip install git+https://github.com/satvik314/educhain.git
 
 ### Use it to Generate MCQs
 
+##### Default : (no. of ques: 1, no csv generated)
+
 ```shell
 from educhain import qna_engine
 
@@ -19,6 +21,32 @@ topic = "Quantum Entanglement"
 level = "Intermediate"
 
 mcq = qna_engine.generate_mcq(topic, level)
+print(mcq)
+```
+
+##### With given no. of ques, no csv generated
+
+```shell
+from educhain import qna_engine
+
+topic = "Quantum Entanglement"
+level = "Intermediate"
+num = 5
+
+mcq = qna_engine.generate_mcq(topic, level, num)
+print(mcq)
+```
+##### With given no. of ques. & csv generated with given file_name
+
+```shell
+from educhain import qna_engine
+
+topic = "Quantum Entanglement"
+level = "Intermediate"
+num = 5
+file_name="python_mcq.csv"
+
+mcq = qna_engine.generate_mcq(topic, level, num, file_name)
 print(mcq)
 ```
 
