@@ -14,6 +14,7 @@ To get started with Educhain, you need to install the package via pip. Run the f
 
 ```bash
 pip install git+https://github.com/satvik314/educhain.git
+```
 
 ## 2. Generating Multiple Choice Questions (MCQs) <a name="generating-mcqs"></a>
 
@@ -21,7 +22,7 @@ pip install git+https://github.com/satvik314/educhain.git
 
 You can use Educhain to generate MCQs effortlessly. By default, it generates one MCQ and does not generate a CSV file.
 
-```
+```python
 from educhain import qna_engine
 
 topic = "Quantum Entanglement"
@@ -35,7 +36,7 @@ print(mcq)
 
 If you need multiple MCQs and want to generate a CSV file containing these questions, you can specify the number of questions and the file name.
 
-```
+```python
 from educhain import qna_engine
 
 topic = "Quantum Entanglement"
@@ -53,7 +54,7 @@ This will generate 5 MCQs on the topic of Quantum Entanglement and save them to 
 
 Educhain also allows you to effortlessly create lesson plans tailored to your specified topic and level.
 
-```
+```python
 from educhain import content_engine
 
 topic = "Medieval History"
