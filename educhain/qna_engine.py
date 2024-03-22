@@ -1,5 +1,5 @@
 import json
-from utils import to_csv  # Import the to_csv function from the utils module
+from .utils import to_csv  # Import the to_csv function from the utils module
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain import PromptTemplate, LLMChain
