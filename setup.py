@@ -9,6 +9,7 @@ setup(
         "langchain-openai",
         "openai",
         "python-dotenv"
+        "pandas"
     ],
     author="Satvik Paramkusham",
     author_email="satvik@buildfastwithai.com",
