@@ -44,7 +44,7 @@ level = "Intermediate"
 num = 5
 file_name = "python_mcq.csv"
 
-mcq = qna_engine.generate_mcq(topic, level, num, file_name)
+mcq = qna_engine.generate_mcq(topic, level, num=num, file_name=file_name)
 print(mcq)
 ```
 
