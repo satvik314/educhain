@@ -8,7 +8,7 @@ setup(
         "langchain",
         "langchain-openai",
         "openai",
-        "python-dotenv"
+        "python-dotenv", 
         "pandas"
     ],
     author="Satvik Paramkusham",
