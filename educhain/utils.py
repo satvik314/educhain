@@ -1,32 +1,22 @@
 import pandas as pd
+from models import Quiz
 
-def to_csv(data, file_name, num):
+def to_csv(quiz_data : Quiz, file_name):
     """
-    Generate CSV file with given data.
+    Generate a CSV file from a Quiz object.
 
     Args:
-    filename (str): Name of the CSV file.
-    data (json): Data to be written to the CSV file.
+    quiz_data (Quiz): Instance of the Quiz class containing a list of Question objects.
+    file_name (str): Name of the CSV file to be created.
     """
-    
-    # Create a DataFrame from the JSON data
     mcq_data = []
-    
-    if (num > 1):    
-        for mcq in data["questions"]:
-            mcq_data.append({
-                'question': mcq["question"],
-                'options': ', '.join(mcq["options"]),
-                'answer': mcq["correct_answer"],
-            })
-    else:
+
+    for question in quiz_data.questions:
         mcq_data.append({
-            'question': data["question"],
-            'options': ', '.join(data["options"]),
-            'answer': data["correct_answer"],
+            'question': question.question,
+            'options': ', '.join(question.options),
+            'correct_answer': question.correct_answer
         })
 
     df = pd.DataFrame(mcq_data)
-
-    # Save the DataFrame to a CSV file
     df.to_csv(file_name, index=False)
