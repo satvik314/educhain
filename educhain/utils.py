@@ -1,5 +1,5 @@
 import pandas as pd
-from models import Quiz
+from .models import Quiz
 
 def to_csv(quiz_data : Quiz, file_name):
     """

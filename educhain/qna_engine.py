@@ -6,11 +6,11 @@ from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
 from .models import Quiz
     
-def generate_mcq(topic, level, num = 1, file_name=None):
+def generate_mcq(topic, level, num = 1, file_name=None, model='gpt-3.5-turbo', temperature=0.7):
 
     parser = PydanticOutputParser(pydantic_object=Quiz)
     
-    llm = ChatOpenAI(model='gpt-3.5-turbo', temperature=0.7)
+    llm = ChatOpenAI(model=model, temperature=temperature)
 
     format_instructions = parser.get_format_instructions()
 
@@ -43,3 +43,11 @@ def generate_mcq(topic, level, num = 1, file_name=None):
         to_csv(structured_output, file_name)
         
     return structured_output
+
+topic = "Quantum Entanglement"
+level = "Intermediate"
+num = 5
+file_name="python_mcq.csv"
+
+mcq = generate_mcq(topic, level, num, file_name)
+print(mcq)
