@@ -43,11 +43,3 @@ def generate_mcq(topic, level, num = 1, file_name=None, model='gpt-3.5-turbo', t
         to_csv(structured_output, file_name)
         
     return structured_output
-
-topic = "Quantum Entanglement"
-level = "Intermediate"
-num = 5
-file_name="python_mcq.csv"
-
-mcq = generate_mcq(topic, level, num, file_name)
-print(mcq)
