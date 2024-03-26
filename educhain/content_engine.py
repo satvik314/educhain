@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
-from langchain import PromptTemplate, LLMChain
-
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 
 def generate_lesson_plan(subject, level, llm=ChatOpenAI()):
     prompt = PromptTemplate(
