@@ -5,7 +5,7 @@ A Python package for generating educational content using Generative AI. Educhai
 ## Installation
 
 ```shell
-pip install git+https://github.com/satvik314/educhain.git
+pip install educhain
 ```
 
 ## Usage
@@ -17,7 +17,7 @@ pip install git+https://github.com/satvik314/educhain.git
 ```shell
 from educhain import qna_engine
 
-topic = "Quantum Entanglement"
+topic = "Theory of Relativity"
 level = "Intermediate"
 num = 5
 
@@ -32,7 +32,7 @@ from educhain import qna_engine
 topic = "Quantum Entanglement"
 level = "Intermediate"
 num = 5
-file_name="python_mcq.csv"
+file_name="my_mcqs.csv"
 
 mcq = qna_engine.generate_mcq(topic, level, num=num, file_name=file_name)
 print(mcq)
