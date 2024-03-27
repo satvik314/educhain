@@ -4,13 +4,11 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
-from .models import Quiz
+from .models import MCQList, MCQ
     
-def generate_mcq(topic, level, num = 1, file_name=None, model='gpt-3.5-turbo', temperature=0.7):
+def generate_mcq(topic, level = "Intermediate", num = 1, llm = ChatOpenAI(), file_name=None):
 
-    parser = PydanticOutputParser(pydantic_object=Quiz)
-    
-    llm = ChatOpenAI(model=model, temperature=temperature)
+    parser = PydanticOutputParser(pydantic_object=MCQList)
 
     format_instructions = parser.get_format_instructions()
 
