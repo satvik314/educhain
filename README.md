@@ -70,6 +70,7 @@ Will be releasing more features for MCQ Generation
 - Bulk Generation
 - Outputs in JSON format
 - Export questions to CSV
+- Support for other LLM models
 - Generate questions from text/pdf file
 - Finetuned Model for question generation
 

@@ -12,12 +12,10 @@ class MCQ(BaseModel):
     #     return f"Question: {self.question}\nOptions:\n{options_str}\nCorrect Answer: {self.correct_answer}"
 
 
-    
-class MCQList(List[MCQ]):
-    """A class representing a list of multiple choice questions."""
-    pass
+
+class MCQList(BaseModel):
+    questions: List[MCQ]
+
     # def __str__(self):
     #     mcq_str = "\n\n".join(str(mcq) for mcq in self)
     #     return f"MCQs:\n\n{mcq_str}"
-
-
