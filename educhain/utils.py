@@ -1,7 +1,7 @@
 import pandas as pd
-from .models import Quiz
+from .models import MCQList
 
-def to_csv(quiz_data : Quiz, file_name):
+def to_csv(quiz_data : MCQList, file_name):
     """
     Generate a CSV file from a Quiz object.
 
