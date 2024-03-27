@@ -67,12 +67,12 @@ print(lesson_plan)
 ## Next Steps
 
 Will be releasing more features for MCQ Generation
-- Bulk Generation
-- Outputs in JSON format
-- Export questions to CSV
-- Support for other LLM models
-- Generate questions from text/pdf file
-- Finetuned Model for question generation
+- [x] Bulk Generation
+- [x] Outputs in JSON format
+- [x] Export questions to CSV
+- [ ] Support for other LLM models
+- [ ] Generate questions from text/pdf file
+- [ ] Finetuned Model for question generation
 
 
 
