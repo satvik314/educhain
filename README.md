@@ -8,9 +8,13 @@ A Python package for generating educational content using Generative AI. Educhai
 pip install educhain
 ```
 
+https://colab.research.google.com/drive/1bseC2F00l42JPVN2-35fwMupeTnyYGME?usp=sharing
+
 ## Usage
 
 ### Use it to Generate MCQs
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bseC2F00l42JPVN2-35fwMupeTnyYGME?usp=sharing)
 
 ##### With given no. of ques, no csv generated
 
