@@ -2,7 +2,13 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 
-def generate_lesson_plan(subject, level, llm=ChatOpenAI()):
+def generate_lesson_plan(subject, level, llm=None):
+
+    if llm:
+        llm = llm
+    else:
+        llm = ChatOpenAI()
+
     prompt = PromptTemplate(
         input_variables=["subject", "level"],
         template="""
