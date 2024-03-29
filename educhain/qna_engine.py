@@ -6,7 +6,7 @@ from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
 from .models import MCQList, MCQ
     
-def generate_mcq(topic, level = "Intermediate", num = 1, llm = ChatOpenAI(), file_name=None):
+def generate_mcq(topic, level = "Intermediate", num = 1, llm = None, file_name=None):
 
     parser = PydanticOutputParser(pydantic_object=MCQList)
 
@@ -26,6 +26,11 @@ def generate_mcq(topic, level = "Intermediate", num = 1, llm = ChatOpenAI(), fil
                                 template=MCQ_template,
                                 partial_variables={"format_instructions": format_instructions}
                                 )
+    
+    if llm:
+        llm = llm
+    else:
+        llm = ChatOpenAI()
 
     MCQ_chain = LLMChain(llm=llm, prompt=MCQ_prompt)
     results = MCQ_chain.invoke({"num": num,
