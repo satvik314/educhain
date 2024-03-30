@@ -6,10 +6,11 @@ class MCQ(BaseModel):
     question: str
     options: List[str]
     correct_answer: str
-
+    
     def show(self):
-        options_str = "\n".join(f"  - {option}" for option in self.options)
-        return f"Question: {self.question}\nOptions:\n{options_str}\nCorrect Answer: {self.correct_answer}"
+        options_str = "\n".join(f"  {chr(65 + i)}. {option}" for i, option in enumerate(self.options))
+        print(f"Question: {self.question}\nOptions:\n{options_str}\nCorrect Answer: {self.correct_answer}\n")
+
 
 
 
@@ -17,5 +18,7 @@ class MCQList(BaseModel):
     questions: List[MCQ]
 
     def show(self):
-        mcq_str = "\n\n".join(str(mcq) for mcq in self)
-        return f"MCQs:\n\n{mcq_str}"
+        print("MCQs:\n")
+        for i, mcq in enumerate(self.questions):
+            print(f"Question {i + 1}:")
+            mcq.show()
