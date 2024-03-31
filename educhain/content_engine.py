@@ -1,13 +1,14 @@
-from langchain_openai import ChatOpenAI
+# from langchain_openai import ChatOpenAI
+from langchain_community.chat_models import ChatLiteLLM
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 
 def generate_lesson_plan(subject, level, llm=None):
 
     if llm:
-        llm = llm
+        llm = ChatLiteLLM(model = llm)
     else:
-        llm = ChatOpenAI()
+        llm = ChatLiteLLM(model = 'gpt-3.5-turbo-0125')
 
     prompt = PromptTemplate(
         input_variables=["subject", "level"],
