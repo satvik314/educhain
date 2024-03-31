@@ -1,7 +1,7 @@
 import json
 from .utils import to_csv  # Import the to_csv function from the utils module
 # from langchain_openai import ChatOpenAI
-from langchain_community import ChatLiteLLM
+from langchain_community.chat_models import ChatLiteLLM
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
