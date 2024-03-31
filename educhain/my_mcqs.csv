@@ -1,0 +1,17 @@
+question,options,correct_answer
+What does the 'yield' keyword do in Python?,"A. It is used to create a generator function, B. It is used to return a value from a function, C. It is used to raise an exception, D. It is used to import modules",A. It is used to create a generator function
+What is the difference between 'deepcopy' and 'copy' in Python?,"A. 'deepcopy' creates a shallow copy while 'copy' creates a deep copy, B. 'deepcopy' creates a deep copy while 'copy' creates a shallow copy, C. They both create shallow copies, D. They both create deep copies",B. 'deepcopy' creates a deep copy while 'copy' creates a shallow copy
+Which of the following statements is true about Python's Global Interpreter Lock (GIL)?,"A. GIL allows multiple threads to execute Python code simultaneously, B. GIL prevents multiple threads from executing Python code simultaneously, C. GIL is only applicable to Python 2.x, D. GIL is used for memory management in Python",B. GIL prevents multiple threads from executing Python code simultaneously
+"What is the output of the following code snippet?
+
+x = 5
+y = 2
+print(eval('x + y'))","A. 7, B. 'x + y', C. 5 + 2, D. Syntax Error",A. 7
+Which module in Python is used for working with regular expressions?,"A. 're', B. 'regex', C. 'regex.py', D. 'regexp'",A. 're'
+What does the 'sys.argv' list contain in Python?,"A. The list of all imported modules, B. The list of all command line arguments passed to a Python script, C. The list of all built-in functions, D. The list of all environment variables",B. The list of all command line arguments passed to a Python script
+Which of the following is NOT a standard data type in Python?,"A. List, B. Tuple, C. Dictionary, D. Set",D. Set
+What does the 'super()' function do in Python?,"A. It returns the parent class object, B. It calls the base class constructor, C. It creates a new instance of the class, D. It returns the child class object",B. It calls the base class constructor
+"What is the output of the following code snippet?
+
+print(3 * 'abc')","A. 'abcabcabc', B. 'abc abc abc', C. 'abc3', D. Syntax Error",A. 'abcabcabc'
+Which of the following is NOT a valid way to open a file in Python?,"A. open('file.txt', 'r'), B. open('file.txt', 'w'), C. open('file.txt', 'a'), D. open('file.txt', 'execute')","D. open('file.txt', 'execute')"

@@ -1,0 +1,102 @@
+[
+    {
+        "question":"What does the 'yield' keyword do in Python?",
+        "options":[
+            "A. It is used to create a generator function",
+            "B. It is used to return a value from a function",
+            "C. It is used to raise an exception",
+            "D. It is used to import modules"
+        ],
+        "correct_answer":"A. It is used to create a generator function"
+    },
+    {
+        "question":"What is the difference between 'deepcopy' and 'copy' in Python?",
+        "options":[
+            "A. 'deepcopy' creates a shallow copy while 'copy' creates a deep copy",
+            "B. 'deepcopy' creates a deep copy while 'copy' creates a shallow copy",
+            "C. They both create shallow copies",
+            "D. They both create deep copies"
+        ],
+        "correct_answer":"B. 'deepcopy' creates a deep copy while 'copy' creates a shallow copy"
+    },
+    {
+        "question":"Which of the following statements is true about Python's Global Interpreter Lock (GIL)?",
+        "options":[
+            "A. GIL allows multiple threads to execute Python code simultaneously",
+            "B. GIL prevents multiple threads from executing Python code simultaneously",
+            "C. GIL is only applicable to Python 2.x",
+            "D. GIL is used for memory management in Python"
+        ],
+        "correct_answer":"B. GIL prevents multiple threads from executing Python code simultaneously"
+    },
+    {
+        "question":"What is the output of the following code snippet?\n\nx = 5\ny = 2\nprint(eval('x + y'))",
+        "options":[
+            "A. 7",
+            "B. 'x + y'",
+            "C. 5 + 2",
+            "D. Syntax Error"
+        ],
+        "correct_answer":"A. 7"
+    },
+    {
+        "question":"Which module in Python is used for working with regular expressions?",
+        "options":[
+            "A. 're'",
+            "B. 'regex'",
+            "C. 'regex.py'",
+            "D. 'regexp'"
+        ],
+        "correct_answer":"A. 're'"
+    },
+    {
+        "question":"What does the 'sys.argv' list contain in Python?",
+        "options":[
+            "A. The list of all imported modules",
+            "B. The list of all command line arguments passed to a Python script",
+            "C. The list of all built-in functions",
+            "D. The list of all environment variables"
+        ],
+        "correct_answer":"B. The list of all command line arguments passed to a Python script"
+    },
+    {
+        "question":"Which of the following is NOT a standard data type in Python?",
+        "options":[
+            "A. List",
+            "B. Tuple",
+            "C. Dictionary",
+            "D. Set"
+        ],
+        "correct_answer":"D. Set"
+    },
+    {
+        "question":"What does the 'super()' function do in Python?",
+        "options":[
+            "A. It returns the parent class object",
+            "B. It calls the base class constructor",
+            "C. It creates a new instance of the class",
+            "D. It returns the child class object"
+        ],
+        "correct_answer":"B. It calls the base class constructor"
+    },
+    {
+        "question":"What is the output of the following code snippet?\n\nprint(3 * 'abc')",
+        "options":[
+            "A. 'abcabcabc'",
+            "B. 'abc abc abc'",
+            "C. 'abc3'",
+            "D. Syntax Error"
+        ],
+        "correct_answer":"A. 'abcabcabc'"
+    },
+    {
+        "question":"Which of the following is NOT a valid way to open a file in Python?",
+        "options":[
+            "A. open('file.txt', 'r')",
+            "B. open('file.txt', 'w')",
+            "C. open('file.txt', 'a')",
+            "D. open('file.txt', 'execute')"
+        ],
+        "correct_answer":"D. open('file.txt', 'execute')"
+    }
+]
