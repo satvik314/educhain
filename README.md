@@ -16,6 +16,7 @@ pip install educhain
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bseC2F00l42JPVN2-35fwMupeTnyYGME?usp=sharing)
 
 Here's an example of how to use EduChain:
+![do_it](https://github.com/lunatic-7/educhain/assets/90578650/611c5c24-47b6-413f-92e9-ab97e41c0f4d)
 
 ### Generate a multiple-choice question with given number of questions
 
