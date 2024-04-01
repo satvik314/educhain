@@ -7,7 +7,7 @@ setup(
     install_requires=[
         "langchain",
         "langchain-community",
-        "litellm",
+        "langchain-openai",
         "openai",
         "python-dotenv", 
         "pandas"

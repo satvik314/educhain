@@ -1,7 +1,6 @@
 import json
 from .utils import to_csv  # Import the to_csv function from the utils module
-# from langchain_openai import ChatOpenAI
-from langchain_community.chat_models import ChatLiteLLM
+from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
@@ -29,9 +28,9 @@ def generate_mcq(topic, level = "Intermediate", num = 1, llm = None, file_name=N
                                 )
     
     if llm:
-        llm = ChatLiteLLM(model = llm)
+        llm = llm
     else:
-        llm = ChatLiteLLM(model = "gpt-3.5-turbo-0125")
+        llm = ChatOpenAI(model = "gpt-3.5-turbo-0125")
 
     MCQ_chain = LLMChain(llm=llm, prompt=MCQ_prompt)
     results = MCQ_chain.invoke({"num": num,
