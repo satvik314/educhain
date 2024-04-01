@@ -30,6 +30,10 @@ The generate_mcq function takes the following arguments:
 - **level** (str): The difficulty level of the MCQs (e.g., "Beginner", "Intermediate", "Advanced").
 - **num** (int, optional): The number of MCQs to generate. Defaults to 1.
 - **llm** (LLM, optional): An instance of a language model from the langchain library. If not provided, the function will use the ChatOpenAI model with the "gpt-3.5-turbo-0125" version.
+- **topic** (str): The topic for which you want to generate MCQs.
+- **level** (str): The difficulty level of the MCQs (e.g., "Beginner", "Intermediate", "Advanced").
+- **num** (int, optional): The number of MCQs to generate. Defaults to 1.
+- **llm** (LLM, optional): An instance of a language model from the langchain library. If not provided, the function will use the ChatOpenAI model with the "gpt-3.5-turbo-0125" version.
 
 The function returns an instance of the MCQList class, which is a custom class defined in the library. It contains a list of Question objects, each representing a single MCQ.
 
@@ -38,6 +42,7 @@ mcq = generate_mcq(topic="Python", level="Advanced", num=5)
 print(mcq)
 ```
 
+#### Save the MCQ to a CSV file
 #### Save the MCQ to a CSV file
 
 ```python
@@ -60,9 +65,7 @@ to_json(mcq, "mcq.json")
 to_pdf(mcq, "mcq.pdf", heading="Python MCQ", subheading="Advanced Level - (10 Questions)")
 ```
 
-
 ### Effortlessly create Lesson Plans
-
 
 ```shell
 from educhain import content_engine
