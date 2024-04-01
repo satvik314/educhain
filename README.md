@@ -22,7 +22,7 @@ Here's an example of how to use EduChain:
 
 ```python
 from educhain import generate_mcq, to_csv, to_json, to_pdf
-```![do_it](https://github.com/lunatic-7/educhain/assets/90578650/99d3aa0d-c7cc-4b42-880d-fa7996544e98)
+```
 
 ### **generate_mcq** function
 
