@@ -44,18 +44,11 @@ print(mcq)
 ```python
 to_csv(mcq, "mcq.csv")
 ```
-##### Output:
-![csv eg](https://github.com/lunatic-7/educhain/assets/90578650/41da49f8-605b-4df6-8612-8297b850ab08)
-
 
 #### Save the MCQ to a JSON file
 ```python
 to_json(mcq, "mcq.json")
 ```
-##### Output:
-![json eg](https://github.com/lunatic-7/educhain/assets/90578650/307ba069-2bee-4f3a-8b7a-68c944677670)
-
-
 
 #### Save the MCQ to a PDF file
 
@@ -65,13 +58,6 @@ to_json(mcq, "mcq.json")
 ```python
 to_pdf(mcq, "mcq.pdf", heading="Python MCQ", subheading="Advanced Level - (10 Questions)")
 ```
-##### Output:
-
-Questions
-![pdf eg1](https://github.com/lunatic-7/educhain/assets/90578650/4c43aefb-72d3-4b00-8b0f-683798e06391)
-
-Answers on seperate page
-![pdf eg2](https://github.com/lunatic-7/educhain/assets/90578650/5d2def26-2afa-4d0e-bd9e-8b81282efdfc)
 
 ### Effortlessly create Lesson Plans
 
