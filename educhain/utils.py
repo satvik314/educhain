@@ -1,10 +1,10 @@
 import pandas as pd
-from .models import Quiz
+from .models import MCQList  ###
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet
 
-def to_csv(quiz_data : Quiz, file_name):
+def to_csv(quiz_data : MCQList, file_name):
     """
     Generate a CSV file from a Quiz object.
 
@@ -17,7 +17,10 @@ def to_csv(quiz_data : Quiz, file_name):
     for question in quiz_data.questions:
         mcq_data.append({
             'question': question.question,
-            'options': ', '.join(question.options),
+            'option_1': question.options[0],
+            'option_2': question.options[1],
+            'option_3': question.options[2],
+            'option_4': question.options[3],
             'correct_answer': question.correct_answer
         })
 
@@ -25,7 +28,7 @@ def to_csv(quiz_data : Quiz, file_name):
     df.to_csv(file_name, index=False)
     
 
-def to_json(quiz_data : Quiz, file_name=None):
+def to_json(quiz_data : MCQList, file_name=None):
 
     """
     Convert a list of Question objects to JSON and create a JSON file.
@@ -44,7 +47,7 @@ def to_json(quiz_data : Quiz, file_name=None):
     return data
 
 
-def to_pdf(quiz_data : Quiz, file_name, heading=None, subheading=None):
+def to_pdf(quiz_data : MCQList, file_name, heading=None, subheading=None):
     """
     Create a PDF file from a list of MCQ (Multiple Choice Questions).
 
