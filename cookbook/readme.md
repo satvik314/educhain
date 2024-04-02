@@ -67,7 +67,7 @@ to_json(mcq, "mcq.json")
 - **subheading** (str): (optional)
 
 ```python
-to_pdf(mcq, "mcq.pdf", heading="Python MCQ", subheading="Advanced Level - (10 Questions)")
+to_pdf(mcq, "mcq.pdf", heading="Quantum Entanglement MCQ", subheading="Intermediate Level - (5 Questions)")
 ```
 
 This will generate 5 MCQs on the topic of Quantum Entanglement.
