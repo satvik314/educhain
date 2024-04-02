@@ -6,7 +6,10 @@ Welcome to the Educhain Cookbook! This cookbook provides a guide on how to utili
 
 1. [Installation](#installation)
 2. [Generating Multiple Choice Questions (MCQs)](#generating-mcqs)
-3. [Creating Lesson Plans](#creating-lesson-plans)
+3. [Save the MCQ to CSV file](#saving-csv)
+4. [Save the MCQ to JSON file](#saving-json)
+5. [Save the MCQ to PDF file](#saving-pdf)
+6. [Creating Lesson Plans](#creating-lesson-plans)
 
 ## 1. Installation <a name="installation"></a>
 
@@ -22,22 +25,22 @@ pip install git+https://github.com/satvik314/educhain.git
 
 You can use Educhain to generate MCQs effortlessly..
 
+##### **generate_mcq** function
+
+The generate_mcq function takes the following arguments:
+- **topic** (str): The topic for which you want to generate MCQs.
+- **level** (str): The difficulty level of the MCQs (e.g., "Beginner", "Intermediate", "Advanced").
+- **num** (int, optional): The number of MCQs to generate. Defaults to 1.
+- **llm** (LLM, optional): An instance of a language model from the langchain library. If not provided, the function will use the ChatOpenAI model with the "gpt-3.5-turbo-0125" version.
+- **topic** (str): The topic for which you want to generate MCQs.
+- **level** (str): The difficulty level of the MCQs (e.g., "Beginner", "Intermediate", "Advanced").
+- **num** (int, optional): The number of MCQs to generate. Defaults to 1.
+- **llm** (LLM, optional): An instance of a language model from the langchain library. If not provided, the function will use the ChatOpenAI model with the "gpt-3.5-turbo-0125" version.
+
+The function returns an instance of the MCQList class, which is a custom class defined in the library. It contains a list of Question objects, each representing a single MCQ.
+
 ```python
-from educhain import qna_engine
-
-topic = "Quantum Entanglement"
-level = "Intermediate"
-
-mcq = qna_engine.generate_mcq(topic, level)
-print(mcq)
-```
-
-#### Generating Multiple Questions
-
-If you need multiple MCQs
-
-```python
-from educhain import qna_engine
+from educhain import qna_engine, to_csv, to_json, to_pdf
 
 topic = "Quantum Entanglement"
 level = "Intermediate"
@@ -47,9 +50,29 @@ mcq = qna_engine.generate_mcq(topic, level, num=num)
 print(mcq)
 ```
 
+### 3. Save the MCQ to a CSV file  <a name="saving-csv"></a>
+
+```python
+to_csv(mcq, "mcq.csv")
+```
+
+### 4. Save the MCQ to a JSON file <a name="saving-json"></a>
+```python
+to_json(mcq, "mcq.json")
+```
+
+### 5. Save the MCQ to a PDF file <a name="saving-pdf"></a>
+
+- **heading** (str): (optional)
+- **subheading** (str): (optional)
+
+```python
+to_pdf(mcq, "mcq.pdf", heading="Python MCQ", subheading="Advanced Level - (10 Questions)")
+```
+
 This will generate 5 MCQs on the topic of Quantum Entanglement.
 
-## 3. Creating Lesson Plans <a name="creating-lesson-plans"></a>
+## 6. Creating Lesson Plans <a name="creating-lesson-plans"></a>
 
 Educhain also allows you to effortlessly create lesson plans tailored to your specified topic and level.
 
