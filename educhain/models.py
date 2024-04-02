@@ -12,8 +12,6 @@ class MCQ(BaseModel):
         print(f"Question: {self.question}\nOptions:\n{options_str}\nCorrect Answer: {self.correct_answer}\n")
 
 
-
-
 class MCQList(BaseModel):
     questions: List[MCQ]
 

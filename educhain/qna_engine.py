@@ -1,12 +1,12 @@
 import json
-from .utils import to_csv  # Import the to_csv function from the utils module
+from .utils import to_csv, to_json, to_pdf  ###
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
-from .models import MCQList, MCQ
-    
-def generate_mcq(topic, level = "Intermediate", num = 1, llm = None, file_name=None):
+from .models import MCQList ###
+
+def generate_mcq(topic, level, num = 1, llm = None):
 
     parser = PydanticOutputParser(pydantic_object=MCQList)
 
@@ -40,9 +40,5 @@ def generate_mcq(topic, level = "Intermediate", num = 1, llm = None, file_name=N
 
     results = results["text"]
     structured_output = parser.parse(results)
-    
-    # Generate Csv file if file_name is provided
-    if file_name:
-        to_csv(structured_output, file_name)
         
     return structured_output

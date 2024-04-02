@@ -10,7 +10,8 @@ setup(
         "langchain-openai",
         "openai",
         "python-dotenv", 
-        "pandas"
+        "pandas",
+        "reportlab"
     ],
     author="Satvik Paramkusham",
     author_email="satvik@buildfastwithai.com",

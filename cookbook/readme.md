@@ -20,7 +20,7 @@ pip install git+https://github.com/satvik314/educhain.git
 
 #### Default Usage
 
-You can use Educhain to generate MCQs effortlessly. By default, it generates one MCQ and does not generate a CSV file.
+You can use Educhain to generate MCQs effortlessly..
 
 ```python
 from educhain import qna_engine
@@ -32,9 +32,9 @@ mcq = qna_engine.generate_mcq(topic, level)
 print(mcq)
 ```
 
-#### Generating Multiple Questions with CSV Output
+#### Generating Multiple Questions
 
-If you need multiple MCQs and want to generate a CSV file containing these questions, you can specify the number of questions and the file name.
+If you need multiple MCQs
 
 ```python
 from educhain import qna_engine
@@ -42,13 +42,12 @@ from educhain import qna_engine
 topic = "Quantum Entanglement"
 level = "Intermediate"
 num = 5
-file_name = "python_mcq.csv"
 
-mcq = qna_engine.generate_mcq(topic, level, num=num, file_name=file_name)
+mcq = qna_engine.generate_mcq(topic, level, num=num)
 print(mcq)
 ```
 
-This will generate 5 MCQs on the topic of Quantum Entanglement and save them to a CSV file named "python_mcq.csv".
+This will generate 5 MCQs on the topic of Quantum Entanglement.
 
 ## 3. Creating Lesson Plans <a name="creating-lesson-plans"></a>
 

@@ -10,38 +10,62 @@ pip install educhain
 
 ## Usage
 
+
 ### Use it to Generate MCQs
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bseC2F00l42JPVN2-35fwMupeTnyYGME?usp=sharing)
 
-##### With given no. of ques, no csv generated
+Here's an example of how to use EduChain:
 
-```shell
-from educhain import qna_engine
+### Generate a multiple-choice question with given number of questions
 
-topic = "Theory of Relativity"
-level = "Intermediate"
-num = 5
 
-mcq = qna_engine.generate_mcq(topic, level, num)
+```python
+from educhain import generate_mcq, to_csv, to_json, to_pdf
+```
+#### **generate_mcq** function
+
+The generate_mcq function takes the following arguments:
+- **topic** (str): The topic for which you want to generate MCQs.
+- **level** (str): The difficulty level of the MCQs (e.g., "Beginner", "Intermediate", "Advanced").
+- **num** (int, optional): The number of MCQs to generate. Defaults to 1.
+- **llm** (LLM, optional): An instance of a language model from the langchain library. If not provided, the function will use the ChatOpenAI model with the "gpt-3.5-turbo-0125" version.
+- **topic** (str): The topic for which you want to generate MCQs.
+- **level** (str): The difficulty level of the MCQs (e.g., "Beginner", "Intermediate", "Advanced").
+- **num** (int, optional): The number of MCQs to generate. Defaults to 1.
+- **llm** (LLM, optional): An instance of a language model from the langchain library. If not provided, the function will use the ChatOpenAI model with the "gpt-3.5-turbo-0125" version.
+
+The function returns an instance of the MCQList class, which is a custom class defined in the library. It contains a list of Question objects, each representing a single MCQ.
+
+```python
+mcq = generate_mcq(topic="Python", level="Advanced", num=5)
 print(mcq)
 ```
-##### With given no. of ques. & csv generated with given file_name
 
-```shell
-from educhain import qna_engine
+#### Save the MCQ to a CSV file
+#### Save the MCQ to a CSV file
 
-topic = "Quantum Entanglement"
-level = "Intermediate"
-num = 5
-file_name="my_mcqs.csv"
+```python
+to_csv(mcq, "mcq.csv")
+```
 
-mcq = qna_engine.generate_mcq(topic, level, num=num, file_name=file_name)
-print(mcq)
+
+#### Save the MCQ to a JSON file
+```python
+to_json(mcq, "mcq.json")
+```
+
+
+#### Save the MCQ to a PDF file
+
+- **heading** (str): (optional)
+- **subheading** (str): (optional)
+
+```python
+to_pdf(mcq, "mcq.pdf", heading="Python MCQ", subheading="Advanced Level - (10 Questions)")
 ```
 
 ### Effortlessly create Lesson Plans
-
 
 ```shell
 from educhain import content_engine
@@ -53,6 +77,9 @@ lesson_plan = content_engine.generate_lesson_plan(topic, level)
 print(lesson_plan)
 ```
 
+## Contributing
+
+*Contributions are welcome! Please open an issue or submit a pull request on the GitHub repository.*
 
 ## Next Steps
 
@@ -60,6 +87,8 @@ Will be releasing more features for MCQ Generation
 - [x] Bulk Generation
 - [x] Outputs in JSON format
 - [x] Export questions to CSV
+- [x] Exports questions to JSON
+- [x] Exports questions to PDF
 - [ ] Support for other LLM models
 - [ ] Generate questions from text/pdf file
 - [ ] Finetuned Model for question generation
