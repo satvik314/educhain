@@ -43,18 +43,15 @@ print(mcq)
 ```
 
 #### Save the MCQ to a CSV file
-#### Save the MCQ to a CSV file
 
 ```python
 to_csv(mcq, "mcq.csv")
 ```
 
-
 #### Save the MCQ to a JSON file
 ```python
 to_json(mcq, "mcq.json")
 ```
-
 
 #### Save the MCQ to a PDF file
 
