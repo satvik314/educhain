@@ -29,6 +29,7 @@ The generate_mcq function takes the following arguments:
 - **topic** (str): The topic for which you want to generate MCQs.
 - **level** (str): The difficulty level of the MCQs (e.g., "Beginner", "Intermediate", "Advanced").
 - **num** (int, optional): The number of MCQs to generate. Defaults to 1.
+- **custom_template** (str, optional): Any optional modification in template which you want to make.
 - **llm** (LLM, optional): An instance of a language model from the langchain library. If not provided, the function will use the ChatOpenAI model with the "gpt-3.5-turbo-0125" version.
 - **topic** (str): The topic for which you want to generate MCQs.
 - **level** (str): The difficulty level of the MCQs (e.g., "Beginner", "Intermediate", "Advanced").
@@ -38,7 +39,7 @@ The generate_mcq function takes the following arguments:
 The function returns an instance of the MCQList class, which is a custom class defined in the library. It contains a list of Question objects, each representing a single MCQ.
 
 ```python
-mcq = generate_mcq(topic="Python", level="Advanced", num=5)
+mcq = generate_mcq(topic="Python", level="Advanced", num=5, custom_template="All questions should be word problems")
 print(mcq)
 ```
 
