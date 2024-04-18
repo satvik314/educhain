@@ -79,7 +79,7 @@ Will be releasing more features for MCQ Generation
 - [x] Exports questions to JSON
 - [x] Exports questions to PDF
 - [ ] Support for other LLM models
-- [ ] Generate questions from text/pdf file
+- [x] Generate questions from text/pdf file
 - [ ] Finetuned Model for question generation
 
 
