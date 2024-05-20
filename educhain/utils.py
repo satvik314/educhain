@@ -1,16 +1,8 @@
 import pandas as pd
 from .models import MCQList  ###
-
-# For creating pdf of the quiz
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet
-
-# For extracting text from a PDF file
-from PyPDF2 import PdfReader
-from langchain_openai import OpenAIEmbeddings
-from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.vectorstores import FAISS
 
 def to_csv(quiz_data : MCQList, file_name):
     """
@@ -95,40 +87,3 @@ def to_pdf(quiz_data : MCQList, file_name, heading=None, subheading=None):
         elements.append(Paragraph(correct_answer_text, styles["BodyText"]))
 
     doc.build(elements)
-
-def extract_pdf(file_path):
-    """
-    Extract text from a PDF file.
-
-    Args:
-    file_path (str): Path to the PDF file.
-
-    Returns:
-    str: Extracted text from the PDF file.
-    """
-    
-    # provide the path of  pdf file/files.
-    pdfreader = PdfReader(file_path)
-    
-    # read text from pdf
-    raw_text = ''
-    for i, page in enumerate(pdfreader.pages):
-        content = page.extract_text()
-        if content:
-            raw_text += content
-    
-    # We need to split the text using Character Text Split such that it sshould not increse token size
-    text_splitter = CharacterTextSplitter(
-        separator = "\n",
-        chunk_size = 1500,
-        chunk_overlap  = 200,
-        length_function = len,
-    )
-    texts = text_splitter.split_text(raw_text)
-    
-    # Download embeddings from OpenAI
-    embeddings = OpenAIEmbeddings()
-    document_search = FAISS.from_texts(texts, embeddings)
-    
-    return document_search
-    
