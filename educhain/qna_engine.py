@@ -52,3 +52,5 @@ def generate_mcq(topic, level, num=1, llm=None, response_model=None , prompt_tem
     results = results.content
     structured_output = parser.parse(results)
 
+    return structured_output
+
