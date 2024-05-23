@@ -8,9 +8,14 @@ from .models import MCQList ###
 
 
 
-def generate_mcq(topic, level, num=1, llm=None, prompt_template=None, **kwargs):
-    parser = PydanticOutputParser(pydantic_object=MCQList)
-    format_instructions = parser.get_format_instructions()
+def generate_mcq(topic, level, num=1, llm=None, response_model=None , prompt_template=None, **kwargs):
+
+    if response_model == None:
+      parser = PydanticOutputParser(pydantic_object = MCQList)
+      format_instructions = parser.get_format_instructions()
+    else:
+      parser = PydanticOutputParser(pydantic_object = response_model)
+      format_instructions = parser.get_format_instructions()
 
     if prompt_template is None:
         prompt_template = """
@@ -33,17 +38,17 @@ def generate_mcq(topic, level, num=1, llm=None, prompt_template=None, **kwargs):
     if llm:
         llm = llm
     else:
-        llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
+        llm = ChatOpenAI(model="gpt-3.5-turbo")
 
-    MCQ_chain = LLMChain(llm=llm, prompt=MCQ_prompt)
+    # MCQ_chain = LLMChain(llm=llm, prompt=MCQ_prompt)
+    MCQ_chain = MCQ_prompt | llm
 
     results = MCQ_chain.invoke(
         {"num": num, "topic": topic, "level": level, **kwargs},
-        return_only_outputs=True
+        # return_only_outputs=True
+
     )
 
-    results = results["text"]
+    results = results.content
     structured_output = parser.parse(results)
-
-    return structured_output
 
