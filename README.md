@@ -91,10 +91,10 @@ questions
 
 ```python
 
-from educhain import to_csv, to_json, to_pdf
+from educhain import to_json, to_pdf, to_csv
 
-to_csv(questions, "questions.json") # export questions to JSON
-to_csv(questions, "questions.pdf") # export questions to PDF
+to_json(questions, "questions.json") # export questions to JSON
+to_pdf(questions, "questions.pdf") # export questions to PDF
 to_csv(questions, "questions.csv") # export questions to CSV
 
 ```
