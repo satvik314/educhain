@@ -8,7 +8,7 @@ from .models import MCQList ###
 
 
 
-def generate_mcq(topic, level, num=1, llm=None, response_model=None , prompt_template=None, **kwargs):
+def generate_mcq(topic, level = "Intermediate", num=1, llm=None, response_model=None , prompt_template=None, **kwargs):
 
     if response_model == None:
       parser = PydanticOutputParser(pydantic_object = MCQList)
