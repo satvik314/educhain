@@ -13,59 +13,95 @@ pip install educhain
 
 ### Use it to Generate MCQs
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bseC2F00l42JPVN2-35fwMupeTnyYGME?usp=sharing)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ImijJ-DF8XGTzyLJ0lq68yInrPN1-L8L?usp=sharing)
 
-Here's an example of how to use EduChain:
+Here's an example of how to use Educhain:
 
-### Generate a multiple-choice question with given number of questions
+## Generate MCQs
+
+### Quickstart
 
 
 ```python
-from educhain import generate_mcq, to_csv, to_json, to_pdf
+from educhain import qna_engine
+
+questions = qna_engine.generate_mcq(
+    topic="Indian History",
+    level="Beginner",
+    num=5
+)
+
+questions
 ```
-#### **generate_mcq** function
 
-The generate_mcq function takes the following arguments:
-- **topic** (str): The topic for which you want to generate MCQs.
-- **level** (str): The difficulty level of the MCQs (e.g., "Beginner", "Intermediate", "Advanced").
-- **num** (int, optional): The number of MCQs to generate. Defaults to 1.
-- **llm** (LLM, optional): An instance of a language model from the langchain library. If not provided, the function will use the ChatOpenAI model with the "gpt-3.5-turbo-0125" version.
-- **topic** (str): The topic for which you want to generate MCQs.
-- **level** (str): The difficulty level of the MCQs (e.g., "Beginner", "Intermediate", "Advanced").
-- **num** (int, optional): The number of MCQs to generate. Defaults to 1.
-- **llm** (LLM, optional): An instance of a language model from the langchain library. If not provided, the function will use the ChatOpenAI model with the "gpt-3.5-turbo-0125" version.
+### Using Custom Prompt Templates
 
-The function returns an instance of the MCQList class, which is a custom class defined in the library. It contains a list of Question objects, each representing a single MCQ.
+You can create your own prompt templates and customize it with various input fields
 
 ```python
-mcq = generate_mcq(topic="Python", level="Advanced", num=5)
-print(mcq)
+from educhain import qna_engine
+
+custom_template = """
+Generate {num} multiple-choice question (MCQ) based on the given topic and level.
+Provide the question, four answer options, and the correct answer.
+
+Topic: {topic}
+Learning Objective: {learning_objective}
+Difficulty Level: {difficulty_level}
+"""
+
+result = qna_engine.generate_mcq(
+    topic="Python Programming",
+    num=2,
+    learning_objective = "Usage of Python classes",
+    difficulty_level = "Hard",
+    prompt_template=custom_template,
+)
+
+result
 ```
 
-#### Save the MCQ to a CSV file
-#### Save the MCQ to a CSV file
+### Using Different LLMs
+
+Switch from default OpenAI models to other models using ChatOpenAI.
+
+Example shows using Llama 3 model through Groq
 
 ```python
-to_csv(mcq, "mcq.csv")
+from educhain import qna_engine
+from langchain_openai import ChatOpenAI
+
+llama3_groq = ChatOpenAI(
+    model = "llama3-70b-8192",
+    openai_api_base = "https://api.groq.com/openai/v1",
+    openai_api_key = "GROQ_API_KEY"
+)
+
+questions = qna_engine.generate_mcq(
+    topic="Chess",
+    level="Hard",
+    num=5,
+    llm = llama3_groq
+)
+
+questions
 ```
 
+### Export questions to JSON, PDF, CSV
 
-#### Save the MCQ to a JSON file
 ```python
-to_json(mcq, "mcq.json")
+
+from educhain import to_csv, to_json, to_pdf
+
+to_csv(questions, "questions.json") # export questions to JSON
+to_csv(questions, "questions.pdf") # export questions to PDF
+to_csv(questions, "questions.csv") # export questions to CSV
+
 ```
 
+## Generate Lesson Plans
 
-#### Save the MCQ to a PDF file
-
-- **heading** (str): (optional)
-- **subheading** (str): (optional)
-
-```python
-to_pdf(mcq, "mcq.pdf", heading="Python MCQ", subheading="Advanced Level - (10 Questions)")
-```
-
-### Effortlessly create Lesson Plans
+### Quickstart
 
 ```shell
 from educhain import content_engine
@@ -86,10 +122,10 @@ print(lesson_plan)
 Will be releasing more features for MCQ Generation
 - [x] Bulk Generation
 - [x] Outputs in JSON format
-- [x] Export questions to CSV
-- [x] Exports questions to JSON
-- [x] Exports questions to PDF
-- [ ] Support for other LLM models
+- [x] Custom Prompt Templates
+- [x] Custom Response Models using Pydantic
+- [x] Exports questions to JSON/PDF/CSV
+- [X] Support for other LLM models
 - [ ] Generate questions from text/pdf file
 - [ ] Finetuned Model for question generation
 
