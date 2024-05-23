@@ -13,11 +13,13 @@ pip install educhain
 
 ### Use it to Generate MCQs
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ImijJ-DF8XGTzyLJ0lq68yInrPN1-L8L?usp=sharing)
-
 Here's an example of how to use Educhain:
 
 ## Generate MCQs
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ImijJ-DF8XGTzyLJ0lq68yInrPN1-L8L?usp=sharing)
+
+Here are some examples on how to use educhain: 
 
 ### Quickstart
 
