@@ -22,30 +22,21 @@ class MCQList(BaseModel):
             print(f"Question {i + 1}:")
             mcq.show()
 
-
 class LessonPlan(BaseModel):
     """A class representing a lesson plan."""
     topic: str
-    duration: str
     objectives: List[str]
-    prerequisites: List[str]
     introduction: str
-    content_outline: List[str]
+    content: str
     assessment: str
     conclusion: str
 
     def show(self):
         print(f"Topic: {self.topic}")
-        print(f"Duration: {self.duration}")
         print("Objectives:")
         for objective in self.objectives:
             print(f"- {objective}")
-        print("Prerequisites:")
-        for prerequisite in self.prerequisites:
-            print(f"- {prerequisite}")
         print(f"Introduction: {self.introduction}")
-        print("Content Outline:")
-        for outline in self.content_outline:
-            print(f"- {outline}")
+        print(f"Content: {self.content}")
         print(f"Assessment: {self.assessment}")
         print(f"Conclusion: {self.conclusion}\n")
