@@ -2,7 +2,7 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
-from .models import LessonPlan
+from .models import LessonPlan,QuestionPaper
 
 def generate_lesson_plan(topic, llm=None, response_model=None, prompt_template=None, **kwargs):
     if response_model == None:
