@@ -40,3 +40,28 @@ class LessonPlan(BaseModel):
         print(f"Content: {self.content}")
         print(f"Assessment: {self.assessment}")
         print(f"Conclusion: {self.conclusion}\n")
+
+
+class QuestionPaper(BaseModel):
+    """A class representing a question paper."""
+    subject: str
+    grade_level: int
+    num_questions: int
+    question_types: List[str]
+    time_limit: Optional[int]
+    difficulty_level: Optional[str]
+    topics: Optional[List[str]]
+    questions: List[MCQ]
+
+    def show(self):
+        print(f"Subject: {self.subject}")
+        print(f"Grade Level: {self.grade_level}")
+        print(f"Number of Questions: {self.num_questions}")
+        print(f"Question Types: {', '.join(self.question_types)}")
+        print(f"Time Limit: {self.time_limit} minutes" if self.time_limit else "No time limit")
+        print(f"Difficulty Level: {self.difficulty_level}" if self.difficulty_level else "Not specified")
+        print(f"Topics: {', '.join(self.topics)}" if self.topics else "Not specified")
+        print("\nQuestions:")
+        for i, mcq in enumerate(self.questions):
+            print(f"Question {i + 1}:")
+            mcq.show()
