@@ -3,6 +3,7 @@ from .models import MCQList  ###
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet
+from typing import List, Optional
 
 def to_csv(quiz_data : MCQList, file_name):
     """
