@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from langchain_core.pydantic_v1 import BaseModel
 
 class MCQ(BaseModel):
