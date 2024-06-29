@@ -7,15 +7,13 @@ from langchain.output_parsers import PydanticOutputParser
 from .models import MCQList ###
 
 
-
-def generate_mcq(topic, num=1, llm=None, response_model=None , prompt_template=None, **kwargs):
-
+def generate_mcq(topic, num=1, llm=None, response_model=None, prompt_template=None, custom_instructions=None, **kwargs):
     if response_model == None:
-      parser = PydanticOutputParser(pydantic_object = MCQList)
-      format_instructions = parser.get_format_instructions()
+        parser = PydanticOutputParser(pydantic_object=MCQList)
+        format_instructions = parser.get_format_instructions()
     else:
-      parser = PydanticOutputParser(pydantic_object = response_model)
-      format_instructions = parser.get_format_instructions()
+        parser = PydanticOutputParser(pydantic_object=response_model)
+        format_instructions = parser.get_format_instructions()
 
     if prompt_template is None:
         prompt_template = """
@@ -24,6 +22,10 @@ def generate_mcq(topic, num=1, llm=None, response_model=None , prompt_template=N
 
         Topic: {topic}
         """
+
+    # Add custom instructions if provided
+    if custom_instructions:
+        prompt_template += f"\n\nAdditional Instructions:\n{custom_instructions}"
 
     # Append the JSON format instruction line to the custom prompt template
     prompt_template += "\nThe response should be in JSON format. \n {format_instructions}"
@@ -39,17 +41,13 @@ def generate_mcq(topic, num=1, llm=None, response_model=None , prompt_template=N
     else:
         llm = ChatOpenAI(model="gpt-3.5-turbo")
 
-    # MCQ_chain = LLMChain(llm=llm, prompt=MCQ_prompt)
     MCQ_chain = MCQ_prompt | llm
 
     results = MCQ_chain.invoke(
         {"num": num, "topic": topic, **kwargs},
-        # return_only_outputs=True
-
     )
 
     results = results.content
     structured_output = parser.parse(results)
 
     return structured_output
-
