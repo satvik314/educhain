@@ -11,7 +11,9 @@ setup(
         "openai",
         "python-dotenv", 
         "pandas",
-        "reportlab"
+        "reportlab",
+        "PyPDF2",
+        "beautifulsoup4",
     ],
     author="Satvik Paramkusham",
     author_email="satvik@buildfastwithai.com",
