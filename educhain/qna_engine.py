@@ -55,7 +55,7 @@ def generate_mcq(topic, num=1, llm=None, response_model=None, prompt_template=No
 
 QuestionType = Literal["Multiple Choice", "Short Answer", "True/False", "Fill in the Blank"]
 
-def questions_with_types(
+def generate_questions(
     topic: str,
     num: int = 1,
     llm: Optional[Any] = None,

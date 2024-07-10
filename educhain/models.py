@@ -30,9 +30,12 @@ class MultipleChoiceQuestion(BaseQuestion):
     options: List[str]
 
     def show(self):
-        super().show()
+        print(f"Question: {self.question}")
         options_str = "\n".join(f"  {chr(65 + i)}. {option}" for i, option in enumerate(self.options))
         print(f"Options:\n{options_str}")
+        print(f"\nCorrect Answer: {self.answer}")
+        if self.explanation:
+            print(f"Explanation: {self.explanation}")
         print()
 
 class ShortAnswerQuestion(BaseQuestion):
