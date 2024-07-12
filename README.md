@@ -181,8 +181,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📬 Contact
 
-- For general inquiries: info@educhain.ai
-- For technical support: support@educhain.ai
+- For general inquiries: educhain.in
+- For technical support: satvik@buildfastwithai.com
 - Follow us on [Twitter](https://twitter.com/educhain_ai)
 - Join our [Discord community](https://discord.gg/educhain)
 
