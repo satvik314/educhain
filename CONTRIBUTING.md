@@ -33,6 +33,6 @@ We welcome contributions to Educhain! Here's how you can help:
 Feel free to contact us:
 
 - Email: satvik@buildfastwithai.com
-- Twitter: [@educhain_ai](https://twitter.com/educhain_ai)
+- Website: [@educhain_in](https://educhain.in)
 
 Thank you for your contributions!
