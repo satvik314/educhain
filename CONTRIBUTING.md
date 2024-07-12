@@ -36,3 +36,4 @@ Feel free to contact us:
 - Website: [@educhain_in](https://educhain.in)
 
 Thank you for your contributions!
+Made with ❤️ by the Educhain Team
