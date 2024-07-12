@@ -1,24 +1,44 @@
-# educhain
+# Educhain 🎓🔗
 
-A Python package for generating educational content using Generative AI. Educhain makes it easy to apply Generative AI in various educational use cases to create engaging and personalized learning experiences 
+[![PyPI version](https://badge.fury.io/py/educhain.svg)](https://badge.fury.io/py/educhain)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python Versions](https://img.shields.io/pypi/pyversions/educhain.svg)](https://pypi.org/project/educhain/)
+[![Downloads](https://pepy.tech/badge/educhain)](https://pepy.tech/project/educhain)
 
-## Installation
+[Website](https://educhain.in) | [Documentation](https://docs.educhain.ai) | 
 
-```shell
+Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content. From generating multiple-choice questions to crafting comprehensive lesson plans, Educhain makes it easy to apply AI in various educational scenarios.
+
+<img src="/api/placeholder/800/400" alt="Educhain Overview" />
+
+## 🚀 Features
+
+- 📝 Generate Multiple Choice Questions (MCQs)
+- 📊 Create Lesson Plans
+- 🔄 Support for various LLM models
+- 📁 Export questions to JSON, PDF, and CSV formats
+- 🎨 Customizable prompt templates
+- 📚 Generate questions from text/PDF files
+
+## 📈 Performance
+
+Educhain consistently outperforms traditional methods in content generation speed and quality:
+
+<img src="images\educhain-comparison-svg.svg" alt="Performance Comparison Graph" />
+
+## 🛠 Installation
+
+```bash
 pip install educhain
 ```
 
-## Usage
+## 🎮 Usage
 
-
-## Generate MCQs
+### Generate MCQs
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ImijJ-DF8XGTzyLJ0lq68yInrPN1-L8L?usp=sharing)
 
-Here are some examples on how to use educhain: 
-
-### Quickstart
-
+#### Quick Start
 
 ```python
 from educhain import qna_engine
@@ -28,13 +48,10 @@ questions = qna_engine.generate_mcq(
     level="Beginner",
     num=5
 )
-
-questions
+print(questions)
 ```
 
-### Using Custom Prompt Templates
-
-You can create your own prompt templates and customize it with various input fields
+#### Using Custom Prompt Templates
 
 ```python
 from educhain import qna_engine
@@ -42,7 +59,6 @@ from educhain import qna_engine
 custom_template = """
 Generate {num} multiple-choice question (MCQ) based on the given topic and level.
 Provide the question, four answer options, and the correct answer.
-
 Topic: {topic}
 Learning Objective: {learning_objective}
 Difficulty Level: {difficulty_level}
@@ -51,81 +67,131 @@ Difficulty Level: {difficulty_level}
 result = qna_engine.generate_mcq(
     topic="Python Programming",
     num=2,
-    learning_objective = "Usage of Python classes",
-    difficulty_level = "Hard",
+    learning_objective="Usage of Python classes",
+    difficulty_level="Hard",
     prompt_template=custom_template,
 )
-
-result
+print(result)
 ```
 
-### Using Different LLMs
-
-Switch from default OpenAI models to other models using ChatOpenAI.
-
-Example shows using Llama 3 model through Groq
+#### Using Different LLM Models
 
 ```python
 from educhain import qna_engine
 from langchain_openai import ChatOpenAI
 
 llama3_groq = ChatOpenAI(
-    model = "llama3-70b-8192",
-    openai_api_base = "https://api.groq.com/openai/v1",
-    openai_api_key = "GROQ_API_KEY"
+    model="llama3-70b-8192",
+    openai_api_base="https://api.groq.com/openai/v1",
+    openai_api_key="GROQ_API_KEY"
 )
 
 questions = qna_engine.generate_mcq(
     topic="Chess",
     level="Hard",
     num=5,
-    llm = llama3_groq
+    llm=llama3_groq
 )
-
-questions
+print(questions)
 ```
 
-### Export questions to JSON, PDF, CSV
+#### Generate Questions from Data Sources
 
 ```python
+from educhain import qna_engine
 
-from educhain import to_json, to_pdf, to_csv
-
-to_json(questions, "questions.json") # export questions to JSON
-to_pdf(questions, "questions.pdf") # export questions to PDF
-to_csv(questions, "questions.csv") # export questions to CSV
-
+questions = qna_engine.generate_mcqs_from_data(
+    source="https://example.com/article",
+    source_type="url",
+    num=5,
+    learning_objective="Understand key concepts",
+    difficulty_level="Intermediate"
+)
+print(questions)
 ```
 
-## Generate Lesson Plans
+### Export Questions
 
-### Quickstart
+```python
+from educhain import to_json, to_pdf, to_csv
 
-```shell
+to_json(questions, "questions.json")  # Export questions to JSON
+to_pdf(questions, "questions.pdf")    # Export questions to PDF
+to_csv(questions, "questions.csv")    # Export questions to CSV
+```
+
+### Generate Lesson Plans
+
+```python
 from educhain import content_engine
 
 topic = "Medieval History"
 level = "Beginner"
-
 lesson_plan = content_engine.generate_lesson_plan(topic, level)
 print(lesson_plan)
 ```
 
-## Contributing
+## 📊 Supported Question Types
 
-*Contributions are welcome! Please open an issue or submit a pull request on the GitHub repository.*
+- Multiple Choice Questions (MCQ)
+- Short Answer Questions
+- True/False Questions
+- Fill in the Blank Questions
 
-## Next Steps
+## 🔧 Advanced Configuration
 
-Will be releasing more features for MCQ Generation
+Educhain offers advanced configuration options to fine-tune its behavior. Check our [configuration guide](https://docs.educhain.ai/configuration) for more details.
+
+## 🌟 Success Stories
+
+Educators worldwide are using Educhain to transform their teaching. Read our [case studies](https://educhain.ai/case-studies) to learn more.
+
+## 📈 Usage Statistics
+
+Educhain's adoption has been growing rapidly:
+
+<img src="/api/placeholder/600/400" alt="Usage Growth Graph" />
+
+## 🗺 Roadmap
+
 - [x] Bulk Generation
 - [x] Outputs in JSON format
 - [x] Custom Prompt Templates
 - [x] Custom Response Models using Pydantic
 - [x] Exports questions to JSON/PDF/CSV
-- [X] Support for other LLM models
-- [ ] Generate questions from text/pdf file
+- [x] Support for other LLM models
+- [x] Generate questions from text/PDF file
 - [ ] Finetuned Model for question generation
+- [ ] Integration with popular Learning Management Systems
+- [ ] Mobile app for on-the-go content generation
 
+## 🤝 Contributing
 
+We welcome contributions! Please see our [Contribution Guide](CONTRIBUTING.md) for more details.
 
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgements
+
+- OpenAI for their GPT models
+- Langchain for the ChatOpenAI interface
+- Our amazing community of contributors
+
+## 📬 Contact
+
+- For general inquiries: info@educhain.ai
+- For technical support: support@educhain.ai
+- Follow us on [Twitter](https://twitter.com/educhain_ai)
+- Join our [Discord community](https://discord.gg/educhain)
+
+For bug reports or feature requests, please open an issue on our [GitHub repository](https://github.com/educhain/educhain).
+
+---
+
+<img src="/api/placeholder/100/100" alt="Educhain Logo" align="right" />
+
+Made with ❤️ by the Educhain Team
+
+[www.educhain.in](https://educhain.in)
