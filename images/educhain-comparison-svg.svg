@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420">
+  <style>
+    .title { font: bold 24px sans-serif; }
+    .subtitle { font: bold 20px sans-serif; }
+    .feature { font: 16px sans-serif; }
+    .code { font: 14px monospace; }
+    .educhain { fill: #4CAF50; }
+    .standard { fill: #FFA726; }
+    .box { fill: white; stroke: #333; stroke-width: 2; }
+    .check { fill: green; }
+    .cross { fill: red; }
+  </style>
+  
+  <rect width="800" height="420" fill="#f0f0f0"/>
+  
+  <!-- Title -->
+  <text x="400" y="40" text-anchor="middle" class="title">Educhain vs Standard Libraries</text>
+  
+  <!-- Educhain -->
+  <rect x="50" y="60" width="340" height="340" class="box"/>
+  <text x="220" y="90" text-anchor="middle" class="subtitle educhain">Educhain</text>
+  <text x="70" y="120" class="code">
+    <tspan x="70" dy="0">from educhain import qna_engine</tspan>
+    <tspan x="70" dy="20"></tspan>
+    <tspan x="70" dy="20">questions = qna_engine.generate_mcq(</tspan>
+    <tspan x="70" dy="20">    topic="Python basics",</tspan>
+    <tspan x="70" dy="20">    level="Beginner",</tspan>
+    <tspan x="70" dy="20">    num=5</tspan>
+    <tspan x="70" dy="20">)</tspan>
+  </text>
+  
+  <text x="70" y="300" class="feature">✅ <tspan class="check">Simple API</tspan></text>
+  <text x="70" y="330" class="feature">✅ <tspan class="check">AI-powered</tspan></text>
+  <text x="70" y="360" class="feature">✅ <tspan class="check">Structured output</tspan></text>
+  
+  <!-- Standard Libraries -->
+  <rect x="410" y="60" width="340" height="340" class="box"/>
+  <text x="580" y="90" text-anchor="middle" class="subtitle standard">Standard Libraries</text>
+  <text x="430" y="120" class="code">
+    <tspan x="430" dy="0">import random</tspan>
+    <tspan x="430" dy="20">import json</tspan>
+    <tspan x="430" dy="20"></tspan>
+    <tspan x="430" dy="20">def generate_question(topic):</tspan>
+    <tspan x="430" dy="20">    # Complex logic here</tspan>
+    <tspan x="430" dy="20">    ...</tspan>
+    <tspan x="430" dy="20"></tspan>
+    <tspan x="430" dy="20">questions = []</tspan>
+    <tspan x="430" dy="20">for _ in range(5):</tspan>
+    <tspan x="430" dy="20">    q = generate_question("Python basics")</tspan>
+    <tspan x="430" dy="20">    questions.append(q)</tspan>
+  </text>
+  
+  <text x="430" y="300" class="feature">❌ <tspan class="cross">Complex implementation</tspan></text>
+  <text x="430" y="330" class="feature">❌ <tspan class="cross">Limited to predefined questions</tspan></text>
+  <text x="430" y="360" class="feature">❌ <tspan class="cross">Manual formatting required</tspan></text>
+</svg>
