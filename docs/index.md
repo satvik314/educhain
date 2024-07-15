@@ -2,7 +2,7 @@
 
 Welcome to the Educhain documentation! 🚀 Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content.
 
-<img src=".images/logo.svg" alt="Educhain Banner" height = 80 width = 80 />
+<img src="logo.svg" alt="Educhain Banner" height = 80 width = 80 />
 
 ## 🚀 Quick Links
 
