@@ -185,27 +185,12 @@ to_pdf(questions, "questions.pdf")    # Export questions to PDF
 to_csv(questions, "questions.csv")    # Export questions to CSV
 ```
 
-## 🎛️ Customization Options
 
-Each export function supports additional parameters:
-
-- `include_answers`: Boolean to include correct answers (default: True)
-- `include_metadata`: Boolean to include generation metadata (default: False)
-- `custom_styling`: Dict for custom styling (PDF and HTML only)
-
-Example:
-
-```python
-exporter.to_pdf(questions, "styled_quiz.pdf", 
-                include_answers=False, 
-                custom_styling={"font": "Arial", "color": "#007bff"})
-```
 
 ## 🌟 Pro Tips
 
 - Use JSON for easy integration with other systems
 - Export to PDF for print-ready quizzes
-- Use Markdown for easy editing and version control
 - Combine with [different question types](question-types.md) for comprehensive assessments
 
 Ready to share your generated content? Start exporting now! 📤✨
