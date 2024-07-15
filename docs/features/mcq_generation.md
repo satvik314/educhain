@@ -167,22 +167,22 @@ Easily share and use your generated content with Educhain's export features! �
 
 1. **CSV** 📑
 2. **PDF** 📁
+3. **JSON**
 
 
 ## 🚀 Usage Example
 
 ```python
-from educhain import qna_engine, exporter
+from educhain import qna_engine
 
 # Generate questions
 questions = qna_engine.generate_mcq(topic="Solar System", num=5)
 
 # Export to different formats
-exporter.to_json(questions, "solar_system_quiz.json")
-exporter.to_csv(questions, "solar_system_quiz.csv")
-exporter.to_pdf(questions, "solar_system_quiz.pdf")
-exporter.to_markdown(questions, "solar_system_quiz.md")
-exporter.to_html(questions, "solar_system_quiz.html")
+from educhain import to_json, to_pdf, to_csv
+to_json(questions, "questions.json")  # Export questions to JSON
+to_pdf(questions, "questions.pdf")    # Export questions to PDF
+to_csv(questions, "questions.csv")    # Export questions to CSV
 ```
 
 ## 🎛️ Customization Options
