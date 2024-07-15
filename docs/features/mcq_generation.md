@@ -25,7 +25,7 @@ questions = qna_engine.generate_mcq(
 | `level` | Difficulty level | "Beginner", "Intermediate", "Advanced" |
 | `num` | Number of questions | 5, 10, 20 |
 | `question_type` | Type of questions | "conceptual", "application", "memory" |
-| `language` | Language of questions | "English", "Spanish", "French" |
+
 
 ## 📊 Output Format
 
