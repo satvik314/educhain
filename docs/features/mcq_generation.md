@@ -68,7 +68,7 @@ from educhain import content_engine
 
 lesson_plan = content_engine.generate_lesson_plan(
     topic="Introduction to Photosynthesis",
-    grade_level="Middle School",
+    grade_level= 7,
     duration="45 minutes"
 )
 
@@ -80,7 +80,7 @@ print(lesson_plan)
 | Option | Description | Example Values |
 |--------|-------------|----------------|
 | `topic` | Main subject of the lesson | "French Revolution", "Algebra Basics" |
-| `grade_level` | Target education level | "Elementary", "Middle School", "High School" |
+| `grade_level` | 1-10 | 10-12 |
 | `duration` | Length of the lesson | "30 minutes", "1 hour", "90 minutes" |
 | `learning_objectives` | Specific goals for the lesson | ["Understand the process", "Identify key components"] |
 
