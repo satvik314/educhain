@@ -2,7 +2,7 @@
 
 Welcome to the Educhain documentation! 🚀 Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content.
 
-<a href = "https://www.buildfastwithai.com/" <img src="logo.svg" alt="https://www.buildfastwithai.com/" height = 80 width = 80 /></a>
+ <img src="logo.svg" alt="https://www.buildfastwithai.com/" height = 80 width = 80 />
 
 ## 🚀 Quick Links
 
