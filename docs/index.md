@@ -14,7 +14,7 @@ Welcome to the Educhain documentation! 🚀 Educhain is a powerful Python packag
 
 ## 📊 Why Educhain?
 
-<img src="/api/placeholder/600/300" alt="Educhain Performance Graph" />
+
 
 Educhain consistently outperforms traditional methods in content generation speed and quality. [Learn more about our performance](resources/case-studies.md)
 
