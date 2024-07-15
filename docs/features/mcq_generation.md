@@ -126,20 +126,15 @@ Educhain supports various question types to diversify your assessments! 📚🧠
 from educhain import qna_engine
 
 # Generate different types of questions
-mcq = qna_engine.generate_mcq(topic="Python Basics", num=2)
-true_false = qna_engine.generate_true_false(topic="World Geography", num=2)
-fill_blanks = qna_engine.generate_fill_blanks(topic="English Grammar", num=2)
-short_answer = qna_engine.generate_short_answer(topic="American History", num=2)
+from educhain import qna_engine
 
-
-# Print all questions
-for q_type, questions in [("MCQ", mcq), ("True/False", true_false), 
-                          ("Fill in the Blanks", fill_blanks), 
-                          ("Short Answer", short_answer), 
-                          ("Matching", matching)]:
-    print(f"\n{q_type} Questions:")
-    for q in questions:
-        print(q)
+questions = qna_engine.generate_questions(
+    "topic": "World War II",
+    "num": 2,
+    "type": "Short Answer",
+    "custom_instructions": "Focus on the European theater"
+)
+questions.show()
 ```
 
 ## 🎛️ Customization
@@ -149,7 +144,7 @@ Each question type supports similar customization options:
 - `topic`: Subject of the questions
 - `num`: Number of questions to generate
 - `level`: Difficulty level (e.g., "Beginner", "Intermediate", "Advanced")
-- `language`: Language of the questions
+
 
 ## 🌟 Pro Tips
 
@@ -169,11 +164,10 @@ Easily share and use your generated content with Educhain's export features! �
 
 ## 📋 Supported Export Formats
 
-1. **JSON** 📄
-2. **CSV** 📑
-3. **PDF** 📁
-4. **Markdown** 📝
-5. **HTML** 🌐
+
+1. **CSV** 📑
+2. **PDF** 📁
+
 
 ## 🚀 Usage Example
 
