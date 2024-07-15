@@ -184,14 +184,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - For general inquiries: educhain.in
 - For technical support: satvik@buildfastwithai.com
 - Follow us on [Twitter](https://twitter.com/educhain_ai)
-- Join our [Discord community](https://discord.gg/educhain)
 
 For bug reports or feature requests, please open an issue on our [GitHub repository](https://github.com/educhain/educhain).
 
 ---
 
-<img src="/api/placeholder/100/100" alt="Educhain Logo" align="right" />
+<img src="images/logo.svg" alt="Educhain Logo" align="right" height = 80 width = 80 />
 
-Made with ❤️ by the Educhain Team
+Made with ❤️ by Buildfastwithai
 
 [www.educhain.in](https://educhain.in)
