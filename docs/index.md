@@ -75,8 +75,8 @@ Educhain is open source software [licensed as MIT](https://github.com/educhain/e
 
 ---
 
-<img src="/api/placeholder/100/100" alt="Educhain Logo" align="right" />
+<img src="logo.svg" alt="Educhain Banner" height = 80 width = 80 />
 
-Made with ❤️ by the Educhain Team
+Made with ❤️ by Buildfastwithai
 
 [www.educhain.in](https://educhain.in)
