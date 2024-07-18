@@ -173,11 +173,6 @@ We welcome contributions! Please see our [Contribution Guide](CONTRIBUTING.md) f
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgements
-
-- OpenAI for their GPT models
-- Langchain for the ChatOpenAI interface
-- Our amazing community of contributors
 
 ## 📬 Contact
 
