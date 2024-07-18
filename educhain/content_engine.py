@@ -2,8 +2,11 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
-from .models import LessonPlan,QuestionPaper
-from typing import List, Optional
+from .models import LessonPlan,QuestionPaper , DoubtSolverConfig, SolvedDoubt
+from typing import List, Optional ,Any 
+from langchain.schema import HumanMessage, SystemMessage
+import os
+import base64
 
 def generate_lesson_plan(topic, llm=None, response_model=None, prompt_template=None, **kwargs):
     if response_model == None:
@@ -109,3 +112,81 @@ def generate_question_paper(
     structured_output = parser.parse(results.content)
 
     return structured_output
+
+# Vision Class
+class DoubtSolver:
+    def __init__(self, config: DoubtSolverConfig = DoubtSolverConfig()):
+        self.config = config
+
+    def solve(self, 
+              img_path: str, 
+              prompt: str = "Explain how to solve this problem", 
+              llm: Optional[Any] = None,
+              custom_instructions: Optional[str] = None,
+              **kwargs) -> Optional[SolvedDoubt]:
+        
+        if not img_path:
+            raise ValueError("Image path or URL is required")
+
+        image_content = self._get_image_content(img_path)
+        
+        parser = PydanticOutputParser(pydantic_object=SolvedDoubt)
+        format_instructions = parser.get_format_instructions()
+
+        system_message = SystemMessage(content="You are a helpful assistant that responds in Markdown. Help with math homework.")
+
+        human_message_content = f"""
+        Analyze the image and {prompt}
+        
+        Provide:
+        1. A detailed explanation
+        2. Step-by-step solution (if applicable)
+        3. Any additional notes or tips
+        
+        {custom_instructions or ''}
+        
+        {format_instructions}
+        """
+
+        human_message = HumanMessage(content=[
+            {"type": "text", "text": human_message_content},
+            {"type": "image_url", "image_url": {"url": image_content}}
+        ])
+
+        if llm is None:
+            llm = self._get_chat_model()
+
+        try:
+            response = llm([system_message, human_message])
+            result = parser.parse(response.content)
+            return result
+        except Exception as e:
+            print(f"Error in solve: {type(e).__name__}: {str(e)}")
+            return None
+
+    def _get_chat_model(self) -> ChatOpenAI:
+        config = self.config.gpt4
+        return ChatOpenAI(
+            model_name=config.model_name, 
+            api_key=os.getenv(config.api_key_name), 
+            max_tokens=config.max_tokens,
+            temperature=0,
+        )
+
+    @staticmethod
+    def _get_image_content(img_path: str) -> str:
+        try:
+            if img_path.startswith(('http://', 'https://')):
+                return img_path
+            elif img_path.startswith('data:image'):
+                return img_path
+            elif os.path.isfile(img_path):
+                with open(img_path, "rb") as image_file:
+                    image_data = image_file.read()
+                base64_image = base64.b64encode(image_data).decode('utf-8')
+                return f"data:image/jpeg;base64,{base64_image}"
+            else:
+                raise ValueError("Invalid image path or URL")
+        except Exception as e:
+            print(f"Error in _get_image_content: {type(e).__name__}: {str(e)}")
+            raise
