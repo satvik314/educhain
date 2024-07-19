@@ -18,9 +18,10 @@ Welcome to the Educhain documentation! 🚀 Educhain is a powerful Python packag
 
 Educhain consistently outperforms traditional methods in content generation speed and quality. [Learn more about our performance](resources/case-studies.md)
 
-## 🌟 Key Features
+## 🌟 Key Features [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]([https://colab.research.google.com/drive/1_RFeReRKFcac2SLCEjnWqLgHV2pQFgPr?usp=sharing])
 
-- 📝 Generate Multiple Choice Questions (MCQs)
+
+- 📝 Generate Multiple Choice Questions (MCQs)  
 - 📊 Create comprehensive Lesson Plans
 - 🔄 Support for various LLM models
 - 📁 Export questions to JSON, PDF, and CSV formats

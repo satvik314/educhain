@@ -163,3 +163,27 @@ class UrlLoader:
     def clean_string(self, text):
         text = re.sub(r'\s+', ' ', text)
         return text.strip()
+    
+# Vision Doubt Solving
+class LLMConfig(BaseModel):
+    model_name: str
+    api_key_name: str
+    max_tokens: int = 1000
+
+class DoubtSolverConfig(BaseModel):
+    gpt4: LLMConfig = LLMConfig(model_name="gpt-4-vision-preview", api_key_name="OPENAI_API_KEY")
+
+class SolvedDoubt(BaseModel):
+    explanation: str
+    steps: Optional[List[str]] = Field(default_factory=list)
+    additional_notes: Optional[str] = None
+
+    def show(self):
+        print("Explanation:")
+        print(self.explanation)
+        print("\nSteps:")
+        for i, step in enumerate(self.steps, 1):
+            print(f"{i}. {step}")
+        if self.additional_notes:
+            print("\nAdditional Notes:")
+            print(self.additional_notes)
