@@ -40,7 +40,7 @@ def generate_mcq(topic, num=1, llm=None, response_model=None, prompt_template=No
     if llm:
         llm = llm
     else:
-        llm = ChatOpenAI(model="gpt-3.5-turbo")
+        llm = ChatOpenAI(model="gpt-4o-mini")
 
     MCQ_chain = MCQ_prompt | llm
 
@@ -109,7 +109,7 @@ def generate_questions(
     )
 
     if llm is None:
-        llm = ChatOpenAI(model="gpt-3.5-turbo")
+        llm = ChatOpenAI(model="gpt-4o-mini")
 
     question_chain = question_prompt | llm
     results = question_chain.invoke(
@@ -119,17 +119,18 @@ def generate_questions(
 
     try:
         # Parse the JSON manually
-        import json
-        parsed_json = json.loads(results)
+        # import json
+        # parsed_json = json.loads(results)
 
-        if type == "Fill in the Blank":
-            # For Fill in the Blank, set blank_word to answer if not provided
-            for q in parsed_json['questions']:
-                if 'blank_word' not in q:
-                    q['blank_word'] = q['answer']
+        # if type == "Fill in the Blank":
+        #     # For Fill in the Blank, set blank_word to answer if not provided
+        #     for q in parsed_json['questions']:
+        #         if 'blank_word' not in q:
+        #             q['blank_word'] = q['answer']
 
         # Now use the parser with the modified JSON
-        structured_output = parser.parse(json.dumps(parsed_json))
+        # structured_output = parser.parse(json.dumps(parsed_json))
+        structured_output = parser.parse(results)
         return structured_output
     except Exception as e:
         print(f"Error parsing output: {e}")
@@ -193,7 +194,7 @@ def generate_mcqs_from_data(
 
     # Set up the language model
     if llm is None:
-        llm = ChatOpenAI(model="gpt-3.5-turbo")
+        llm = ChatOpenAI(model="gpt-4o-mini")
 
     # Create the chain
     mcq_chain = mcq_prompt | llm
@@ -213,7 +214,8 @@ def generate_mcqs_from_data(
         parsed_json = json.loads(results)
         
         # Now use the parser with the parsed JSON
-        structured_output = parser.parse(json.dumps(parsed_json))
+        # structured_output = parser.parse(json.dumps(parsed_json))
+        structured_output = parser.parse(results)
         return structured_output
     except Exception as e:
         print(f"Error parsing output: {e}")
