@@ -171,7 +171,7 @@ class LLMConfig(BaseModel):
     max_tokens: int = 1000
 
 class DoubtSolverConfig(BaseModel):
-    gpt4: LLMConfig = LLMConfig(model_name="gpt-4-vision-preview", api_key_name="OPENAI_API_KEY")
+    gpt4: LLMConfig = LLMConfig(model_name="gpt-4o-mini", api_key_name="OPENAI_API_KEY")
 
 class SolvedDoubt(BaseModel):
     explanation: str
