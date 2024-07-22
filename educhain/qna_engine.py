@@ -210,8 +210,8 @@ def generate_mcqs_from_data(
     results = results.content
 
     try:
-        # Parse the JSON manually
-        parsed_json = json.loads(results)
+        # We dont need to parse the json again here
+        #parsed_json = json.loads(results)
         
         # Now use the parser with the parsed JSON
         # structured_output = parser.parse(json.dumps(parsed_json))
