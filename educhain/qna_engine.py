@@ -9,7 +9,7 @@ from .models import *
 import re
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import TextFormatter
-from googleapiclient.discovery import build
+
 
 def generate_mcq(topic, num=1, llm=None, response_model=None, prompt_template=None, custom_instructions=None, **kwargs):
     if response_model == None:
