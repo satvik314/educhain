@@ -8,6 +8,7 @@ from langchain.schema import HumanMessage, SystemMessage
 import os
 import base64
 
+# Generated Lesson Plan
 def generate_lesson_plan(topic, llm=None, response_model=None, prompt_template=None, **kwargs):
     if response_model == None:
         parser = PydanticOutputParser(pydantic_object=LessonPlan)
