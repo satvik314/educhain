@@ -14,6 +14,7 @@ setup(
         "reportlab",
         "PyPDF2",
         "beautifulsoup4",
+        "youtube_transcript_api",
     ],
     author="Satvik Paramkusham",
     author_email="satvik@buildfastwithai.com",

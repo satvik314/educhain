@@ -6,6 +6,9 @@ from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
 from .models import MCQList ###
 from .models import *
+import re
+from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api.formatters import TextFormatter
 
 
 def generate_mcq(topic, num=1, llm=None, response_model=None, prompt_template=None, custom_instructions=None, **kwargs):
@@ -222,3 +225,53 @@ def generate_mcqs_from_data(
         print("Raw output:")
         print(results)
         return MCQList(questions=[])
+
+
+
+def generate_questions_from_youtube(
+    url: str,
+    num: int = 1,
+    llm: Optional[Any] = None,
+    question_type: str = "Multiple Choice",
+    prompt_template: Optional[str] = None,
+    custom_instructions: Optional[str] = None,
+    **kwargs
+) -> QuestionList:
+    # Extract video ID from URL
+    video_id = extract_video_id(url)
+    
+    
+    # Get transcript
+    transcript = get_youtube_transcript(video_id)
+    
+    
+    # Generate questions
+    questions = generate_questions(
+        topic=transcript,
+        num=num,
+        llm=llm,
+        type=question_type,
+        prompt_template=prompt_template,
+        custom_instructions=custom_instructions,
+        **kwargs
+    )
+    
+    return questions
+
+def extract_video_id(url: str) -> str:
+    # Regular expression to match YouTube video IDs
+    pattern = r'(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(?:embed\/)?(?:v\/)?(?:shorts\/)?(?:live\/)?(?:feature=player_embedded&v=)?(?:e\/)?(?:\/)?([^\s&amp;?#]+)'
+    match = re.search(pattern, url)
+    if match:
+        return match.group(1)
+    else:
+        raise ValueError("Invalid YouTube URL")
+
+
+def get_youtube_transcript(video_id: str) -> str:
+    try:
+        transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        formatter = TextFormatter()
+        return formatter.format_transcript(transcript)
+    except Exception as e:
+        raise ValueError(f"Error fetching transcript: {str(e)}")
