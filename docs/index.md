@@ -9,7 +9,7 @@ Welcome to the Educhain documentation! 🚀 Educhain is a powerful Python packag
 | 📚 Getting Started | 🌟 Features | 🛠️ Advanced | 🤝 Community |
 |:----------------:|:---------:|:----------:|:-----------:|
 | [🔧 Installation](getting-started/installation.md) | [📝 MCQ Generation](features/mcq_generation.md) | [🎨 Custom Prompts](advanced-usage/custom-prompts.md) | [👥 Contributing](contributing.md) |
-| [🏃‍♂️ Quick Start](getting-started/quick-start.md) | [📊 Lesson Plans](features/lesson-plans.md) | [🤖 LLM Models](advanced-usage/llm-models.md) | [💬 Discord](https://discord.gg/educhain) |
+| [🏃‍♂️ Quick Start](getting-started/quick-start.md) | [📊 MCQ_from_data](features/mcq_from_data.md) | [🤖 LLM Models](advanced-usage/llm-models.md) | [💬 Discord](https://discord.gg/educhain) |
 | [⚙️ Configuration](getting-started/configuration.md) | [📤 Export Options](features/export-options.md) | [📚 Data Sources](advanced-usage/data-sources.md) | [🌐 Website](https://educhain.in) |
 
 ## 📊 Why Educhain?
