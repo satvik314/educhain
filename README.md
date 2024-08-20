@@ -18,7 +18,10 @@ Educhain is a powerful Python package that leverages Generative AI to create eng
 - 🔄 Support for various LLM models
 - 📁 Export questions to JSON, PDF, and CSV formats
 - 🎨 Customizable prompt templates
-- 📚 Generate questions from text/PDF files
+- 📚 Generate questions from text/PDF/URL files
+- 📹 Generate questions from youtube videos
+- 🥽 Generate questions from images
+
 
 ## 📈 Performance
 
