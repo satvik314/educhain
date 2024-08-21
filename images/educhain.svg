@@ -1,0 +1,53 @@
+<svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title-text {
+      font-size: 48px;
+      font-weight: bold;
+      fill: #3f51b5;
+      animation: title-fade 3s ease-in-out infinite;
+    }
+
+    .subtitle-text {
+      font-size: 28px;
+      fill: #666;
+      animation: subtitle-fade 3s ease-in-out infinite;
+    }
+
+    .divider {
+      stroke: #3f51b5;
+      stroke-width: 4;
+      stroke-linecap: round;
+      animation: divider-dash 3s ease-in-out infinite;
+    }
+
+    .background {
+      fill: linear-gradient(to right, #f5f5f5, #e3f2fd);
+      rx: 20;
+      ry: 20;
+    }
+
+    @keyframes title-fade {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    @keyframes subtitle-fade {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    @keyframes divider-dash {
+      0% { stroke-dasharray: 0, 800; stroke-dashoffset: 0; }
+      50% { stroke-dasharray: 800, 0; stroke-dashoffset: -400; }
+      100% { stroke-dasharray: 0, 800; stroke-dashoffset: -800; }
+    }
+  </style>
+
+  <rect x="0" y="0" width="800" height="300" class="background" />
+
+  <g transform="translate(100, 100)">
+    <text class="title-text" x="0" y="0">educhain</text>
+    <text class="subtitle-text" x="0" y="60">Revolutionizing education through AI</text>
+    <line class="divider" x1="0" y1="100" x2="600" y2="100" />
+  </g>
+</svg>

@@ -1,11 +1,19 @@
+<p align="center">
+  <img src="https://github.com/VedantDeshmukh2/educhain/blob/main/images/educhain.svg" alt="Educhain Logo" width="800" height="400">
+</p>
+
+
+<div align="center">
+  
+  [![PyPI version](https://badge.fury.io/py/educhain.svg)](https://badge.fury.io/py/educhain)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Python Versions](https://img.shields.io/pypi/pyversions/educhain.svg)](https://pypi.org/project/educhain/)
+  [![Downloads](https://pepy.tech/badge/educhain)](https://pepy.tech/project/educhain)
+
+</div>
+
 # Educhain 🎓🔗
-
-[![PyPI version](https://badge.fury.io/py/educhain.svg)](https://badge.fury.io/py/educhain)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python Versions](https://img.shields.io/pypi/pyversions/educhain.svg)](https://pypi.org/project/educhain/)
-[![Downloads](https://pepy.tech/badge/educhain)](https://pepy.tech/project/educhain)
-
-[Website](https://educhain.in) | [Documentation](docs/index.md) | 
+[Website](https://educhain.in) | [Documentation](docs/index.md) 
 
 Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content. From generating multiple-choice questions to crafting comprehensive lesson plans, Educhain makes it easy to apply AI in various educational scenarios.
 
