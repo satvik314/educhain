@@ -12,10 +12,7 @@
 
 </div>
 
-
 # Educhain 🎓🔗
-
-
 [Website](https://educhain.in) | [Documentation](docs/index.md) 
 
 Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content. From generating multiple-choice questions to crafting comprehensive lesson plans, Educhain makes it easy to apply AI in various educational scenarios.
