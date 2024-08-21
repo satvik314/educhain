@@ -1,12 +1,20 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/yourusername/educhain/main/images/educhain.svg" alt="Educhain Logo" width="120" height="120">
+  <img src="https://github.com/VedantDeshmukh2/educhain/blob/main/images/educhain.svg" alt="Educhain Logo" width="800" height="400">
 </p>
 
+
+<div align="center">
+  
+  [![PyPI version](https://badge.fury.io/py/educhain.svg)](https://badge.fury.io/py/educhain)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Python Versions](https://img.shields.io/pypi/pyversions/educhain.svg)](https://pypi.org/project/educhain/)
+  [![Downloads](https://pepy.tech/badge/educhain)](https://pepy.tech/project/educhain)
+
+</div>
+
+
 # Educhain 🎓🔗
-[![PyPI version](https://badge.fury.io/py/educhain.svg)](https://badge.fury.io/py/educhain)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python Versions](https://img.shields.io/pypi/pyversions/educhain.svg)](https://pypi.org/project/educhain/)
-[![Downloads](https://pepy.tech/badge/educhain)](https://pepy.tech/project/educhain)
+
 
 [Website](https://educhain.in) | [Documentation](docs/index.md) 
 
