@@ -1,15 +1,13 @@
 import json
-from .utils import to_csv, to_json, to_pdf  ###
+from .utils import to_csv, to_json, to_pdf
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
-from .models import MCQList ###
+from .models import MCQList
 from .models import *
-import re
-from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api.formatters import TextFormatter
 
+from langchain_community.document_loaders import YoutubeLoader
 
 def generate_mcq(topic, num=1, llm=None, response_model=None, prompt_template=None, custom_instructions=None, **kwargs):
     if response_model == None:
@@ -56,7 +54,10 @@ def generate_mcq(topic, num=1, llm=None, response_model=None, prompt_template=No
 
     return structured_output
 
-QuestionType = Literal["Multiple Choice", "Short Answer", "True/False", "Fill in the Blank"]
+
+QuestionType = Literal["Multiple Choice",
+                       "Short Answer", "True/False", "Fill in the Blank"]
+
 
 def generate_questions(
     topic: str,
@@ -141,6 +142,7 @@ def generate_questions(
         print(results)
         return QuestionList(questions=[])
 
+
 def generate_mcqs_from_data(
     source: str,
     source_type: str,
@@ -161,7 +163,8 @@ def generate_mcqs_from_data(
     elif source_type == 'text':
         content = source  # For text, the source is the content itself
     else:
-        raise ValueError("Unsupported source type. Please use 'pdf', 'url', or 'text'.")
+        raise ValueError(
+            "Unsupported source type. Please use 'pdf', 'url', or 'text'.")
 
     # Set up the parser
     parser = PydanticOutputParser(pydantic_object=MCQList)
@@ -190,7 +193,8 @@ def generate_mcqs_from_data(
 
     # Create the prompt
     mcq_prompt = PromptTemplate(
-        input_variables=["num", "topic", "learning_objective", "difficulty_level"],
+        input_variables=["num", "topic",
+                         "learning_objective", "difficulty_level"],
         template=prompt_template,
         partial_variables={"format_instructions": format_instructions}
     )
@@ -214,8 +218,8 @@ def generate_mcqs_from_data(
 
     try:
         # We dont need to parse the json again here
-        #parsed_json = json.loads(results)
-        
+        # parsed_json = json.loads(results)
+
         # Now use the parser with the parsed JSON
         # structured_output = parser.parse(json.dumps(parsed_json))
         structured_output = parser.parse(results)
@@ -227,7 +231,6 @@ def generate_mcqs_from_data(
         return MCQList(questions=[])
 
 
-
 def generate_questions_from_youtube(
     url: str,
     num: int = 1,
@@ -237,14 +240,9 @@ def generate_questions_from_youtube(
     custom_instructions: Optional[str] = None,
     **kwargs
 ) -> QuestionList:
-    # Extract video ID from URL
-    video_id = extract_video_id(url)
-    
-    
     # Get transcript
-    transcript = get_youtube_transcript(video_id)
-    
-    
+    transcript = get_youtube_transcript(url)
+
     # Generate questions
     questions = generate_questions(
         topic=transcript,
@@ -255,23 +253,14 @@ def generate_questions_from_youtube(
         custom_instructions=custom_instructions,
         **kwargs
     )
-    
+
     return questions
 
-def extract_video_id(url: str) -> str:
-    # Regular expression to match YouTube video IDs
-    pattern = r'(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(?:embed\/)?(?:v\/)?(?:shorts\/)?(?:live\/)?(?:feature=player_embedded&v=)?(?:e\/)?(?:\/)?([^\s&amp;?#]+)'
-    match = re.search(pattern, url)
-    if match:
-        return match.group(1)
-    else:
-        raise ValueError("Invalid YouTube URL")
 
-
-def get_youtube_transcript(video_id: str) -> str:
+def get_youtube_transcript(url: str) -> str:
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id)
-        formatter = TextFormatter()
-        return formatter.format_transcript(transcript)
+        loader = YoutubeLoader.from_youtube_url(url, add_video_info=False)
+        transcript = loader.load()
+        return transcript
     except Exception as e:
         raise ValueError(f"Error fetching transcript: {str(e)}")
