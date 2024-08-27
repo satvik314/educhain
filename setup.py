@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="educhain",
-    version="0.2.11",
+    version="0.2.13",
     packages=find_packages(),
     install_requires=[
         "langchain",
@@ -15,6 +15,7 @@ setup(
         "PyPDF2",
         "beautifulsoup4",
         "youtube_transcript_api",
+        "time",
     ],
     author="Satvik Paramkusham",
     author_email="satvik@buildfastwithai.com",
