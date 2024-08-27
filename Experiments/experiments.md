@@ -17,12 +17,29 @@ This file records all the experiments and features added to the project.
 
 
 
-## Experiment 2: Addition of Science Subject (Date: YYYY-MM-DD)
+## Experiment 2: Adaptive Quiz Class (Date: 24-8-2024)
 
-* Description: Added support for Science subject in the question paper generator.
+* Description: Created the adaptive quiz class for adaptive question answering
 * Features:
-        + Implemented question paper generation for Science subject.
-        + Added support for Class X.
+  
+- **`db`** (`str`): Specifies the database to be used. Default is `None`. If `"supabase"` is provided, a connection to Supabase will be initialized.
+  
+- **`llm`** (`object`): The language model (LLM) used for generating questions. If not provided, the class will automatically initialize an LLM.
+  
+- **`difficulty_increase_threshold`** (`str`): The threshold for increasing the difficulty of questions. Default is `"Medium"`.
+  
+- **`topic`** (`str`): The topic of the quiz. Default is an empty string (`""`).
+  
+- **`num_questions`** (`int`): The number of questions to generate in the quiz. Default is `5`.
+  
+- **`custom_instruction`** (`str`): Custom instructions for generating the quiz questions. Default is an empty string (`""`).
+  
+- **`show_options`** (`bool`): A boolean indicating whether to immediately show answer options to the user. Default is `False`.
+  
+- **`data`** (`any`): External data that might influence question generation. Default is `None`.
+  
+- **`source_type`** (`str`): Specifies the source type for quiz data. Default is `None`.
+
 
 ## Experiment 3: Integration with Latex (Date: YYYY-MM-DD)
 
