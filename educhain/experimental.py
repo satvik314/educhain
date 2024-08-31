@@ -3,13 +3,17 @@ import json
 from .utils import to_csv, to_json, to_pdf
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+from langchain.chains import LLMChain, LLMMathChain
 from langchain.output_parsers import PydanticOutputParser
 from .models import MCQList
 from .models import *
 from langchain_community.document_loaders import YoutubeLoader
 import time
 from qna_engine import generate_mcq,generate_questions,generate_mcqs_from_data,generate_questions_from_youtube
+from typing import List, Dict, Any, Optional
+from langchain_core.pydantic_v1 import BaseModel, Field
+from langchain_community.callbacks.manager import get_openai_callback
+import random
 
 
 class Adaptive_Quiz:
@@ -173,3 +177,147 @@ class Adaptive_Quiz:
             print("Quiz data successfully saved to Supabase.")
         except Exception as e:
             print(f"An error occurred while saving to Supabase: {e}")
+
+
+
+
+
+
+#qna_engine_math________________________________________________
+
+
+#MODEL
+class Option(BaseModel):
+    text: str = Field(description="The text of the option.")
+    correct: str = Field(description="Whether the option is correct or not. Either 'true' or 'false'")
+
+class MCQMath(BaseModel):
+    question: str = Field(description="The quiz question, strictly avoid Latex formatting")
+    requires_math: bool = Field(default=False, description="""Whether the question requires the LLM Math Chain for accurate answers. This includes, but is not limited to: 
+    1. Any arithmetic operations (addition, subtraction, multiplication, division)
+    2. Calculations involving percentages
+    3. Problems with exponents or roots
+    4. Logarithmic calculations
+    5. Trigonometric functions
+    6. Algebraic equations or expressions
+    7. Statistical calculations (mean, median, mode, standard deviation, etc.)
+    8. Probability calculations
+    9. Series or sequence calculations
+    10. Calculus-related problems (derivatives, integrals)
+    11. Geometry problems involving area, volume, or angles
+    12. Unit conversions
+    13. Financial calculations (compound interest, depreciation, etc.)
+    14. Any problem involving multiple steps of mathematical reasoning
+    15. Sorting or ranking based on numerical values
+    16. Optimization problems
+    17. Any question that explicitly asks for a numerical answer
+    Set to True if any of these conditions are met, ensuring the LLM Math Chain is utilized for all questions requiring precise mathematical computations.""")
+    # requires_math: bool = Field(default=False, description="Whether the question requires help from LLM_Math or has advanced math calculations. Questions which has multiplication, division, sorting, exponents, etc.")
+    options: List[Option] = Field(description="The possible answers to the question. The list should contain 4 options.")
+    explanation: str =  Field(default=None, description="Explanation of the question")
+
+    def show(self):
+      print(f"Question: {self.question}")
+      for i, option in enumerate(self.options):
+            print(f"  {chr(65 + i)}. {option.text} {'(Correct)' if option.correct == 'true' else ''}")
+      if self.explanation:
+          print(f"Explanation: {self.explanation}")
+      print()
+
+class MCQListMath(BaseModel):
+    questions: List[MCQMath]
+
+    def show(self):
+      for i, question in enumerate(self.questions, 1):
+          print(f"Question {i}:")
+          question.show()
+
+
+# FUNCTIONS:
+
+# GENERATE SIMILAR OTPIONS:
+def generate_similar_options(question, correct_answer, num_options=3):
+    llm = ChatOpenAI(model='gpt-4o-mini', temperature=0.7)
+    prompt = f"Generate {num_options} incorrect but plausible options similar to this correct answer: {correct_answer} for this question: {question}. Provide only the options, separated by semicolons. The options should not precede or end with any symbols, it should be similar to the correct answer."
+    response = llm.predict(prompt)
+    return response.split(';')
+
+
+# MAIN GENERATE MCQ FUNCTION:
+def generate_mcq_math(topic, num=1, llm=None, response_model=None, prompt_template=None, custom_instructions=None, **kwargs):
+    if response_model == None:
+        parser = PydanticOutputParser(pydantic_object=MCQListMath)
+        format_instructions = parser.get_format_instructions()
+    else:
+        parser = PydanticOutputParser(pydantic_object=response_model)
+        format_instructions = parser.get_format_instructions()
+
+    if prompt_template is None:
+        prompt_template = """
+        You are an Academic AI assistant tasked with generating multiple-choice questions on various topics specialised in Maths Subject.
+        Generate {num} multiple-choice question (MCQ) based on the given topic and level.
+        provide the question, four answer options, and the correct answer.
+
+        Topic: {topic}
+        """
+
+    # Add custom instructions if provided
+    if custom_instructions:
+        prompt_template += f"\n\nAdditional Instructions:\n{custom_instructions}"
+
+    # Append the JSON format instruction line to the custom prompt template
+    prompt_template += "\nThe response should be in JSON format. \n {format_instructions}"
+
+    MCQ_prompt = PromptTemplate(
+        input_variables=["num", "topic"],
+        template=prompt_template,
+        partial_variables={"format_instructions": format_instructions}
+    )
+
+    if llm:
+        llm = llm
+    else:
+        llm = ChatOpenAI(model="gpt-4o-mini")
+
+    MCQ_chain = MCQ_prompt | llm
+
+    results = MCQ_chain.invoke(
+        {"num": num, "topic": topic, **kwargs},
+    )
+    results = results.content
+    structured_output = parser.parse(results)
+
+    # Initialize LLMMathChain
+    llm_math = LLMMathChain.from_llm(llm=llm, verbose=False)
+
+    # Process questions that contain math expressions
+    for question in structured_output.questions:
+        if question.requires_math:
+            try:
+                # Use LLMMathChain to solve the question
+                with get_openai_callback() as cb:
+                    result = llm_math.run(question.question)
+                    result = result.strip().split(":")[-1]
+                    result = float(result)
+                    result = f"{result: .2f}"
+
+                # Update the question's explanation with the math solution
+                question.explanation += f"\n\nMath solution: {result}"
+
+                # Generate new options based on the LLMMathChain result
+                correct_option = Option(text=str(result.lstrip()), correct='true')
+                incorrect_options = [Option(text=opt.strip(), correct='false') for opt in generate_similar_options(question.question, result)]
+
+                # Ensure we have exactly 4 options
+                while len(incorrect_options) < 3:
+                    incorrect_options.append(Option(text="N/A", correct='false'))
+
+                question.options = [correct_option] + incorrect_options[:3]
+                random.shuffle(question.options) 
+            except Exception as e:
+                print(f"LLMMathChain failed to answer: {str(e)}")
+                # If LLMMathChain fails, keep the original options
+                pass
+    return structured_output
+
+
