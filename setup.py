@@ -15,7 +15,7 @@ setup(
         "PyPDF2",
         "beautifulsoup4",
         "youtube_transcript_api",
-        "time",
+        # "time",
     ],
     author="Satvik Paramkusham",
     author_email="satvik@buildfastwithai.com",
