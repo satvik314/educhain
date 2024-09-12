@@ -137,8 +137,7 @@ to_csv(questions, "questions.csv")    # Export questions to CSV
 from educhain import content_engine
 
 topic = "Medieval History"
-level = "Beginner"
-lesson_plan = content_engine.generate_lesson_plan(topic, level)
+lesson_plan = content_engine.generate_lesson_plan(topic)
 print(lesson_plan)
 ```
 
