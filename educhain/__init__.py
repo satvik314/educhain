@@ -1,5 +1,44 @@
-from .utils import to_csv, to_json, to_pdf
-from .qna_engine import generate_mcq
-from .content_engine import generate_lesson_plan, generate_question_paper
+from .educhain import Educhain
+from .config import EduchainConfig, LLMConfig
+from .qna_engine import QnAEngine, AdaptiveQuiz
+from .content_engine import ContentEngine, DoubtSolver
+from .models import (
+    BaseQuestion,
+    MultipleChoiceQuestion,
+    ShortAnswerQuestion,
+    TrueFalseQuestion,
+    FillInBlankQuestion,
+    QuestionList,
+    MCQList,
+    ShortAnswerQuestionList,
+    TrueFalseQuestionList,
+    FillInBlankQuestionList,
+    LessonPlan,
+    QuestionPaper,
+    DoubtSolverConfig,
+    SolvedDoubt
+)
 
-__all__ = ['generate_mcq', 'to_csv', 'to_json', 'to_pdf', 'generate_lesson_plan','generate_question_paper']
+__all__ = [
+    "Educhain",
+    "EduchainConfig",
+    "LLMConfig",
+    "QnAEngine",
+    "AdaptiveQuiz",
+    "ContentEngine",
+    "DoubtSolver",
+    "BaseQuestion",
+    "MultipleChoiceQuestion",
+    "ShortAnswerQuestion",
+    "TrueFalseQuestion",
+    "FillInBlankQuestion",
+    "QuestionList",
+    "MCQList",
+    "ShortAnswerQuestionList",
+    "TrueFalseQuestionList",
+    "FillInBlankQuestionList",
+    "LessonPlan",
+    "QuestionPaper",
+    "DoubtSolverConfig",
+    "SolvedDoubt"
+]
