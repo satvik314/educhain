@@ -11,7 +11,8 @@ from langchain_community.document_loaders import YoutubeLoader
 import time
 from qna_engine import generate_mcq,generate_questions,generate_mcqs_from_data,generate_questions_from_youtube
 from typing import List, Dict, Any, Optional
-from langchain_core.pydantic_v1 import BaseModel, Field
+# from langchain_core.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 from langchain_community.callbacks.manager import get_openai_callback
 import random
 
