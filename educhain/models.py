@@ -171,6 +171,10 @@ class LLMConfig(BaseModel):
     api_key_name: str
     max_tokens: int = 1000
 
+    model_config = {
+        'protected_namespaces': ()
+    }
+
 class DoubtSolverConfig(BaseModel):
     gpt4: LLMConfig = LLMConfig(model_name="gpt-4o-mini", api_key_name="OPENAI_API_KEY")
 
