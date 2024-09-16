@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="educhain",
-    version="0.2.15",
+    version="0.2.16",  # Increment this from 0.2.15 to 0.2.16
     packages=find_packages(),
     install_requires=[
         "langchain",
