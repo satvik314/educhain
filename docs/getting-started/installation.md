@@ -3,17 +3,17 @@
 # 📥 Installation
 
 Getting Educhain up and running is a breeze! 🌬️
+```
 
 ## 🚀 Quick Install
-
-```bash
+```
 pip install educhain
 ```
 
 ## 📋 Requirements
 
 - Python 3.7+
-- OpenAI API key
+- OpenAI API key(default model gpt-4o-mini)
 
 ## 🔧 Detailed Setup
 
