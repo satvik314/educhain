@@ -2,8 +2,8 @@ from typing import List, Optional, Any, Literal
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.output_parsers import PydanticOutputParser
-from models import MCQList, QuestionList, MultipleChoiceQuestion, ShortAnswerQuestionList, TrueFalseQuestionList, FillInBlankQuestionList ,PdfFileLoader,UrlLoader
-from config import EduchainConfig, LLMConfig
+from .models import MCQList, QuestionList, MultipleChoiceQuestion, ShortAnswerQuestionList, TrueFalseQuestionList, FillInBlankQuestionList ,PdfFileLoader,UrlLoader
+from .config import EduchainConfig, LLMConfig
 from langchain_community.document_loaders import YoutubeLoader
 import time
 import os
