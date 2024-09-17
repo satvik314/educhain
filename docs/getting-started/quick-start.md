@@ -94,7 +94,7 @@ Choose your preferred language model:
 ```python
 from educhain import qna_engine
 
-qna_engine.set_model("gpt-4")  # Default is "gpt-3.5-turbo"
+qna_engine.set_model("gpt-4")  # Default is "gpt-4o-mini"
 ```
 
 ## 🎨 Customizing Prompt Templates
