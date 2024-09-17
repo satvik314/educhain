@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any, Literal
-from langchain_core.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 from langchain_community.document_loaders import YoutubeLoader
 import requests
 from bs4 import BeautifulSoup
