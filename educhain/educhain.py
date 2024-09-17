@@ -1,8 +1,8 @@
 from typing import List, Optional, Any
-from config import EduchainConfig, LLMConfig
-from qna_engine import QnAEngine, AdaptiveQuiz
-from content_engine import ContentEngine, DoubtSolver
-from models import MCQList, LessonPlan, QuestionPaper, SolvedDoubt, QuestionList
+from .config import EduchainConfig, LLMConfig
+from .qna_engine import QnAEngine, AdaptiveQuiz
+from .content_engine import ContentEngine, DoubtSolver
+from .models import MCQList, LessonPlan, QuestionPaper, SolvedDoubt, QuestionList
 import os
 
 class Educhain:
