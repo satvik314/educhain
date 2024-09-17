@@ -3,8 +3,8 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
-from models import LessonPlan, QuestionPaper, DoubtSolverConfig, SolvedDoubt
-from config import EduchainConfig
+from .models import LessonPlan, QuestionPaper, DoubtSolverConfig, SolvedDoubt
+from .config import EduchainConfig
 from langchain.schema import HumanMessage, SystemMessage
 import os
 import base64
