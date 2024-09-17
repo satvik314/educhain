@@ -28,7 +28,7 @@ Educhain consistently outperforms traditional methods in content generation spee
 - 🎨 Customizable prompt templates
 - 📚 Generate questions from text/PDF files
 
-## 🚀 Get Started in Minutes
+## 🚀 Get Started in Seconds
 
 ```python
 from educhain import qna_engine
