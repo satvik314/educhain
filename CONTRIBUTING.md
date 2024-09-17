@@ -1,6 +1,6 @@
 # Contributing to Educhain
 
-We welcome contributions to Educhain! Here's how you can help:
+We welcome contributions to Educhain!❤️ Here's how you can help:
 
 ## Reporting Issues
 
