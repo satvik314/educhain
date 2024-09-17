@@ -8,8 +8,8 @@ Get up and running with Educhain in minutes! 🚀
 ## 📚 Basic Usage
 
 Here's a simple example to generate multiple-choice questions:
-
-```python
+```
+```
 from educhain import qna_engine
 
 questions = qna_engine.generate_mcq(
@@ -29,8 +29,7 @@ for i, q in enumerate(questions, 1):
 
 Customize your questions with additional parameters:
 
-```python
-questions = qna_engine.generate_mcq(
+```questions = qna_engine.generate_mcq(
     topic="Machine Learning",
     level="Intermediate",
     num=3,
@@ -43,12 +42,11 @@ questions = qna_engine.generate_mcq(
 
 Create comprehensive lesson plans with ease:
 
-```python
+```f
 from educhain import content_engine
 
 lesson_plan = content_engine.generate_lesson_plan(
     topic="World War II",
-    grade_level="High School",
     duration="60 minutes"
 )
 
@@ -75,7 +73,7 @@ Customize Educhain to fit your needs perfectly! 🎛️
 
 Set your OpenAI API key:
 
-```python
+
 import educhain
 
 educhain.api_key = "your-api-key-here"
