@@ -52,20 +52,41 @@ pip install educhain
 #### Quick Start
 
 ```python
-from educhain import qna_engine
+from educhain import Educhain
 
-questions = qna_engine.generate_mcq(
-    topic="Indian History",
-    level="Beginner",
-    num=5
-)
-print(questions)
+client = Educhain()
+
+ques = client.qna_engine.generate_questions(topic="Newton's Law of Motion",
+                                            num=5,
+                                            custom_instructions = "Give me some basic questions")
+print(ques)
+ques.json() # ques.dict()
 ```
+
+#### Support Different Question Types
+
+```python
+# Supports "Multiple Choice" (default); "True/False"; "Fill in the Blank"; "Short Answer"
+
+from educhain import Educhain
+
+client = Educhain()
+
+ques = client.qna_engine.generate_questions(topic = "Psychology", 
+                                            num = 10,
+                                            question_type="Fill in the Blank")
+
+print(ques)
+ques.json() #ques.dict()
+```
+
 
 #### Using Custom Prompt Templates
 
 ```python
-from educhain import qna_engine
+from educhain import Educhain
+
+client = Educhain()
 
 custom_template = """
 Generate {num} multiple-choice question (MCQ) based on the given topic and level.
@@ -75,70 +96,65 @@ Learning Objective: {learning_objective}
 Difficulty Level: {difficulty_level}
 """
 
-result = qna_engine.generate_mcq(
+ques = client.qna_engine.generate_questions(
     topic="Python Programming",
     num=2,
     learning_objective="Usage of Python classes",
     difficulty_level="Hard",
     prompt_template=custom_template,
 )
-print(result)
+
+print(ques)
 ```
 
 #### Using Different LLM Models
 
 ```python
-from educhain import qna_engine
-from langchain_openai import ChatOpenAI
+from educhain import Educhain, LLMConfig
+from langchain_google_genai import ChatGoogleGenerativeAI
 
-llama3_groq = ChatOpenAI(
-    model="llama3-70b-8192",
-    openai_api_base="https://api.groq.com/openai/v1",
-    openai_api_key="GROQ_API_KEY"
-)
+gemini_flash = ChatGoogleGenerativeAI(
+    model="gemini-1.5-flash-exp-0827",
+    google_api_key="GOOGLE_API_KEY")
 
-questions = qna_engine.generate_mcq(
-    topic="Chess",
-    level="Hard",
-    num=5,
-    llm=llama3_groq
-)
-print(questions)
+flash_config = LLMConfig(custom_model=gemini_flash)
+
+client = Educhain(flash_config) #using gemini model with educhain
+
+ques = client.qna_engine.generate_questions(topic="Psychology",
+                                            num=10)
+
+print(ques)
+ques.json() #ques.dict()
 ```
 
-#### Generate Questions from Data Sources
+#### Generate Questions from Data Sources (URL/PDF/Text)
 
 ```python
-from educhain import qna_engine
+from educhain import Educhain
+client = Educhain()
 
-questions = qna_engine.generate_mcqs_from_data(
-    source="https://example.com/article",
+ques = client.qna_engine.generate_questions_from_data(
+    source="https://en.wikipedia.org/wiki/Big_Mac_Index",
     source_type="url",
-    num=5,
-    learning_objective="Understand key concepts",
-    difficulty_level="Intermediate"
-)
-print(questions)
-```
+    num=5)
 
-### Export Questions
-
-```python
-from educhain import to_json, to_pdf, to_csv
-
-to_json(questions, "questions.json")  # Export questions to JSON
-to_pdf(questions, "questions.pdf")    # Export questions to PDF
-to_csv(questions, "questions.csv")    # Export questions to CSV
+print(ques)
+ques.json() # ques.dict()
 ```
 
 ### Generate Lesson Plans
 
 ```python
-from educhain import content_engine
+from educhain import Educhain
 
-topic = "Medieval History"
-lesson_plan = content_engine.generate_lesson_plan(topic)
-print(lesson_plan)
+client = Educhain()
+
+plan = client.content_engine.generate_lesson_plan(
+                              topic = "Newton's Law of Motion")
+
+print(plan)
+plan.json()  # plan.dict()
 ```
 
 ## 📊 Supported Question Types
@@ -152,9 +168,6 @@ print(lesson_plan)
 
 Educhain offers advanced configuration options to fine-tune its behavior. Check our [configuration guide](https://docs.educhain.ai/configuration) for more details.
 
-## 🌟 Success Stories
-
-Educators worldwide are using Educhain to transform their teaching. Read our [case studies](https://educhain.ai/case-studies) to learn more.
 
 ## 📈 Usage Statistics
 
@@ -168,10 +181,8 @@ Educhain's adoption has been growing rapidly:
 - [x] Outputs in JSON format
 - [x] Custom Prompt Templates
 - [x] Custom Response Models using Pydantic
-- [x] Exports questions to JSON/PDF/CSV
 - [x] Support for other LLM models
 - [x] Generate questions from text/PDF file
-- [ ] Finetuned Model for question generation
 - [ ] Integration with popular Learning Management Systems
 - [ ] Mobile app for on-the-go content generation
 
