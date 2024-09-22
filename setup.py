@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="educhain",
-    version="0.2.18",  # Incremented from 0.2.17 to 0.2.18
+    version="0.3.1",
     packages=find_packages(),
     install_requires=[
         "langchain",
@@ -15,8 +15,17 @@ setup(
         "PyPDF2",
         "beautifulsoup4",
         "youtube_transcript_api",
-        # "time",
+        "pydantic",
+        "requests",
+        "chromadb",
     ],
+    extras_require={
+        "dev": [
+            "pytest",
+            "black",
+            "flake8",
+        ],
+    },
     author="Satvik Paramkusham",
     author_email="satvik@buildfastwithai.com",
     description="A Python package for generating educational content using Generative AI",
@@ -28,9 +37,11 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
+    python_requires='>=3.7',
 )
