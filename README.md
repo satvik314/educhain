@@ -44,11 +44,11 @@ pip install educhain
 
 ## 🎮 Usage
 
-### Generate MCQs
+## Starter Guide
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ImijJ-DF8XGTzyLJ0lq68yInrPN1-L8L?usp=sharing)
 
-#### Quick Start
+### Quick Start
 
 Get started with content generation in < 3 lines! 
 
@@ -64,7 +64,7 @@ print(ques)
 ques.json() # ques.dict()
 ```
 
-#### Supports Different Question Types
+### Supports Different Question Types
 
 Generates different types of questions. See the advanced guide to create a custom question type. 
 
@@ -84,7 +84,7 @@ print(ques)
 ques.json() #ques.dict()
 ```
 
-#### Use Different LLM Models
+### Use Different LLM Models
 
 To use a custom model, you can pass a model configuration through the `LLMConfig` class
 
@@ -109,7 +109,7 @@ print(ques)
 ques.json() #ques.dict()
 ```
 
-#### Customizable Prompt Templates 
+### Customizable Prompt Templates 
 
 Configure your prompt templates for more control over input parameters and output quality. 
 
@@ -138,7 +138,7 @@ print(ques)
 ```
 
 
-#### Generate Questions from Data Sources
+### Generate Questions from Data Sources
 
 Ingest your own data to create content. Currently supports URL/PDF/TXT.
 
@@ -156,7 +156,7 @@ ques.json() # ques.dict()
 ```
 
 
-#### Generate Lesson Plans
+### Generate Lesson Plans
 
 Create interactive and detailed lesson plans. 
 
