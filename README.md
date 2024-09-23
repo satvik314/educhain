@@ -58,8 +58,7 @@ from educhain import Educhain
 client = Educhain()
 
 ques = client.qna_engine.generate_questions(topic="Newton's Law of Motion",
-                                            num=5,
-                                            custom_instructions = "Give me some basic questions")
+                                            num=5)
 print(ques)
 ques.json() # ques.dict()
 ```
@@ -78,7 +77,8 @@ client = Educhain()
 
 ques = client.qna_engine.generate_questions(topic = "Psychology", 
                                             num = 10,
-                                            question_type="Fill in the Blank")
+                                            question_type="Fill in the Blank"
+                                            custom_instructions = "Only basic questions")
 
 print(ques)
 ques.json() #ques.dict()
