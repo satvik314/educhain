@@ -50,111 +50,129 @@ pip install educhain
 
 #### Quick Start
 
+Get started with content generation in < 3 lines! 
+
 ```python
-from educhain.engines import qna_engine
+from educhain import Educhain
 
-ques = qna_engine.QnAEngine()
+client = Educhain()
 
-questions = ques.generate_questions(
-    topic="Python programming",
-    num=2
-)
-questions.show()
+ques = client.qna_engine.generate_questions(topic="Newton's Law of Motion",
+                                            num=5,
+                                            custom_instructions = "Give me some basic questions")
+print(ques)
+ques.json() # ques.dict()
 ```
+
+#### Supports Different Question Types
+
+Generates different types of questions. See the advanced guide to create a custom question type. 
+
+
+```python
+# Supports "Multiple Choice" (default); "True/False"; "Fill in the Blank"; "Short Answer"
+
+from educhain import Educhain
+
+client = Educhain()
+
+ques = client.qna_engine.generate_questions(topic = "Psychology", 
+                                            num = 10,
+                                            question_type="Fill in the Blank")
+
+print(ques)
+ques.json() #ques.dict()
+```
+
+#### Use Different LLM Models
+
+To use a custom model, you can pass a model configuration through the `LLMConfig` class
+
+Here's an example using the Gemini Model
+
+```python
+from langchain_google_genai import ChatGoogleGenerativeAI
+from educhain import Educhain, LLMConfig
+
+gemini_flash = ChatGoogleGenerativeAI(
+    model="gemini-1.5-flash-exp-0827",
+    google_api_key="GOOGLE_API_KEY")
+
+flash_config = LLMConfig(custom_model=gemini_flash)
+
+client = Educhain(flash_config) #using gemini model with educhain
+
+ques = client.qna_engine.generate_questions(topic="Psychology",
+                                            num=10)
+
+print(ques)
+ques.json() #ques.dict()
+```
+
+#### Customizable Prompt Templates 
+
+Configure your prompt templates for more control over input parameters and output quality. 
+
+```python
+from educhain import Educhain
+
+client = Educhain()
+
+custom_template = """
+Generate {num} multiple-choice question (MCQ) based on the given topic and level.
+Provide the question, four answer options, and the correct answer.
+Topic: {topic}
+Learning Objective: {learning_objective}
+Difficulty Level: {difficulty_level}
+"""
+
+ques = client.qna_engine.generate_questions(
+    topic="Python Programming",
+    num=2,
+    learning_objective="Usage of Python classes",
+    difficulty_level="Hard",
+    prompt_template=custom_template,
+)
+
+print(ques)
+```
+
 
 #### Generate Questions from Data Sources
 
+Ingest your own data to create content. Currently supports URL/PDF/TXT.
+
 ```python
-from educhain.engines import qna_engine
+from educhain import Educhain
+client = Educhain()
 
-ques = qna_engine.QnAEngine()
-
-data_ques = ques.generate_questions_from_data(
-    source="https://en.wikipedia.org/wiki/Main_Page",
+ques = client.qna_engine.generate_questions_from_data(
+    source="https://en.wikipedia.org/wiki/Big_Mac_Index",
     source_type="url",
-    num=2
-)
-data_ques.show()
+    num=5)
+
+print(ques)
+ques.json() # ques.dict()
 ```
 
-#### Generate MCQs with Custom Instructions
+
+#### Generate Lesson Plans
+
+Create interactive and detailed lesson plans. 
 
 ```python
-from educhain.engines import qna_engine
+from educhain import Educhain
 
-ques = qna_engine.QnAEngine()
+client = Educhain()
 
-data_ques = ques.generate_questions_with_rag(
-    source="https://lichess.org/forum/off-topic-discussion/longest-message-ever?page=3",
-    source_type="url",
-    num=2,
-    custom_instructions="Include questions about the 15th day of the Month of August."
-)
-data_ques.show()
+plan = client.content_engine.generate_lesson_plan(
+                              topic = "Newton's Law of Motion")
+
+print(plan)
+plan.json()  # plan.dict()
 ```
 
-#### Generate Math MCQs
 
-```python
-from educhain.engines import qna_engine
-
-ques = qna_engine.QnAEngine()
-
-data_ques = ques.generate_mcq_math(
-    topic="division of complicated decimals up to 7 decimals",
-    num=2
-)
-data_ques.show()
-```
-
-### Generate Lesson Plans
-
-```python
-from educhain.engines import content_engine
-
-content_engine = content_engine.ContentEngine()
-
-lesson_plan = content_engine.generate_lesson_plan(
-    topic="Trigonometry", 
-    custom_instructions="Include real-world examples"
-)
-lesson_plan.show()
-```
-
-## 🧠 Using Custom Models in Educhain
-
-Educhain allows you to integrate your own custom models for generating questions and lesson plans. This flexibility lets you fine-tune the AI's behavior to suit your specific needs, whether it's a proprietary language model or an open-source one.
-
-### Example: Using a Custom Language Model (LLM)
-
-To use a custom model, you can pass a model configuration through the `LLMConfig` class and use it with the content generation engines. Here's how to do it:
-
-```python
-from educhain.engines import content_engine
-from educhain.core import config
-from langchain.chat_models import ChatOpenAI
-
-# Initialize your custom model (e.g., Llama 3.1-70b)
-llama = ChatOpenAI(
-    model="llama-3.1-70b-versatile",
-    openai_api_base="https://api.groq.com/openai/v1",
-    openai_api_key=userdata.get("GROQ_API_KEY")  # Your custom model's API key
-)
-
-# Create a custom configuration for Educhain's content engine
-llm_config = config.LLMConfig(custom_model=llama)
-
-# Initialize the content engine with your custom model
-content_engine = content_engine.ContentEngine(llm_config=llm_config)
-
-# Generate a lesson plan with your custom model
-lesson_plan = content_engine.generate_lesson_plan(
-    topic="Trigonometry", 
-    custom_instructions="Include real-world examples"
-)
-lesson_plan.show()
-
-```
 ## 📊 Supported Question Types
 
 - Multiple Choice Questions (MCQ)
@@ -164,7 +182,7 @@ lesson_plan.show()
 
 ## 🔧 Advanced Configuration
 
-Educhain offers advanced configuration options to fine-tune its behavior. Check our [configuration guide](https://docs.educhain.ai/configuration) for more details.
+Educhain offers advanced configuration options to fine-tune its behavior. Check our [advanced guide]() for more details. (coming soon!)
 
 ## 🌟 Success Stories
 
