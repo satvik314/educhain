@@ -26,7 +26,7 @@ class QnAEngine:
         if llm_config is None:
             llm_config = LLMConfig()  # Use default OpenAI configuration
         self.llm = self._initialize_llm(llm_config)
-        self.embeddings = OpenAIEmbeddings()
+        # self.embeddings = OpenAIEmbeddings()
         self.pdf_loader = PdfFileLoader()
         self.url_loader = UrlLoader()
 
