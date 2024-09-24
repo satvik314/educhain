@@ -251,7 +251,7 @@ class QnAEngine:
             return model()
 
     def generate_similar_options(self, question, correct_answer, num_options=3):
-        llm = ChatOpenAI(model='gpt-4o-mini', temperature=0.7)
+        llm = self.llm
         prompt = f"Generate {num_options} incorrect but plausible options similar to this correct answer: {correct_answer} for this question: {question}. Provide only the options, separated by semicolons. The options should not precede or end with any symbols, it should be similar to the correct answer."
         response = llm.predict(prompt)
         return response.split(';')
