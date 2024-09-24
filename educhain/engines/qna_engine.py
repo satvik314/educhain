@@ -26,9 +26,9 @@ class QnAEngine:
         if llm_config is None:
             llm_config = LLMConfig()  # Use default OpenAI configuration
         self.llm = self._initialize_llm(llm_config)
-        # self.embeddings = OpenAIEmbeddings()
         self.pdf_loader = PdfFileLoader()
         self.url_loader = UrlLoader()
+        self.embeddings = None  # Initialize as None
 
     def _initialize_llm(self, llm_config: LLMConfig):
         if llm_config.custom_model:
@@ -83,6 +83,10 @@ class QnAEngine:
         return base_template
 
     def _create_vector_store(self, content: str) -> Chroma:
+        # Ensure embeddings are initialized
+        if self.embeddings is None:
+            self.embeddings = OpenAIEmbeddings()
+
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
         texts = text_splitter.split_text(content)
 
@@ -122,12 +126,15 @@ class QnAEngine:
         format_instructions = parser.get_format_instructions()
 
         if response_model:
-            template = """
-            Generate {num} questions based on the given topic.
-            Topic: {topic}
+            if prompt_template:
+                template = prompt_template
+            else:
+                template = """
+                Generate {num} questions based on the given topic.
+                Topic: {topic}
 
-            Ensure that each question follows the structure specified in the format instructions.
-            """
+                Ensure that each question follows the structure specified in the format instructions.
+                """
         else:
             template = self._get_prompt_template(question_type, prompt_template)
 
@@ -192,6 +199,10 @@ class QnAEngine:
         difficulty_level: str = "",
         **kwargs
     ) -> Any:
+        # Initialize embeddings only when this method is called
+        if self.embeddings is None:
+            self.embeddings = OpenAIEmbeddings()
+
         content = self._load_data(source, source_type)
 
         vector_store = self._create_vector_store(content)
