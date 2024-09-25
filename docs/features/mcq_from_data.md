@@ -5,9 +5,10 @@ Generate engaging MCQs from various data sources using AI! 🧠✨
 ## 🚀 Basic Usage
 
 ```python
-from educhain import generate_mcqs_from_data
+from educhain import Educhain
 
-questions = generate_mcqs_from_data(
+client = Educhain()
+questions = client.qna_engine.generate_questions_from_data(
     source="https://en.wikipedia.org/wiki/Artificial_intelligence",
     source_type="url",
     num=5,
