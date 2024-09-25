@@ -9,10 +9,14 @@ Get up and running with Educhain in minutes! 🚀
 
 Here's a simple example to generate multiple-choice questions:
 
-```python
-from educhain import qna_engine
 
-questions = qna_engine.generate_mcq(
+```python
+`
+from educhain import Educhain
+
+client = Educhain()
+
+questions = client.qna_engine.generate_questions(
     topic="Python Programming",
     level="Beginner",
     num=5
@@ -30,7 +34,9 @@ for i, q in enumerate(questions, 1):
 Customize your questions with additional parameters:
 
 ```python
-questions = qna_engine.generate_mcq(
+client = Educhain()
+
+questions = client.qna_engine.generate_questions(
     topic="Machine Learning",
     level="Intermediate",
     num=3,
@@ -44,9 +50,9 @@ questions = qna_engine.generate_mcq(
 Create comprehensive lesson plans with ease:
 
 ```python
-from educhain import content_engine
-
-lesson_plan = content_engine.generate_lesson_plan(
+from educhain import Educhain()
+client = Educhain()
+lesson_plan = client.content_engine.generate_lesson_plan(
     topic="World War II",
     grade_level="High School",
     duration="60 minutes"
@@ -92,24 +98,16 @@ export EDUCHAIN_API_KEY="your-api-key-here"
 Choose your preferred language model:
 
 ```python
-from educhain import qna_engine
+from langchain_google_genai import ChatGoogleGenerativeAI
+from educhain import Educhain, LLMConfig
 
-qna_engine.set_model("gpt-4")  # Default is "gpt-3.5-turbo"
-```
+gemini_flash = ChatGoogleGenerativeAI(
+    model="gemini-1.5-flash-exp-0827",
+    google_api_key="GOOGLE_API_KEY")
 
-## 🎨 Customizing Prompt Templates
+flash_config = LLMConfig(custom_model=gemini_flash)
 
-Define your own prompt templates:
-
-```python
-from educhain import qna_engine
-
-custom_template = """
-Generate {num} multiple-choice questions about {topic} at {level} level.
-Each question should have 4 options and one correct answer.
-"""
-
-qna_engine.set_prompt_template(custom_template)
+client = Educhain(flash_config)
 ```
 
 
