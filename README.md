@@ -30,11 +30,14 @@ Educhain is a powerful Python package that leverages Generative AI to create eng
 - 📹 Generate questions from YouTube videos
 - 🥽 Generate questions from images
 
-## 📈 Performance
+## 📈 Workflow
 
-Educhain consistently outperforms traditional methods in content generation speed and quality:
+**Reimagining Education with AI** 🤖
+- 📜 QnA Engine: Generates an infinte variety of Questions
+- 📰 Content Engine: One-stop content generation - lesson plans, flashcards, notes etc
+- 📌 Personalization Engine: Adapts to your individual level of understanding for a tailored experience.
 
-<img src="images/educhain-comparison-svg.svg" alt="Performance Comparison Graph" />
+<img src="images/educhain_diagram.png" alt="Educhain workflow diagram" />
 
 ## 🛠 Installation
 
