@@ -255,3 +255,70 @@ def get_youtube_transcript(url: str) -> str:
         raise ValueError(f"Error fetching transcript: {str(e)}")
 
 
+def generate_mcq_math(self, topic, num=1, llm=None, response_model=None,
+                         prompt_template=None, custom_instructions=None, **kwargs):
+        if response_model is None:
+            parser = PydanticOutputParser(pydantic_object=MCQListMath)
+            format_instructions = parser.get_format_instructions()
+        else:
+            parser = PydanticOutputParser(pydantic_object=response_model)
+            format_instructions = parser.get_format_instructions()
+
+        if prompt_template is None:
+            prompt_template = """
+            You are an Academic AI assistant tasked with generating multiple-choice questions on various topics specialised in Maths Subject.
+            Generate {num} multiple-choice question (MCQ) based on the given topic and level.
+            provide the question, four answer options, and the correct answer.
+
+            Topic: {topic}
+            """
+
+        if custom_instructions:
+            prompt_template += f"\n\nAdditional Instructions:\n{custom_instructions}"
+
+        prompt_template += "\nThe response should be in JSON format. \n {format_instructions}"
+
+        MCQ_prompt = PromptTemplate(
+            input_variables=["num", "topic"],
+            template=prompt_template,
+            partial_variables={"format_instructions": format_instructions}
+        )
+
+        if llm:
+            llm = llm
+        else:
+            llm = self.llm  # Use the initialized LLM from the class
+
+        MCQ_chain = MCQ_prompt | llm
+
+        results = MCQ_chain.invoke(
+            {"num": num, "topic": topic, **kwargs},
+        )
+        results = results.content
+        structured_output = parser.parse(results)
+
+        llm_math = LLMMathChain.from_llm(llm=llm, verbose=False)
+
+        for question in structured_output.questions:
+            if question.requires_math:
+                try:
+                    with get_openai_callback() as cb:
+                        result = llm_math.invoke({"question": question.question})
+                        result = result['result'].strip().split(":")[-1]
+                        result = float(result)
+                        result = f"{result: .2f}"
+
+                    question.explanation += f"\n\nMath solution: {result}"
+
+                    correct_option = Option(text=str(result.lstrip()), correct='true')
+                    incorrect_options = [Option(text=opt.strip(), correct='false')
+                                         for opt in self.generate_similar_options(question.question, result)]
+
+                    while len(incorrect_options) < 3:
+                        incorrect_options.append(Option(text="N/A", correct='false'))
+
+                    question.options = [correct_option] + incorrect_options[:3]
+                    random.shuffle(question.options)
+                except Exception as e:
+                    print(f"LLMMathChain failed to answer: {str(e)}")
+        return structured_output
