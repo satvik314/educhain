@@ -256,8 +256,18 @@ class QnAEngine:
         response = llm.predict(prompt)
         return response.split(';')
 
-    def generate_mcq_math(self, topic, num=1, llm=None, response_model=None,
-                         prompt_template=None, custom_instructions=None, **kwargs):
+
+    def generate_mcq_math(
+        self,
+        topic: str,
+        num: int = 1,
+        question_type: QuestionType = "Multiple Choice",
+        prompt_template: Optional[str] = None,
+        custom_instructions: Optional[str] = None,
+        response_model: Optional[Type[Any]] = None,
+        **kwargs
+    ) -> Any:
+
         if response_model is None:
             parser = PydanticOutputParser(pydantic_object=MCQListMath)
             format_instructions = parser.get_format_instructions()
@@ -278,27 +288,22 @@ class QnAEngine:
             prompt_template += f"\n\nAdditional Instructions:\n{custom_instructions}"
 
         prompt_template += "\nThe response should be in JSON format. \n {format_instructions}"
-
-        MCQ_prompt = PromptTemplate(
+  
+        question_prompt = PromptTemplate(
             input_variables=["num", "topic"],
             template=prompt_template,
             partial_variables={"format_instructions": format_instructions}
         )
 
-        if llm:
-            llm = llm
-        else:
-            llm = self.llm  # Use the initialized LLM from the class
-
-        MCQ_chain = MCQ_prompt | llm
-
-        results = MCQ_chain.invoke(
+        question_chain = question_prompt | self.llm
+        results = question_chain.invoke(
             {"num": num, "topic": topic, **kwargs},
         )
         results = results.content
+
         structured_output = parser.parse(results)
 
-        llm_math = LLMMathChain.from_llm(llm=llm, verbose=False)
+        llm_math = LLMMathChain.from_llm(llm=self.llm, verbose=False)
 
         for question in structured_output.questions:
             if question.requires_math:
@@ -307,19 +312,26 @@ class QnAEngine:
                         result = llm_math.invoke({"question": question.question})
                         result = result['result'].strip().split(":")[-1]
                         result = float(result)
-                        result = f"{result: .2f}"
+                        result = f"{result:.2f}"
 
                     question.explanation += f"\n\nMath solution: {result}"
 
+                    # Generate the correct and incorrect options
                     correct_option = Option(text=str(result.lstrip()), correct='true')
-                    incorrect_options = [Option(text=opt.strip(), correct='false')
-                                         for opt in self.generate_similar_options(question.question, result)]
+                    incorrect_options = [
+                        Option(text=opt.strip(), correct='false')
+                        for opt in self.generate_similar_options(question.question, result)
+                    ]
 
+                    # Ensure there are 3 incorrect options
                     while len(incorrect_options) < 3:
                         incorrect_options.append(Option(text="N/A", correct='false'))
 
+                    # Assign the options and shuffle them
                     question.options = [correct_option] + incorrect_options[:3]
                     random.shuffle(question.options)
+
                 except Exception as e:
                     print(f"LLMMathChain failed to answer: {str(e)}")
+
         return structured_output
