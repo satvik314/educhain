@@ -35,7 +35,6 @@ class LessonPlan(BaseModel):
 
 
 class Flashcard(BaseModel):
-    from typing import Optional, Type, Any
     front: str = Field(..., description="The front side of the flashcard with a question or key term")
     back: str = Field(..., description="The back side of the flashcard with the answer or definition")
     explanation: Optional[str] = Field(None, description="An optional explanation or additional context")
