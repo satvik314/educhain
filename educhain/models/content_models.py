@@ -1,4 +1,4 @@
-from typing import Optional, Type, Any
+from typing import Optional, Type, Any ,List
 from pydantic import BaseModel, Field
 
 class ContentElement(BaseModel):
