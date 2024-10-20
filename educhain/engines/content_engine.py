@@ -91,28 +91,31 @@ class ContentEngine:
             return response_model()
     
     def generate_flashcards(
-        # self,
+        self,
         topic: str,
         num: int = 10,
         prompt_template: Optional[str] = None,
         custom_instructions: Optional[str] = None,
         response_model: Optional[Type[Any]] = None,
+        llm: Optional[Any] = None,
         **kwargs
     ) -> FlashcardSet:
-        parser = PydanticOutputParser(pydantic_object=FlashcardSet)
+        if response_model is None:
+            response_model = FlashcardSet
+        parser = PydanticOutputParser(pydantic_object=response_model)
         format_instructions = parser.get_format_instructions()
-    
+
         if prompt_template is None:
             prompt_template = """
             Generate a set of {num} flashcards on the topic: {topic}.
-    
+
             For each flashcard, provide:
             1. A front side with a question or key term
             2. A back side with the answer or definition
             3. An optional explanation or additional context
-    
+
             The flashcards should cover key concepts, terminology, and important facts related to the topic.
-    
+
             Ensure that the output follows this structure:
             - A title for the flashcard set (the main topic)
             - A list of flashcards, each containing:
@@ -120,24 +123,24 @@ class ContentEngine:
               - back: The answer or definition
               - explanation: Additional context or explanation (optional)
             """
-    
+
         if custom_instructions:
             prompt_template += f"\n\nAdditional Instructions:\n{custom_instructions}"
-    
+
         prompt_template += "\n\nThe response should be in JSON format.\n{format_instructions}"
-    
+
         flashcard_prompt = PromptTemplate(
             input_variables=["num", "topic"],
             template=prompt_template,
             partial_variables={"format_instructions": format_instructions}
         )
-    
-        flashcard_chain = flashcard_prompt | llm
-        # flashcard_chain = flashcard_prompt | self.llm
+
+        llm_to_use = llm if llm is not None else self.llm
+        flashcard_chain = flashcard_prompt | llm_to_use
         results = flashcard_chain.invoke(
             {"num": num, "topic": topic, **kwargs},
         )
-    
+
         try:
             structured_output = parser.parse(results.content)
             return structured_output
