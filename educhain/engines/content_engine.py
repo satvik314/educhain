@@ -6,7 +6,8 @@ from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
 from educhain.core.config import LLMConfig
 from educhain.models.content_models import LessonPlan
-from educhain.models import FlashcardSet  # Make sure to import the new model
+from educhain.models.content_models import FlashcardSet 
+
 
 class ContentEngine:
     def __init__(self, llm_config: Optional[LLMConfig] = None):
