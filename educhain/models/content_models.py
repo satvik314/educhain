@@ -32,3 +32,24 @@ class LessonPlan(BaseModel):
                     print(f"      - {element.content}")
 
         print("\n" + "=" * 80)
+
+
+class Flashcard(BaseModel):
+    front: str = Field(..., description="The front side of the flashcard with a question or key term")
+    back: str = Field(..., description="The back side of the flashcard with the answer or definition")
+    explanation: Optional[str] = Field(None, description="An optional explanation or additional context")
+
+class FlashcardSet(BaseModel):
+    title: str = Field(..., description="The title or topic of the flashcard set")
+    flashcards: List[Flashcard] = Field(..., description="A list of flashcards in this set")
+
+    def show(self):
+        print("=" * 80)
+        print(f"Flashcard Set: {self.title}")
+        print("=" * 80)
+        for i, flashcard in enumerate(self.flashcards, 1):
+            print(f"\n{i}. Front: {flashcard.front}")
+            print(f"   Back: {flashcard.back}")
+            if flashcard.explanation:
+                print(f"   Explanation: {flashcard.explanation}")
+        print("\n" + "=" * 80)
