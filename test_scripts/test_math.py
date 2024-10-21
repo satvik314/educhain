@@ -10,9 +10,9 @@ llm_config = LLMConfig(
 
 engine = QnAEngine(llm_config=llm_config)
 
-topic = "Basic Algebra"
+topic = "Geometry"
 
-num_questions = 3 
+num_questions = 7
 response = engine.generate_mcq_math(
     topic=topic,
     num=num_questions
