@@ -29,7 +29,7 @@ setup(
     author="Satvik Paramkusham",
     author_email="satvik@buildfastwithai.com",
     description="A Python package for generating educational content using Generative AI",
-    long_description=open("README.md", encoding="utf-8").read(),
+    long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/satvik314/educhain",
     classifiers=[
