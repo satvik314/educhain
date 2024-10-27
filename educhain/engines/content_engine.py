@@ -5,7 +5,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
 from educhain.core.config import LLMConfig
-from educhain.models.content_models import LessonPlan, StudyGuide
+from educhain.models.content_models import LessonPlan, StudyGuide, CareerConnections
 
 class ContentEngine:
     def __init__(self, llm_config: Optional[LLMConfig] = None):
@@ -245,5 +245,155 @@ class ContentEngine:
                     "outcome": "N/A",
                     "lessons_learned": ["N/A"],
                     "related_concepts": ["N/A"]
+                }]
+            )
+        
+    # Carrer connections
+    def generate_career_connections(
+        self,
+        topic: str,
+        industry_focus: Optional[str] = None,
+        prompt_template: Optional[str] = None,
+        custom_instructions: Optional[str] = None,
+        response_model: Optional[Type[Any]] = None,
+        llm: Optional[Any] = None,
+        **kwargs
+    ) -> Any:
+        """
+        Generates connections between academic topics and real-world careers,
+        including insights from professionals in the field.
+        """
+        if response_model is None:
+            response_model = CareerConnections
+
+        parser = PydanticOutputParser(pydantic_object=response_model)
+        format_instructions = parser.get_format_instructions()
+
+        if prompt_template is None:
+            prompt_template = """
+            Create comprehensive career connections for the following academic topic:
+            Topic: {topic}
+            Industry Focus: {industry_focus}
+
+            Generate detailed information about how this topic connects to real-world careers and professional opportunities.
+            Include:
+
+            1. Industry Overview
+            - Current state of the industry
+            - Future outlook
+            - Key trends and developments
+
+            2. Career Paths formatted as:
+            "career_paths": [
+                {{
+                    "title": "Job Title",
+                    "description": "Role description",
+                    "typical_responsibilities": ["responsibility1", "responsibility2"],
+                    "required_education": "Education requirements",
+                    "salary_range": "Typical salary range",
+                    "growth_potential": "Career growth opportunities",
+                    "topic_application": "How this topic is used in the role"
+                }}
+            ]
+
+            3. Professional Insights formatted as:
+            "professional_insights": [
+                {{
+                    "role": "Professional's role",
+                    "experience_level": "Years of experience",
+                    "key_insights": ["insight1", "insight2"],
+                    "daily_applications": ["application1", "application2"],
+                    "advice_for_students": ["advice1", "advice2"]
+                }}
+            ]
+
+            4. Required Skills
+            - Technical skills
+            - Soft skills
+            - Industry-specific skills
+            - Future skills needed
+
+            5. Preparation Steps
+            - Educational pathways
+            - Certifications
+            - Experience building
+            - Networking opportunities
+
+            6. Resources
+            - Professional organizations
+            - Learning platforms
+            - Industry publications
+            - Networking opportunities
+
+            Make sure to:
+            - Focus on current and emerging career opportunities
+            - Include both traditional and non-traditional career paths
+            - Highlight the practical applications of the topic
+            - Provide actionable steps for students
+            - Include diverse perspectives and roles
+
+            Response format:
+            {format_instructions}
+            """
+
+        if custom_instructions:
+            prompt_template += f"\n\nAdditional Instructions:\n{custom_instructions}"
+
+        prompt = PromptTemplate(
+            input_variables=["topic", "industry_focus"],
+            template=prompt_template,
+            partial_variables={"format_instructions": format_instructions}
+        )
+
+        llm_to_use = llm if llm is not None else self.llm
+        
+        career_chain = prompt | llm_to_use
+        results = career_chain.invoke(
+            {
+                "topic": topic,
+                "industry_focus": industry_focus or "General",
+                **kwargs
+            },
+        )
+        results = results.content
+
+        try:
+            structured_output = parser.parse(results)
+            return structured_output
+        except Exception as e:
+            print(f"Error parsing output: {e}")
+            print("Raw output:")
+            print(results)
+            return response_model(
+                topic=topic,
+                industry_overview="Error generating content",
+                career_paths=[{
+                    "title": "Sample Career",
+                    "description": "Error generating career paths",
+                    "typical_responsibilities": ["N/A"],
+                    "required_education": "N/A",
+                    "salary_range": "N/A",
+                    "growth_potential": "N/A",
+                    "topic_application": "N/A"
+                }],
+                required_skills={
+                    "technical": ["Error generating skills"],
+                    "soft": ["Error generating skills"]
+                },
+                industry_trends=["Error generating trends"],
+                professional_insights=[{
+                    "role": "Sample Professional",
+                    "experience_level": "N/A",
+                    "key_insights": ["Error generating insights"],
+                    "daily_applications": ["N/A"],
+                    "advice_for_students": ["N/A"]
+                }],
+                preparation_steps={
+                    "education": ["Error generating steps"],
+                    "experience": ["Error generating steps"]
+                },
+                resources=[{
+                    "name": "Sample Resource",
+                    "url": "N/A"
                 }]
             )

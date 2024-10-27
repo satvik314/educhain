@@ -79,37 +79,6 @@ class LessonPlan(BaseModel):
         print("Real-World Applications: ", self.real_world_applications or "None")
         print("Ethical Considerations: ", self.ethical_considerations or "None")
 
-# class StudyGuide(BaseModel):
-#     topic: str
-#     overview: str
-#     key_concepts: List[str]
-#     important_dates: Optional[List[str]] = None
-#     example_questions: List[str]
-#     additional_resources: Optional[List[str]] = None
-
-#     def show(self):
-#         print(f"Study Guide for Topic: {self.topic}\n")
-#         print(f"Overview:\n{self.overview}\n")
-#         print("Key Concepts:")
-#         for concept in self.key_concepts:
-#             print(f"- {concept}")
-        
-#         if self.important_dates:
-#             print("\nImportant Dates:")
-#             for date in self.important_dates:
-#                 print(f"- {date}")
-
-#         print("\nExample Questions:")
-#         for question in self.example_questions:
-#             print(f"- {question}")
-
-#         if self.additional_resources:
-#             print("\nAdditional Resources:")
-#             for resource in self.additional_resources:
-#                 print(f"- {resource}")
-
-from typing import Optional, List, Dict
-from pydantic import BaseModel, Field
 
 class CaseStudy(BaseModel):
     title: str
@@ -310,3 +279,120 @@ class StudyGuide(BaseModel):
                 
         if self.summary:
             print(f"\nSummary:\n{self.summary}")
+
+# Carrer Connection
+class Skill(BaseModel):
+    name: str = Field(..., description="Name of the skill")
+    description: str = Field(..., description="Detailed description of the skill")
+    importance_level: str = Field(..., description="How important this skill is for the career (Essential/Important/Helpful)")
+    acquisition_methods: List[str] = Field(..., description="Ways to acquire or develop this skill")
+
+class CareerPath(BaseModel):
+    title: str = Field(..., description="Job title or role name")
+    description: str = Field(..., description="Detailed description of the career path")
+    typical_responsibilities: List[str] = Field(..., description="List of typical job responsibilities")
+    required_education: str = Field(..., description="Required educational qualifications")
+    salary_range: str = Field(..., description="Typical salary range for this role")
+    growth_potential: str = Field(..., description="Career growth and advancement opportunities")
+    topic_application: str = Field(..., description="How the academic topic is applied in this role")
+    required_skills: List[Skill] = Field(..., description="Skills required for this career path")
+
+class ProfessionalInsight(BaseModel):
+    role: str = Field(..., description="Professional's current role")
+    experience_level: str = Field(..., description="Years of experience in the field")
+    company_type: str = Field(..., description="Type of company or industry sector")
+    key_insights: List[str] = Field(..., description="Key insights about the career path")
+    daily_applications: List[str] = Field(..., description="How they apply the topic in daily work")
+    advice_for_students: List[str] = Field(..., description="Professional advice for students")
+    career_journey: str = Field(..., description="Brief description of their career journey")
+
+class IndustryTrend(BaseModel):
+    name: str = Field(..., description="Name of the trend")
+    description: str = Field(..., description="Detailed description of the trend")
+    impact: str = Field(..., description="Expected impact on the industry")
+    timeframe: str = Field(..., description="Expected timeframe for this trend")
+    related_skills: List[str] = Field(..., description="Skills related to this trend")
+
+class Resource(BaseModel):
+    name: str = Field(..., description="Name of the resource")
+    type: str = Field(..., description="Type of resource (Organization/Platform/Publication)")
+    description: str = Field(..., description="Description of the resource")
+    url: Optional[str] = Field(None, description="URL for the resource if applicable")
+    cost: Optional[str] = Field(None, description="Cost information if applicable")
+
+class PreparationPath(BaseModel):
+    stage: str = Field(..., description="Stage of preparation (e.g., Education, Early Career)")
+    requirements: List[str] = Field(..., description="Requirements for this stage")
+    duration: str = Field(..., description="Expected duration of this stage")
+    milestones: List[str] = Field(..., description="Key milestones to achieve")
+    resources_needed: List[str] = Field(..., description="Resources needed for this stage")
+
+class CareerConnections(BaseModel):
+    topic: str = Field(..., description="The academic topic being connected to careers")
+    industry_overview: str = Field(..., description="Overview of the industry landscape")
+    career_paths: List[CareerPath] = Field(..., description="Detailed career paths related to the topic")
+    industry_trends: List[IndustryTrend] = Field(..., description="Current and emerging industry trends")
+    professional_insights: List[ProfessionalInsight] = Field(..., description="Insights from industry professionals")
+    preparation_paths: List[PreparationPath] = Field(..., description="Steps to prepare for these careers")
+    resources: List[Resource] = Field(..., description="Useful resources for career preparation")
+    skill_categories: Dict[str, List[Skill]] = Field(..., description="Categorized skills required across careers")
+
+    def show(self):
+        print("=" * 80)
+        print(f"Career Connections: {self.topic}")
+        print("=" * 80)
+        print("\nIndustry Overview:")
+        print(self.industry_overview)
+        
+        print("\nCareer Paths:")
+        for i, path in enumerate(self.career_paths, 1):
+            print(f"\n{i}. {path.title}")
+            print(f"   Description: {path.description}")
+            print("   Responsibilities:")
+            for resp in path.typical_responsibilities:
+                print(f"   - {resp}")
+            print(f"   Education: {path.required_education}")
+            print(f"   Salary Range: {path.salary_range}")
+            print(f"   Growth Potential: {path.growth_potential}")
+            print("   Required Skills:")
+            for skill in path.required_skills:
+                print(f"   - {skill.name} ({skill.importance_level})")
+
+        print("\nIndustry Trends:")
+        for trend in self.industry_trends:
+            print(f"\n- {trend.name}")
+            print(f"  Impact: {trend.impact}")
+            print(f"  Timeframe: {trend.timeframe}")
+
+        print("\nProfessional Insights:")
+        for insight in self.professional_insights:
+            print(f"\nFrom {insight.role} ({insight.experience_level})")
+            print("Key Insights:")
+            for key_insight in insight.key_insights:
+                print(f"- {key_insight}")
+            print("Advice for Students:")
+            for advice in insight.advice_for_students:
+                print(f"- {advice}")
+
+        print("\nPreparation Paths:")
+        for path in self.preparation_paths:
+            print(f"\n{path.stage}")
+            print("Requirements:")
+            for req in path.requirements:
+                print(f"- {req}")
+            print(f"Duration: {path.duration}")
+
+        print("\nResources:")
+        for resource in self.resources:
+            print(f"\n- {resource.name} ({resource.type})")
+            print(f"  Description: {resource.description}")
+            if resource.url:
+                print(f"  URL: {resource.url}")
+            if resource.cost:
+                print(f"  Cost: {resource.cost}")
+
+        print("\nSkill Categories:")
+        for category, skills in self.skill_categories.items():
+            print(f"\n{category}:")
+            for skill in skills:
+                print(f"- {skill.name}: {skill.description}")
