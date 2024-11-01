@@ -1,6 +1,6 @@
 # educhain/engines/qna_engine.py
 
-from typing import Optional, Type, Any, List, Literal
+from typing import Optional, Type, Any, List, Literal, Union, Tuple
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain.prompts import PromptTemplate
@@ -16,10 +16,14 @@ from educhain.models.qna_models import (
     FillInBlankQuestionList, MCQListMath, Option
 )
 from educhain.utils.loaders import PdfFileLoader, UrlLoader
+from educhain.utils.output_formatter import OutputFormatter
+
+# Update the QuestionType definition
 
 import random
 
 QuestionType = Literal["Multiple Choice", "Short Answer", "True/False", "Fill in the Blank"]
+OutputFormatType = Literal["pdf", "csv"]
 
 class QnAEngine:
     def __init__(self, llm_config: Optional[LLMConfig] = None):
@@ -111,6 +115,21 @@ class QnAEngine:
             return source
         else:
             raise ValueError("Unsupported source type. Please use 'pdf', 'url', or 'text'.")
+        
+    def _handle_output_format(self, data: Any, output_format: Optional[OutputFormatType]) -> Union[Any, Tuple[Any, str]]:
+        """Handle output format conversion if specified"""
+        if output_format is None:
+            return data
+            
+        formatter = OutputFormatter()
+        if output_format == "pdf":
+            output_file = formatter.to_pdf(data)
+        elif output_format == "csv":
+            output_file = formatter.to_csv(data)
+        else:
+            raise ValueError(f"Unsupported output format: {output_format}")
+            
+        return data, output_file
 
     def generate_questions(
         self,
@@ -120,6 +139,7 @@ class QnAEngine:
         prompt_template: Optional[str] = None,
         custom_instructions: Optional[str] = None,
         response_model: Optional[Type[Any]] = None,
+        output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
         parser, model = self._get_parser_and_model(question_type, response_model)
@@ -157,6 +177,10 @@ class QnAEngine:
 
         try:
             structured_output = parser.parse(results)
+
+            if output_format:
+                self._handle_output_format(structured_output, output_format)
+                
             return structured_output
         except Exception as e:
             print(f"Error parsing output: {e}")
@@ -173,6 +197,7 @@ class QnAEngine:
         prompt_template: Optional[str] = None,
         custom_instructions: Optional[str] = None,
         response_model: Optional[Type[Any]] = None,
+        output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
         content = self._load_data(source, source_type)
@@ -197,6 +222,7 @@ class QnAEngine:
         response_model: Optional[Type[Any]] = None,
         learning_objective: str = "",
         difficulty_level: str = "",
+        output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
         # Initialize embeddings only when this method is called
@@ -244,7 +270,12 @@ class QnAEngine:
         results = qa_chain.invoke({"query": query, "n_results": 3})
 
         try:
-            return parser.parse(results["result"])
+            structured_output = parser.parse(results["result"])
+
+            if output_format:
+                self._handle_output_format(structured_output, output_format)
+            
+            return structured_output
         except Exception as e:
             print(f"Error parsing output: {e}")
             print("Raw output:", results)
@@ -264,6 +295,7 @@ class QnAEngine:
         prompt_template: Optional[str] = None,
         custom_instructions: Optional[str] = None,
         response_model: Optional[Type[Any]] = None,
+        output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
 
@@ -332,5 +364,8 @@ class QnAEngine:
 
                 except Exception as e:
                     print(f"LLMMathChain failed to answer: {str(e)}")
+
+        if output_format:
+                self._handle_output_format(structured_output, output_format)
 
         return structured_output

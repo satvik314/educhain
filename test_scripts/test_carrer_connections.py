@@ -25,6 +25,7 @@ def test_generate_career_connections():
         career_connections = content_engine.generate_career_connections(
             topic=topic,
             industry_focus=industry_focus,
+            output_format="csv"
         )
 
         career_connections.show()  # Using the show method we defined in the Pydantic model

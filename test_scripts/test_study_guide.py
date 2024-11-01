@@ -28,6 +28,7 @@ def test_generate_study_guide():
             topic=topic,
             difficulty_level=difficulty_level,
             custom_instructions=custom_instructions,
+            output_format="csv"
         )
 
         # Display results

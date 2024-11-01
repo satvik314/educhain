@@ -6,6 +6,7 @@ from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
 from educhain.core.config import LLMConfig
 from educhain.models.content_models import LessonPlan, StudyGuide, CareerConnections
+import json
 
 class ContentEngine:
     def __init__(self, llm_config: Optional[LLMConfig] = None):
@@ -35,6 +36,7 @@ class ContentEngine:
         custom_instructions: Optional[str] = None,
         response_model: Optional[Type[Any]] = None,
         llm: Optional[Any] = None,
+        output_format: Optional[str] = None,
         **kwargs
     ) -> Any:
         if response_model is None:
@@ -104,6 +106,7 @@ class ContentEngine:
         try:
             # Parse results to match the new LessonPlan structure
             structured_output = parser.parse(results)
+
             return structured_output
         except Exception as e:
             print(f"Error parsing output: {e}")
@@ -120,6 +123,7 @@ class ContentEngine:
         custom_instructions: Optional[str] = None,
         response_model: Optional[Type[Any]] = None,
         llm: Optional[Any] = None,
+        output_format: Optional[str] = None,
         **kwargs
     ) -> Any:
         if response_model is None:
@@ -218,8 +222,10 @@ class ContentEngine:
                     '"case_studies": []',
                     '"case_studies": [{"title": "Sample Case", "scenario": "No case studies provided", "challenge": "N/A", "solution": "N/A", "outcome": "N/A", "lessons_learned": ["N/A"], "related_concepts": ["N/A"]}]'
                 )
-                
+
+            # Parse results to match the new LessonPlan structure
             structured_output = parser.parse(results)
+
             return structured_output
         except Exception as e:
             print(f"Error parsing output: {e}")
@@ -257,6 +263,7 @@ class ContentEngine:
         custom_instructions: Optional[str] = None,
         response_model: Optional[Type[Any]] = None,
         llm: Optional[Any] = None,
+        output_format: Optional[str] = None,
         **kwargs
     ) -> Any:
         """
@@ -358,7 +365,9 @@ class ContentEngine:
         results = results.content
 
         try:
+            # Parse results to match the new LessonPlan structure
             structured_output = parser.parse(results)
+            
             return structured_output
         except Exception as e:
             print(f"Error parsing output: {e}")

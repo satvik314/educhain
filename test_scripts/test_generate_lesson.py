@@ -6,9 +6,9 @@ def test_generate_lesson_plan():
     try:
         
         llm_config = LLMConfig(
-            model_name="gpt-4o-mini",
+            model_name="gpt-4o",
             api_key="",
-            max_tokens=3000,
+            max_tokens=4000,
             temperature=0.5,
         )
 
@@ -22,6 +22,7 @@ def test_generate_lesson_plan():
         lesson_plan = content_engine.generate_lesson_plan(
             topic=topic,
             custom_instructions=custom_instructions,
+            output_format="csv"
         )
 
         # Display the lesson plan using the show() function
