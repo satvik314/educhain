@@ -8,9 +8,10 @@ Unleash the power of AI to create engaging MCQs! 🧠✨
 ## 🚀 Basic Usage
 
 ```python
-from educhain import qna_engine
+from educhain import Educhain
 
-questions = qna_engine.generate_mcq(
+client = Educhain()
+questions = client.qna_engine.generate_questions(
     topic="Python Programming",
     level="Intermediate",
     num=10
