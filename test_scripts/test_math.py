@@ -10,12 +10,13 @@ llm_config = LLMConfig(
 
 engine = QnAEngine(llm_config=llm_config)
 
-topic = "Geometry"
+topic = "Linear Algebra"
 
-num_questions = 7
+num_questions = 5
 response = engine.generate_mcq_math(
     topic=topic,
-    num=num_questions
+    num=num_questions,
+    output_format="pdf"
 )
 
 print(response)
