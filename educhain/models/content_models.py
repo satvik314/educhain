@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional, Type, Any ,List
 from pydantic import BaseModel, Field
 
 class ContentElement(BaseModel):
@@ -73,6 +73,28 @@ class LessonPlan(BaseModel):
                 for assessment in subtopic.assessment_ideas:
                     print(f"      - {assessment.type.capitalize()}: {assessment.description}")
 
+        print("\n" + "=" * 80)
+
+
+class Flashcard(BaseModel):
+    front: str = Field(..., description="The front side of the flashcard with a question or key term")
+    back: str = Field(..., description="The back side of the flashcard with the answer or definition")
+    explanation: Optional[str] = Field(None, description="An optional explanation or additional context")
+
+class FlashcardSet(BaseModel):
+    title: str = Field(..., description="The title or topic of the flashcard set")
+    flashcards: List[Flashcard] = Field(..., description="A list of flashcards in this set")
+
+    def show(self):
+        print("=" * 80)
+        print(f"Flashcard Set: {self.title}")
+        print("=" * 80)
+        for i, flashcard in enumerate(self.flashcards, 1):
+            print(f"\n{i}. Front: {flashcard.front}")
+            print(f"   Back: {flashcard.back}")
+            if flashcard.explanation:
+                print(f"   Explanation: {flashcard.explanation}")
+        print("\n" + "=" * 80)
         print("\nLearning Adaptations: ", self.learning_adaptations or "None")
         print("Real-World Applications: ", self.real_world_applications or "None")
         print("Ethical Considerations: ", self.ethical_considerations or "None")
