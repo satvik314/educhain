@@ -57,7 +57,7 @@ class Option(BaseModel):
 
 class MCQMath(BaseModel):
     question: str = Field(description="The quiz question, strictly avoid Latex formatting")
-    requires_math: bool = Field(default=False, description="Whether the question requires the LLM Math Chain for accurate answers.")
+    requires_math: bool = Field(description="Whether the question requires the LLM Math Chain for accurate answers.")
     options: List[Option] = Field(description="The possible answers to the question. The list should contain 4 options.")
     explanation: str =  Field(default=None, description="Explanation of the question")
 
