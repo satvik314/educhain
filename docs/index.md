@@ -49,15 +49,15 @@ questions.show()
 
 Educators worldwide are using Educhain to transform their teaching. Check out our [success stories](resources/case-studies.md) to see how Educhain is making a difference in classrooms around the globe.
 
-## 🗺️ Roadmap
+## 🗺️ Roadmap  
 
-We're constantly improving Educhain. Here's what's on the horizon:
+We're always working to make Educhain better! Be sure to check out our upcoming features:  
+ 
+- [ ] **Flashcard Generation** to simplify learning  
+- [ ] **Study Guide Creation** for comprehensive topic understanding  
+- [ ] **High-Accuracy Math Questions** for students and educators  
+- [ ] **Try it out on our [website](https://educhain.in)** for on-the-go content creation 🚀   
 
-- [ ] Finetuned Model for question generation
-- [ ] Integration with popular Learning Management Systems
-- [ ] Mobile app for on-the-go content generation
-
-[📅 View our full roadmap](https://github.com/educhain/educhain/projects/1)
 
 ## 🤝 Contributing
 
