@@ -232,6 +232,3 @@ For bug reports or feature requests, please open an issue on our [GitHub reposit
 Made with ❤️ by Buildfastwithai
 
 [www.educhain.in](https://educhain.in)
-```
-
-You can now copy and paste this directly into your project!
