@@ -31,14 +31,16 @@ Educhain consistently outperforms traditional methods in content generation spee
 ## 🚀 Get Started in Minutes
 
 ```python
-from educhain import qna_engine
+from educhain import Educhain
 
-questions = qna_engine.generate_mcq(
+client = Educhain()
+questions = client.qna_engine.generate_questions(
     topic="Indian History",
-    level="Beginner",
+    custom_instructions="Include questions about Maharana Pratap",
     num=5
 )
-print(questions)
+
+questions.show() 
 ```
 
 [🏃‍♂️ See our Quick Start guide for more](getting-started/quick-start.md)
