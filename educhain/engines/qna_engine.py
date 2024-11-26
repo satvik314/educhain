@@ -1,6 +1,6 @@
 # educhain/engines/qna_engine.py
 
-from typing import Optional, Type, Any, List, Literal
+from typing import Optional, Type, Any, List, Literal, Union, Tuple
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain.prompts import PromptTemplate
@@ -16,10 +16,14 @@ from educhain.models.qna_models import (
     FillInBlankQuestionList, MCQListMath, Option
 )
 from educhain.utils.loaders import PdfFileLoader, UrlLoader
+from educhain.utils.output_formatter import OutputFormatter
+
+# Update the QuestionType definition
 
 import random
 
 QuestionType = Literal["Multiple Choice", "Short Answer", "True/False", "Fill in the Blank"]
+OutputFormatType = Literal["pdf", "csv"]
 
 class QnAEngine:
     def __init__(self, llm_config: Optional[LLMConfig] = None):
@@ -111,6 +115,21 @@ class QnAEngine:
             return source
         else:
             raise ValueError("Unsupported source type. Please use 'pdf', 'url', or 'text'.")
+        
+    def _handle_output_format(self, data: Any, output_format: Optional[OutputFormatType]) -> Union[Any, Tuple[Any, str]]:
+        """Handle output format conversion if specified"""
+        if output_format is None:
+            return data
+            
+        formatter = OutputFormatter()
+        if output_format == "pdf":
+            output_file = formatter.to_pdf(data)
+        elif output_format == "csv":
+            output_file = formatter.to_csv(data)
+        else:
+            raise ValueError(f"Unsupported output format: {output_format}")
+            
+        return data, output_file
 
     def generate_questions(
         self,
@@ -120,6 +139,7 @@ class QnAEngine:
         prompt_template: Optional[str] = None,
         custom_instructions: Optional[str] = None,
         response_model: Optional[Type[Any]] = None,
+        output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
         parser, model = self._get_parser_and_model(question_type, response_model)
@@ -157,6 +177,10 @@ class QnAEngine:
 
         try:
             structured_output = parser.parse(results)
+
+            if output_format:
+                self._handle_output_format(structured_output, output_format)
+                
             return structured_output
         except Exception as e:
             print(f"Error parsing output: {e}")
@@ -173,6 +197,7 @@ class QnAEngine:
         prompt_template: Optional[str] = None,
         custom_instructions: Optional[str] = None,
         response_model: Optional[Type[Any]] = None,
+        output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
         content = self._load_data(source, source_type)
@@ -197,6 +222,7 @@ class QnAEngine:
         response_model: Optional[Type[Any]] = None,
         learning_objective: str = "",
         difficulty_level: str = "",
+        output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
         # Initialize embeddings only when this method is called
@@ -244,7 +270,12 @@ class QnAEngine:
         results = qa_chain.invoke({"query": query, "n_results": 3})
 
         try:
-            return parser.parse(results["result"])
+            structured_output = parser.parse(results["result"])
+
+            if output_format:
+                self._handle_output_format(structured_output, output_format)
+            
+            return structured_output
         except Exception as e:
             print(f"Error parsing output: {e}")
             print("Raw output:", results)
@@ -256,6 +287,27 @@ class QnAEngine:
         response = llm.predict(prompt)
         return response.split(';')
 
+    def _process_math_result(self, math_result: Any) -> str:
+        """Helper method to process and extract numerical answer from LLMMathChain result"""
+        if isinstance(math_result, dict):
+            if 'answer' in math_result:
+                return math_result['answer'].split('Answer: ')[-1].strip()
+            elif 'result' in math_result:
+                return math_result['result'].strip()
+        
+        # Handle string response
+        result_str = str(math_result)
+        if 'Answer:' in result_str:
+            return result_str.split('Answer:')[-1].strip()
+        
+        # Remove any question repetition and extract the numerical result
+        lines = result_str.split('\n')
+        for line in reversed(lines):
+            if line.strip().replace('.', '').isdigit():
+                return line.strip()
+        
+        raise ValueError("Could not extract numerical result from LLMMathChain response")
+    
     def generate_mcq_math(
         self,
         topic: str,
@@ -266,28 +318,39 @@ class QnAEngine:
         response_model: Optional[Type[Any]] = None,
         **kwargs
     ) -> Any:
-
         if response_model is None:
             parser = PydanticOutputParser(pydantic_object=MCQListMath)
-            format_instructions = parser.get_format_instructions()
         else:
             parser = PydanticOutputParser(pydantic_object=response_model)
-            format_instructions = parser.get_format_instructions()
+
+        format_instructions = parser.get_format_instructions()
 
         if prompt_template is None:
             prompt_template = """
-            You are an Academic AI assistant tasked with generating multiple-choice questions on various topics specialised in Maths Subject.
-            Generate {num} multiple-choice question (MCQ) based on the given topic and level.
-            provide the question, four answer options, and the correct answer.
-
+            You are an Academic AI assistant specialized in generating multiple-choice math questions.
+            Generate {num} multiple-choice questions (MCQ) based on the given topic.
+            Each question MUST be a mathematical computation question.
+            
+            For each question:
+            1. Make sure it requires mathematical calculation
+            2. Set requires_math to true
+            3. Provide clear numerical values
+            4. Ensure the question has a single, unambiguous answer
+            
             Topic: {topic}
+            
+            Format each question to include:
+            - A clear mathematical problem
+            - Four distinct numerical options
+            - The correct answer
+            - A step-by-step explanation
             """
 
         if custom_instructions:
             prompt_template += f"\n\nAdditional Instructions:\n{custom_instructions}"
 
-        prompt_template += "\nThe response should be in JSON format. \n {format_instructions}"
-  
+        prompt_template += "\nThe response should be in JSON format.\n{format_instructions}"
+
         question_prompt = PromptTemplate(
             input_variables=["num", "topic"],
             template=prompt_template,
@@ -300,37 +363,64 @@ class QnAEngine:
         )
         results = results.content
 
-        structured_output = parser.parse(results)
+        try:
+            structured_output = parser.parse(results)
+        except Exception as e:
+            print(f"Error parsing output: {e}")
+            print("Raw output:")
+            print(results)
+            return MCQListMath()
 
-        llm_math = LLMMathChain.from_llm(llm=self.llm, verbose=False)
+        llm_math = LLMMathChain.from_llm(llm=self.llm, verbose=True)
 
         for question in structured_output.questions:
             if question.requires_math:
                 try:
-                    with get_openai_callback() as cb:
-                        result = llm_math.invoke({"question": question.question})
-                        result = result['result'].strip().split(":")[-1]
-                        result = float(result)
-                        result = f"{result:.2f}"
-
-                    question.explanation += f"\n\nMath solution: {result}"
-
-                    # Generate the correct and incorrect options
-                    correct_option = Option(text=str(result.lstrip()), correct='true')
-                    incorrect_options = [
-                        Option(text=opt.strip(), correct='false')
-                        for opt in self.generate_similar_options(question.question, result)
-                    ]
-
-                    # Ensure there are 3 incorrect options
-                    while len(incorrect_options) < 3:
-                        incorrect_options.append(Option(text="N/A", correct='false'))
-
-                    # Assign the options and shuffle them
-                    question.options = [correct_option] + incorrect_options[:3]
-                    random.shuffle(question.options)
-
+                    # Extract numerical expression from the question
+                    math_result = llm_math.invoke({"question": question.question})
+                    
+                    try:
+                        # Process the result using the helper method
+                        solution = self._process_math_result(math_result)
+                        
+                        # Convert to float and format
+                        numerical_solution = float(solution)
+                        formatted_solution = f"{numerical_solution:.2f}"
+                        
+                        question.explanation += f"\n\nMath solution: {formatted_solution}"
+                        
+                        # Generate options with the correct string format
+                        correct_option = Option(text=formatted_solution, correct='true')
+                        
+                        # Generate incorrect options
+                        variations = [0.9, 1.1, 1.2]
+                        incorrect_options = []
+                        
+                        for var in variations:
+                            wrong_val = numerical_solution * var
+                            incorrect_options.append(
+                                Option(
+                                    text=f"{wrong_val:.2f}",
+                                    correct='false'
+                                )
+                            )
+                        
+                        # Combine and shuffle options
+                        question.options = [correct_option] + incorrect_options
+                        random.shuffle(question.options)
+                        
+                    except (ValueError, TypeError) as e:
+                        print(f"Error processing numerical result: {e}")
+                        raise
+                        
                 except Exception as e:
                     print(f"LLMMathChain failed to answer: {str(e)}")
+                    question.explanation += "\n\nMath solution: Unable to compute."
+                    question.options = [
+                        Option(text="Unable to compute", correct='true'),
+                        Option(text="N/A", correct='false'),
+                        Option(text="N/A", correct='false'),
+                        Option(text="N/A", correct='false')
+                    ]
 
         return structured_output

@@ -12,8 +12,12 @@
 
 </div>
 
-# Educhain 🎓🔗
-[Website](https://educhain.in) | [Documentation](docs/index.md)
+# Educhain 🎓🔗  
+
+[![Educhain Website](https://img.shields.io/badge/Educhain-Website-blue?style=for-the-badge&logo=google-chrome)](https://educhain.in)  [![Documentation](https://img.shields.io/badge/Educhain-Documentation-brightgreen?style=for-the-badge&logo=readthedocs)](docs/index.md)  
+
+Welcome to Educhain! Transform your educational content effortlessly with cutting-edge AI tools. Explore our **[Website](https://educhain.in)** and dive into the **[Documentation](docs/index.md)** to get started.  
+
 
 Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content. From generating multiple-choice questions to crafting comprehensive lesson plans, Educhain makes it easy to apply AI in various educational scenarios.
 
@@ -49,7 +53,9 @@ pip install educhain
 
 ## Starter Guide
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1JNjQz20SRnyRyAN9YtgCzYq4gj8iBTRH?usp=chrome_ntp#scrollTo=UtLn9rOF-gPm)
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1JNjQz20SRnyRyAN9YtgCzYq4gj8iBTRH?usp=sharing)
+
 
 ### Quick Start
 
