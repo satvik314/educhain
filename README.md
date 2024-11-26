@@ -53,7 +53,9 @@ pip install educhain
 
 ## Starter Guide
 
+
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1JNjQz20SRnyRyAN9YtgCzYq4gj8iBTRH?usp=sharing)
+
 
 ### Quick Start
 
@@ -236,6 +238,3 @@ For bug reports or feature requests, please open an issue on our [GitHub reposit
 Made with ❤️ by Buildfastwithai
 
 [www.educhain.in](https://educhain.in)
-```
-
-You can now copy and paste this directly into your project!
