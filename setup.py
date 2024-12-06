@@ -2,13 +2,13 @@ from setuptools import setup, find_packages
 
 setup(
     name="educhain",
-    version="0.3.2",
+    version="0.3.3",
     packages=find_packages(),
     install_requires=[
         "langchain==0.3.4",
         "langchain-community==0.3.3",
-        "langchain-openai==0.2.3",
-        "openai==1.52.2",
+        "langchain-openai==0.2.11",
+        "openai==1.57.0",
         "python-dotenv==1.0.1", 
         "pandas==2.2.3",
         "reportlab==4.2.5",
