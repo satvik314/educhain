@@ -65,21 +65,6 @@ print(lesson_plan)
 
 This will generate a lesson plan suitable for beginners on the topic of Medieval History.
 
-#### Generate Questions from Data Sources
-
-```python
-from educhain import qna_engine
-
-questions = qna_engine.generate_mcqs_from_data(
-    source="https://example.com/article",
-    source_type="url",
-    num=5,
-    learning_objective="Understand key concepts",
-    difficulty_level="Intermediate"
-)
-print(questions)
-```
-
 ### Conclusion
 
 Educhain simplifies the process of generating educational content using Generative AI. With its intuitive functions, educators and developers can create engaging and personalized learning experiences tailored to various topics and levels. Explore the possibilities with Educhain and enhance your educational materials today!
