@@ -31,14 +31,16 @@ Educhain consistently outperforms traditional methods in content generation spee
 ## 🚀 Get Started in Minutes
 
 ```python
-from educhain import qna_engine
+from educhain import Educhain
 
-questions = qna_engine.generate_mcq(
+client = Educhain()
+questions = client.qna_engine.generate_questions(
     topic="Indian History",
-    level="Beginner",
+    custom_instructions="Include questions about Maharana Pratap",
     num=5
 )
-print(questions)
+
+questions.show() 
 ```
 
 [🏃‍♂️ See our Quick Start guide for more](getting-started/quick-start.md)
@@ -47,15 +49,15 @@ print(questions)
 
 Educators worldwide are using Educhain to transform their teaching. Check out our [success stories](resources/case-studies.md) to see how Educhain is making a difference in classrooms around the globe.
 
-## 🗺️ Roadmap
+## 🗺️ Roadmap  
 
-We're constantly improving Educhain. Here's what's on the horizon:
+We're always working to make Educhain better! Be sure to check out our upcoming features:  
+ 
+- [ ] **Flashcard Generation** to simplify learning  
+- [ ] **Study Guide Creation** for comprehensive topic understanding  
+- [ ] **High-Accuracy Math Questions** for students and educators  
+- [ ] **Try it out on our [website](https://educhain.in)** for on-the-go content creation 🚀   
 
-- [ ] Finetuned Model for question generation
-- [ ] Integration with popular Learning Management Systems
-- [ ] Mobile app for on-the-go content generation
-
-[📅 View our full roadmap](https://github.com/educhain/educhain/projects/1)
 
 ## 🤝 Contributing
 

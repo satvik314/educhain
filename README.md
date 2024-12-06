@@ -12,8 +12,12 @@
 
 </div>
 
-# Educhain 🎓🔗
-[Website](https://educhain.in) | [Documentation](docs/index.md)
+# Educhain 🎓🔗  
+
+[![Educhain Website](https://img.shields.io/badge/Educhain-Website-blue?style=for-the-badge&logo=google-chrome)](https://educhain.in)  [![Documentation](https://img.shields.io/badge/Educhain-Documentation-brightgreen?style=for-the-badge&logo=readthedocs)](docs/index.md)  
+
+Welcome to Educhain! Transform your educational content effortlessly with cutting-edge AI tools. Explore our **[Website](https://educhain.in)** and dive into the **[Documentation](docs/index.md)** to get started.  
+
 
 Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content. From generating multiple-choice questions to crafting comprehensive lesson plans, Educhain makes it easy to apply AI in various educational scenarios.
 
@@ -30,11 +34,14 @@ Educhain is a powerful Python package that leverages Generative AI to create eng
 - 📹 Generate questions from YouTube videos
 - 🥽 Generate questions from images
 
-## 📈 Performance
+## 📈 Workflow
 
-Educhain consistently outperforms traditional methods in content generation speed and quality:
+**Reimagining Education with AI** 🤖
+- 📜 QnA Engine: Generates an infinte variety of Questions
+- 📰 Content Engine: One-stop content generation - lesson plans, flashcards, notes etc
+- 📌 Personalization Engine: Adapts to your individual level of understanding for a tailored experience.
 
-<img src="images/educhain-comparison-svg.svg" alt="Performance Comparison Graph" />
+<img src="images/educhain_diagram.png" alt="Educhain workflow diagram" />
 
 ## 🛠 Installation
 
@@ -46,7 +53,9 @@ pip install educhain
 
 ## Starter Guide
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ImijJ-DF8XGTzyLJ0lq68yInrPN1-L8L?usp=sharing)
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1JNjQz20SRnyRyAN9YtgCzYq4gj8iBTRH?usp=sharing)
+
 
 ### Quick Start
 
@@ -229,6 +238,3 @@ For bug reports or feature requests, please open an issue on our [GitHub reposit
 Made with ❤️ by Buildfastwithai
 
 [www.educhain.in](https://educhain.in)
-```
-
-You can now copy and paste this directly into your project!

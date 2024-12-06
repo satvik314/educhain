@@ -13,7 +13,7 @@ Welcome to the Educhain Cookbook! This cookbook provides a guide on how to utili
 To get started with Educhain, you need to install the package via pip. Run the following command in your terminal:
 
 ```bash
-pip install git+https://github.com/satvik314/educhain.git
+pip install educhain
 ```
 
 ## 2. Generating Multiple Choice Questions (MCQs) <a name="generating-mcqs"></a>
@@ -23,12 +23,11 @@ pip install git+https://github.com/satvik314/educhain.git
 You can use Educhain to generate MCQs effortlessly..
 
 ```python
-from educhain import qna_engine
+from educhain import Educhain
 
 topic = "Quantum Entanglement"
-level = "Intermediate"
-
-mcq = qna_engine.generate_mcq(topic, level)
+client = Educhain()
+mcq = client.qna_engine.generate_questions(topic)
 print(mcq)
 ```
 
@@ -37,13 +36,13 @@ print(mcq)
 If you need multiple MCQs
 
 ```python
-from educhain import qna_engine
+from educhain import Educhain
 
+client = Educhain()
 topic = "Quantum Entanglement"
-level = "Intermediate"
 num = 5
 
-mcq = qna_engine.generate_mcq(topic, level, num=num)
+mcq = client.qna_engine.generate_questions(topic, num=num)
 print(mcq)
 ```
 
@@ -54,12 +53,12 @@ This will generate 5 MCQs on the topic of Quantum Entanglement.
 Educhain also allows you to effortlessly create lesson plans tailored to your specified topic and level.
 
 ```python
-from educhain import content_engine
+from educhain import Educhain
+client = Educhain()
 
 topic = "Medieval History"
-level = "Beginner"
 
-lesson_plan = content_engine.generate_lesson_plan(topic, level)
+lesson_plan = client.content_engine.generate_lesson_plan(topic)
 print(lesson_plan)
 ```
 

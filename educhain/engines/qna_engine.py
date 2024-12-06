@@ -1,6 +1,6 @@
 # educhain/engines/qna_engine.py
 
-from typing import Optional, Type, Any, List, Literal
+from typing import Optional, Type, Any, List, Literal, Union, Tuple
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain.prompts import PromptTemplate
@@ -9,6 +9,9 @@ from langchain.output_parsers import PydanticOutputParser
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
 from langchain_community.callbacks.manager import get_openai_callback
+from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api.formatters import TextFormatter
+import re
 
 from educhain.core.config import LLMConfig
 from educhain.models.qna_models import (
@@ -16,10 +19,14 @@ from educhain.models.qna_models import (
     FillInBlankQuestionList, MCQListMath, Option
 )
 from educhain.utils.loaders import PdfFileLoader, UrlLoader
+from educhain.utils.output_formatter import OutputFormatter
+
+# Update the QuestionType definition
 
 import random
 
 QuestionType = Literal["Multiple Choice", "Short Answer", "True/False", "Fill in the Blank"]
+OutputFormatType = Literal["pdf", "csv"]
 
 class QnAEngine:
     def __init__(self, llm_config: Optional[LLMConfig] = None):
@@ -111,6 +118,21 @@ class QnAEngine:
             return source
         else:
             raise ValueError("Unsupported source type. Please use 'pdf', 'url', or 'text'.")
+        
+    def _handle_output_format(self, data: Any, output_format: Optional[OutputFormatType]) -> Union[Any, Tuple[Any, str]]:
+        """Handle output format conversion if specified"""
+        if output_format is None:
+            return data
+            
+        formatter = OutputFormatter()
+        if output_format == "pdf":
+            output_file = formatter.to_pdf(data)
+        elif output_format == "csv":
+            output_file = formatter.to_csv(data)
+        else:
+            raise ValueError(f"Unsupported output format: {output_format}")
+            
+        return data, output_file
 
     def generate_questions(
         self,
@@ -120,6 +142,7 @@ class QnAEngine:
         prompt_template: Optional[str] = None,
         custom_instructions: Optional[str] = None,
         response_model: Optional[Type[Any]] = None,
+        output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
         parser, model = self._get_parser_and_model(question_type, response_model)
@@ -157,6 +180,10 @@ class QnAEngine:
 
         try:
             structured_output = parser.parse(results)
+
+            if output_format:
+                self._handle_output_format(structured_output, output_format)
+                
             return structured_output
         except Exception as e:
             print(f"Error parsing output: {e}")
@@ -173,6 +200,7 @@ class QnAEngine:
         prompt_template: Optional[str] = None,
         custom_instructions: Optional[str] = None,
         response_model: Optional[Type[Any]] = None,
+        output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
         content = self._load_data(source, source_type)
@@ -197,6 +225,7 @@ class QnAEngine:
         response_model: Optional[Type[Any]] = None,
         learning_objective: str = "",
         difficulty_level: str = "",
+        output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
         # Initialize embeddings only when this method is called
@@ -244,7 +273,12 @@ class QnAEngine:
         results = qa_chain.invoke({"query": query, "n_results": 3})
 
         try:
-            return parser.parse(results["result"])
+            structured_output = parser.parse(results["result"])
+
+            if output_format:
+                self._handle_output_format(structured_output, output_format)
+            
+            return structured_output
         except Exception as e:
             print(f"Error parsing output: {e}")
             print("Raw output:", results)
@@ -256,70 +290,259 @@ class QnAEngine:
         response = llm.predict(prompt)
         return response.split(';')
 
-    def generate_mcq_math(self, topic, num=1, llm=None, response_model=None,
-                         prompt_template=None, custom_instructions=None, **kwargs):
+    def _process_math_result(self, math_result: Any) -> str:
+        """Helper method to process and extract numerical answer from LLMMathChain result"""
+        if isinstance(math_result, dict):
+            if 'answer' in math_result:
+                return math_result['answer'].split('Answer: ')[-1].strip()
+            elif 'result' in math_result:
+                return math_result['result'].strip()
+        
+        # Handle string response
+        result_str = str(math_result)
+        if 'Answer:' in result_str:
+            return result_str.split('Answer:')[-1].strip()
+        
+        # Remove any question repetition and extract the numerical result
+        lines = result_str.split('\n')
+        for line in reversed(lines):
+            if line.strip().replace('.', '').isdigit():
+                return line.strip()
+        
+        raise ValueError("Could not extract numerical result from LLMMathChain response")
+    
+    def generate_mcq_math(
+        self,
+        topic: str,
+        num: int = 1,
+        question_type: QuestionType = "Multiple Choice",
+        prompt_template: Optional[str] = None,
+        custom_instructions: Optional[str] = None,
+        response_model: Optional[Type[Any]] = None,
+        **kwargs
+    ) -> Any:
         if response_model is None:
             parser = PydanticOutputParser(pydantic_object=MCQListMath)
-            format_instructions = parser.get_format_instructions()
         else:
             parser = PydanticOutputParser(pydantic_object=response_model)
-            format_instructions = parser.get_format_instructions()
+
+        format_instructions = parser.get_format_instructions()
 
         if prompt_template is None:
             prompt_template = """
-            You are an Academic AI assistant tasked with generating multiple-choice questions on various topics specialised in Maths Subject.
-            Generate {num} multiple-choice question (MCQ) based on the given topic and level.
-            provide the question, four answer options, and the correct answer.
-
+            You are an Academic AI assistant specialized in generating multiple-choice math questions.
+            Generate {num} multiple-choice questions (MCQ) based on the given topic.
+            Each question MUST be a mathematical computation question.
+            
+            For each question:
+            1. Make sure it requires mathematical calculation
+            2. Set requires_math to true
+            3. Provide clear numerical values
+            4. Ensure the question has a single, unambiguous answer
+            
             Topic: {topic}
+            
+            Format each question to include:
+            - A clear mathematical problem
+            - Four distinct numerical options
+            - The correct answer
+            - A step-by-step explanation
             """
 
         if custom_instructions:
             prompt_template += f"\n\nAdditional Instructions:\n{custom_instructions}"
 
-        prompt_template += "\nThe response should be in JSON format. \n {format_instructions}"
+        prompt_template += "\nThe response should be in JSON format.\n{format_instructions}"
 
-        MCQ_prompt = PromptTemplate(
+        question_prompt = PromptTemplate(
             input_variables=["num", "topic"],
             template=prompt_template,
             partial_variables={"format_instructions": format_instructions}
         )
 
-        if llm:
-            llm = llm
-        else:
-            llm = self.llm  # Use the initialized LLM from the class
-
-        MCQ_chain = MCQ_prompt | llm
-
-        results = MCQ_chain.invoke(
+        question_chain = question_prompt | self.llm
+        results = question_chain.invoke(
             {"num": num, "topic": topic, **kwargs},
         )
         results = results.content
-        structured_output = parser.parse(results)
 
-        llm_math = LLMMathChain.from_llm(llm=llm, verbose=False)
+        try:
+            structured_output = parser.parse(results)
+        except Exception as e:
+            print(f"Error parsing output: {e}")
+            print("Raw output:")
+            print(results)
+            return MCQListMath()
+
+        llm_math = LLMMathChain.from_llm(llm=self.llm, verbose=True)
 
         for question in structured_output.questions:
             if question.requires_math:
                 try:
-                    with get_openai_callback() as cb:
-                        result = llm_math.invoke({"question": question.question})
-                        result = result['result'].strip().split(":")[-1]
-                        result = float(result)
-                        result = f"{result: .2f}"
-
-                    question.explanation += f"\n\nMath solution: {result}"
-
-                    correct_option = Option(text=str(result.lstrip()), correct='true')
-                    incorrect_options = [Option(text=opt.strip(), correct='false')
-                                         for opt in self.generate_similar_options(question.question, result)]
-
-                    while len(incorrect_options) < 3:
-                        incorrect_options.append(Option(text="N/A", correct='false'))
-
-                    question.options = [correct_option] + incorrect_options[:3]
-                    random.shuffle(question.options)
+                    # Extract numerical expression from the question
+                    math_result = llm_math.invoke({"question": question.question})
+                    
+                    try:
+                        # Process the result using the helper method
+                        solution = self._process_math_result(math_result)
+                        
+                        # Convert to float and format
+                        numerical_solution = float(solution)
+                        formatted_solution = f"{numerical_solution:.2f}"
+                        
+                        question.explanation += f"\n\nMath solution: {formatted_solution}"
+                        
+                        # Generate options with the correct string format
+                        correct_option = Option(text=formatted_solution, correct='true')
+                        
+                        # Generate incorrect options
+                        variations = [0.9, 1.1, 1.2]
+                        incorrect_options = []
+                        
+                        for var in variations:
+                            wrong_val = numerical_solution * var
+                            incorrect_options.append(
+                                Option(
+                                    text=f"{wrong_val:.2f}",
+                                    correct='false'
+                                )
+                            )
+                        
+                        # Combine and shuffle options
+                        question.options = [correct_option] + incorrect_options
+                        random.shuffle(question.options)
+                        
+                    except (ValueError, TypeError) as e:
+                        print(f"Error processing numerical result: {e}")
+                        raise
+                        
                 except Exception as e:
                     print(f"LLMMathChain failed to answer: {str(e)}")
+                    question.explanation += "\n\nMath solution: Unable to compute."
+                    question.options = [
+                        Option(text="Unable to compute", correct='true'),
+                        Option(text="N/A", correct='false'),
+                        Option(text="N/A", correct='false'),
+                        Option(text="N/A", correct='false')
+                    ]
+
         return structured_output
+
+    def _extract_video_id(self, url: str) -> str:
+        """Extract YouTube video ID from URL."""
+        pattern = r'(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(?:embed\/)?(?:v\/)?(?:shorts\/)?(?:live\/)?(?:feature=player_embedded&v=)?(?:e\/)?(?:\/)?([^\s&amp;?#]+)'
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+        raise ValueError("Invalid YouTube URL")
+
+    def _get_youtube_transcript(self, video_id: str, target_language: str = 'en') -> tuple[str, str]:
+        """
+        Get and format YouTube video transcript with multi-language support.
+        Returns tuple of (transcript, language_code)
+        """
+        try:
+            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+            
+            # Get all available languages
+            available_languages = [transcript.language_code for transcript in transcript_list]
+            
+            if not available_languages:
+                raise ValueError("No transcripts available for this video")
+            
+            # First try to get transcript in target language
+            try:
+                transcript = transcript_list.find_transcript([target_language])
+                return TextFormatter().format_transcript(transcript.fetch()), target_language
+            except:
+                # If target language not found, get any available transcript
+                transcript = transcript_list.find_transcript(available_languages)
+                original_language = transcript.language_code
+                
+                # If translation to target language is available and requested
+                if transcript.is_translatable and target_language != original_language:
+                    translated = transcript.translate(target_language)
+                    return TextFormatter().format_transcript(translated.fetch()), target_language
+                
+                # Return original language transcript if no translation needed/available
+                return TextFormatter().format_transcript(transcript.fetch()), original_language
+                
+        except Exception as e:
+            error_message = str(e).lower()
+            if "transcriptsdisabled" in error_message:
+                raise ValueError(
+                    "This video does not have subtitles/closed captions enabled. "
+                    "Available languages: " + ", ".join(available_languages)
+                )
+            elif "notranscriptfound" in error_message:
+                raise ValueError(
+                    f"No transcript found for language '{target_language}'. "
+                    f"Available languages: {', '.join(available_languages)}"
+                )
+            else:
+                raise ValueError(f"Error fetching transcript: {str(e)}")
+
+    def generate_questions_from_youtube(
+        self,
+        url: str,
+        num: int = 1,
+        question_type: QuestionType = "Multiple Choice",
+        prompt_template: Optional[str] = None,
+        custom_instructions: Optional[str] = None,
+        response_model: Optional[Type[Any]] = None,
+        output_format: Optional[OutputFormatType] = None,
+        target_language: str = 'en',
+        preserve_original_language: bool = False,
+        **kwargs
+    ) -> Any:
+        """
+        Generate questions from a YouTube video transcript in specified language.
+        
+        Args:
+            url: YouTube video URL
+            num: Number of questions to generate
+            question_type: Type of questions to generate
+            prompt_template: Optional custom prompt template
+            custom_instructions: Optional additional instructions
+            response_model: Optional custom response model
+            output_format: Optional output format (pdf/csv)
+            target_language: Target language for questions (e.g., 'hi' for Hindi)
+            preserve_original_language: If True, keeps original language even if different from target
+            **kwargs: Additional arguments
+        """
+        try:
+            video_id = self._extract_video_id(url)
+            transcript, detected_language = self._get_youtube_transcript(video_id, target_language)
+            
+            if not transcript:
+                raise ValueError("No transcript content retrieved from the video")
+
+            # Language-specific instructions
+            language_context = f"\nContent language: {detected_language}"
+            if detected_language != target_language and not preserve_original_language:
+                language_context += f"\nGenerate questions in {target_language}"
+            
+            # Update custom instructions
+            video_context = f"\nThis content is from a YouTube video (ID: {video_id}). {language_context}"
+            if custom_instructions:
+                custom_instructions = video_context + "\n" + custom_instructions
+            else:
+                custom_instructions = video_context
+
+            return self.generate_questions_from_data(
+                source=transcript,
+                source_type="text",
+                num=num,
+                question_type=question_type,
+                prompt_template=prompt_template,
+                custom_instructions=custom_instructions,
+                response_model=response_model,
+                output_format=output_format,
+                target_language=target_language,
+                **kwargs
+            )
+            
+        except ValueError as ve:
+            raise ValueError(f"YouTube processing error: {str(ve)}")
+        except Exception as e:
+            raise Exception(f"Unexpected error processing YouTube video: {str(e)}")
