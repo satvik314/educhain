@@ -18,6 +18,7 @@ setup(
         "pydantic==2.9.2",
         "requests",
         "chromadb==0.5.15",
+        "protobuf<5"
     ],
     extras_require={
         "dev": [
