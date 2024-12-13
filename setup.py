@@ -13,7 +13,7 @@ setup(
         "pandas==2.2.3",
         "reportlab==4.2.5",
         "PyPDF2",
-        "beautifulsoup4==3.2.2",
+        "beautifulsoup4",
         "youtube_transcript_api==0.6.2",
         "pydantic==2.9.2",
         "requests==2.32.2",
