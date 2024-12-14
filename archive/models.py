@@ -162,6 +162,7 @@ class UrlLoader:
         return self.clean_string(content)
 
     def clean_string(self, text):
+        text = re.sub(r'[^\x00-\x7F]+', ' ', text)
         text = re.sub(r'\s+', ' ', text)
         return text.strip()
     
