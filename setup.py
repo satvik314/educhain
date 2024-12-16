@@ -18,7 +18,11 @@ setup(
         "pydantic==2.9.2",
         "requests",
         "chromadb==0.5.15",
-        "protobuf<5"
+        "protobuf<5",
+        "Pillow",  #image processing
+        "sounddevice",  # audio recording
+        "soundfile",  #audio file handling
+        "numpy",  # Required for audio processing
     ],
     extras_require={
         "dev": [
