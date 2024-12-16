@@ -16,10 +16,19 @@ import re
 from educhain.core.config import LLMConfig
 from educhain.models.qna_models import (
     MCQList, ShortAnswerQuestionList, TrueFalseQuestionList, 
-    FillInBlankQuestionList, MCQListMath, Option
+    FillInBlankQuestionList, MCQListMath, Option ,SolvedDoubt, SpeechInstructions
 )
 from educhain.utils.loaders import PdfFileLoader, UrlLoader
 from educhain.utils.output_formatter import OutputFormatter
+import base64
+import os
+from PIL import Image
+import io
+from openai import OpenAI
+import tempfile
+import sounddevice as sd
+import soundfile as sf
+import numpy as np
 
 # Update the QuestionType definition
 
@@ -546,3 +555,258 @@ class QnAEngine:
             raise ValueError(f"YouTube processing error: {str(ve)}")
         except Exception as e:
             raise Exception(f"Unexpected error processing YouTube video: {str(e)}")
+
+    def _load_image(self, source: str) -> str:
+        """Load and encode image from file or URL"""
+        try:
+            if source.startswith(('http://', 'https://')):
+                return source
+            elif source.startswith('data:image'):
+                return source
+            else:
+                image = Image.open(source)
+                if image.mode not in ('RGB', 'L'):
+                    image = image.convert('RGB')
+                
+                buffered = io.BytesIO()
+                image.save(buffered, format="JPEG")
+                return f"data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode()}"
+
+        except Exception as e:
+            raise ValueError(f"Error loading image: {str(e)}")
+
+    def solve_doubt(
+        self,
+        image_source: str,
+        prompt: str = "Explain how to solve this problem",
+        custom_instructions: Optional[str] = None,
+        detail_level: Literal["low", "medium", "high"] = "medium",
+        focus_areas: Optional[List[str]] = None,
+        **kwargs
+    ) -> SolvedDoubt:
+        """
+        Analyze an image and provide detailed explanation with solution steps.
+        
+        Args:
+            image_source: Path or URL to the image
+            prompt: Custom prompt for analysis
+            custom_instructions: Additional instructions for analysis
+            detail_level: Level of detail in explanation
+            focus_areas: Specific aspects to focus on
+            **kwargs: Additional parameters for the model
+        
+        Returns:
+            SolvedDoubt: Object containing explanation, steps, and additional notes
+        """
+        if not image_source:
+            raise ValueError("Image source (path or URL) is required")
+
+        try:
+            image_content = self._load_image(image_source)
+            
+            # Create parser for structured output
+            parser = PydanticOutputParser(pydantic_object=SolvedDoubt)
+            format_instructions = parser.get_format_instructions()
+
+            # Construct the prompt with all parameters
+            base_prompt = f"Analyze the image and {prompt}\n"
+            if focus_areas:
+                base_prompt += f"\nFocus on these aspects: {', '.join(focus_areas)}"
+            base_prompt += f"\nProvide a {detail_level}-detail explanation"
+            
+            system_message = SystemMessage(
+                content="You are a helpful assistant that responds in Markdown. Help with math homework."
+            )
+
+            human_message_content = f"""
+            {base_prompt}
+            
+            Provide:
+            1. A detailed explanation
+            2. Step-by-step solution (if applicable)
+            3. Any additional notes or tips
+            
+            {custom_instructions or ''}
+            
+            {format_instructions}
+            """
+
+            human_message = HumanMessage(content=[
+                {"type": "text", "text": human_message_content},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": image_content,
+                        "detail": "high" if detail_level == "high" else "low"
+                    }
+                }
+            ])
+
+            response = self.llm.invoke(
+                [system_message, human_message],
+                **kwargs
+            )
+
+            try:
+                return parser.parse(response.content)
+            except Exception as e:
+                # Fallback if parsing fails
+                return SolvedDoubt(
+                    explanation=response.content,
+                    steps=[],
+                    additional_notes="Note: Response format was not structured as requested."
+                )
+
+        except Exception as e:
+            error_msg = f"Error in solve_doubt: {type(e).__name__}: {str(e)}"
+            print(error_msg)
+            return SolvedDoubt(
+                explanation=error_msg,
+                steps=[],
+                additional_notes="An error occurred during processing."
+            )
+
+    def _initialize_whisper_client(self):
+        """Initialize OpenAI client for Whisper"""
+        return OpenAI()
+
+    def record_audio(self, duration=10, sample_rate=44100):
+        """Record audio from microphone
+        
+        Args:
+            duration (int): Recording duration in seconds
+            sample_rate (int): Audio sample rate
+            
+        Returns:
+            str: Path to temporary audio file
+        """
+        print(f"Recording for {duration} seconds...")
+        recording = sd.rec(
+            int(duration * sample_rate),
+            samplerate=sample_rate,
+            channels=1,
+            dtype=np.float32
+        )
+        sd.wait()
+        print("Recording complete!")
+
+        # Save to temporary file
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
+        sf.write(temp_file.name, recording, sample_rate)
+        return temp_file.name
+
+    def transcribe_audio(self, audio_path: str) -> str:
+        """Transcribe audio file using Whisper
+        
+        Args:
+            audio_path (str): Path to audio file
+            
+        Returns:
+            str: Transcribed text
+        """
+        client = self._initialize_whisper_client()
+        
+        with open(audio_path, 'rb') as audio_file:
+            transcript = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file,
+                language="en"  # Explicitly set English as the language
+            )
+        
+        return transcript.text
+
+    def _extract_speech_instructions(self, transcribed_text: str) -> SpeechInstructions:
+        """Extract structured information from transcribed text using LLM"""
+        
+        instruction_prompt = """
+        Extract key information from the following speech input. Format the response as JSON.
+        
+        Rules:
+        1. Extract the main topic/subject matter
+        2. Identify the number of questions requested (default to 5 if not specified)
+        3. Capture any special instructions or requirements
+        4. Detect the language of instruction (default to english)
+        
+        Speech input: {text}
+        
+        Format the response according to this Pydantic model:
+        {format_instructions}
+        """
+        
+        parser = PydanticOutputParser(pydantic_object=SpeechInstructions)
+        
+        prompt = PromptTemplate(
+            template=instruction_prompt,
+            input_variables=["text"],
+            partial_variables={"format_instructions": parser.get_format_instructions()}
+        )
+        
+        chain = prompt | self.llm | parser
+        
+        try:
+            return chain.invoke({"text": transcribed_text})
+        except Exception as e:
+            print(f"Error parsing speech instructions: {e}")
+            # Provide default values if parsing fails
+            return SpeechInstructions(
+                topic="Could not detect topic",
+                num_questions=5,
+                custom_instructions=None
+            )
+
+    def generate_questions_from_speech(
+        self,
+        duration: Optional[int] = None,
+        audio_path: Optional[str] = None,
+        question_type: QuestionType = "Multiple Choice",
+        **kwargs
+    ) -> Any:
+        """Generate questions from speech input (live recording or audio file)"""
+        if not duration and not audio_path:
+            raise ValueError("Either duration for recording or audio_path must be provided")
+
+        try:
+            # Handle live recording or existing audio file
+            if duration:
+                print(f"Recording for {duration} seconds...")
+                temp_audio_path = self.record_audio(duration=duration)
+                transcribed_text = self.transcribe_audio(temp_audio_path)
+                os.unlink(temp_audio_path)
+            else:
+                transcribed_text = self.transcribe_audio(audio_path)
+
+            if not transcribed_text or len(transcribed_text.strip()) < 10:
+                return "No clear speech detected. Please try again."
+
+            print("Transcribed text:", transcribed_text)
+
+            # Extract structured information from speech
+            instructions = self._extract_speech_instructions(transcribed_text)
+            
+            if instructions.topic == "Could not detect topic":
+                return "Could not detect a clear topic. Please try again and specify the topic clearly."
+
+            # Generate questions using extracted information
+            questions = self.generate_questions(
+                topic=instructions.topic,
+                num=instructions.num_questions,
+                question_type=question_type,
+                custom_instructions=instructions.custom_instructions,
+                **kwargs
+            )
+
+            if not questions or (hasattr(questions, 'questions') and len(questions.questions) == 0):
+                return "Could not generate questions from the audio. Please try again with clearer speech."
+
+            # Return comprehensive response
+            response_info = {
+                "questions": questions,
+                "transcribed_text": transcribed_text,
+                "extracted_info": instructions.dict(),
+            }
+
+            return response_info
+
+        except Exception as e:
+            print(f"Error processing audio: {str(e)}")
+            return f"Error: {str(e)}"
