@@ -24,11 +24,11 @@ import base64
 import os
 from PIL import Image
 import io
-from openai import OpenAI
-import tempfile
-import sounddevice as sd
-import soundfile as sf
-import numpy as np
+# from openai import OpenAI
+# import tempfile
+# import sounddevice as sd
+# import soundfile as sf
+# import numpy as np
 
 # Update the QuestionType definition
 
@@ -666,147 +666,147 @@ class QnAEngine:
                 additional_notes="An error occurred during processing."
             )
 
-    def _initialize_whisper_client(self):
-        """Initialize OpenAI client for Whisper"""
-        return OpenAI()
+    # def _initialize_whisper_client(self):
+    #     """Initialize OpenAI client for Whisper"""
+    #     return OpenAI()
 
-    def record_audio(self, duration=10, sample_rate=44100):
-        """Record audio from microphone
+    # def record_audio(self, duration=10, sample_rate=44100):
+    #     """Record audio from microphone
         
-        Args:
-            duration (int): Recording duration in seconds
-            sample_rate (int): Audio sample rate
+    #     Args:
+    #         duration (int): Recording duration in seconds
+    #         sample_rate (int): Audio sample rate
             
-        Returns:
-            str: Path to temporary audio file
-        """
-        print(f"Recording for {duration} seconds...")
-        recording = sd.rec(
-            int(duration * sample_rate),
-            samplerate=sample_rate,
-            channels=1,
-            dtype=np.float32
-        )
-        sd.wait()
-        print("Recording complete!")
+    #     Returns:
+    #         str: Path to temporary audio file
+    #     """
+    #     print(f"Recording for {duration} seconds...")
+    #     recording = sd.rec(
+    #         int(duration * sample_rate),
+    #         samplerate=sample_rate,
+    #         channels=1,
+    #         dtype=np.float32
+    #     )
+    #     sd.wait()
+    #     print("Recording complete!")
 
-        # Save to temporary file
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
-        sf.write(temp_file.name, recording, sample_rate)
-        return temp_file.name
+    #     # Save to temporary file
+    #     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
+    #     sf.write(temp_file.name, recording, sample_rate)
+    #     return temp_file.name
 
-    def transcribe_audio(self, audio_path: str) -> str:
-        """Transcribe audio file using Whisper
+    # def transcribe_audio(self, audio_path: str) -> str:
+    #     """Transcribe audio file using Whisper
         
-        Args:
-            audio_path (str): Path to audio file
+    #     Args:
+    #         audio_path (str): Path to audio file
             
-        Returns:
-            str: Transcribed text
-        """
-        client = self._initialize_whisper_client()
+    #     Returns:
+    #         str: Transcribed text
+    #     """
+    #     client = self._initialize_whisper_client()
         
-        with open(audio_path, 'rb') as audio_file:
-            transcript = client.audio.transcriptions.create(
-                model="whisper-1",
-                file=audio_file,
-                language="en"  # Explicitly set English as the language
-            )
+    #     with open(audio_path, 'rb') as audio_file:
+    #         transcript = client.audio.transcriptions.create(
+    #             model="whisper-1",
+    #             file=audio_file,
+    #             language="en"  # Explicitly set English as the language
+    #         )
         
-        return transcript.text
+    #     return transcript.text
 
-    def _extract_speech_instructions(self, transcribed_text: str) -> SpeechInstructions:
-        """Extract structured information from transcribed text using LLM"""
+    # def _extract_speech_instructions(self, transcribed_text: str) -> SpeechInstructions:
+    #     """Extract structured information from transcribed text using LLM"""
         
-        instruction_prompt = """
-        Extract key information from the following speech input. Format the response as JSON.
+    #     instruction_prompt = """
+    #     Extract key information from the following speech input. Format the response as JSON.
         
-        Rules:
-        1. Extract the main topic/subject matter
-        2. Identify the number of questions requested (default to 5 if not specified)
-        3. Capture any special instructions or requirements
-        4. Detect the language of instruction (default to english)
+    #     Rules:
+    #     1. Extract the main topic/subject matter
+    #     2. Identify the number of questions requested (default to 5 if not specified)
+    #     3. Capture any special instructions or requirements
+    #     4. Detect the language of instruction (default to english)
         
-        Speech input: {text}
+    #     Speech input: {text}
         
-        Format the response according to this Pydantic model:
-        {format_instructions}
-        """
+    #     Format the response according to this Pydantic model:
+    #     {format_instructions}
+    #     """
         
-        parser = PydanticOutputParser(pydantic_object=SpeechInstructions)
+    #     parser = PydanticOutputParser(pydantic_object=SpeechInstructions)
         
-        prompt = PromptTemplate(
-            template=instruction_prompt,
-            input_variables=["text"],
-            partial_variables={"format_instructions": parser.get_format_instructions()}
-        )
+    #     prompt = PromptTemplate(
+    #         template=instruction_prompt,
+    #         input_variables=["text"],
+    #         partial_variables={"format_instructions": parser.get_format_instructions()}
+    #     )
         
-        chain = prompt | self.llm | parser
+    #     chain = prompt | self.llm | parser
         
-        try:
-            return chain.invoke({"text": transcribed_text})
-        except Exception as e:
-            print(f"Error parsing speech instructions: {e}")
-            # Provide default values if parsing fails
-            return SpeechInstructions(
-                topic="Could not detect topic",
-                num_questions=5,
-                custom_instructions=None
-            )
+    #     try:
+    #         return chain.invoke({"text": transcribed_text})
+    #     except Exception as e:
+    #         print(f"Error parsing speech instructions: {e}")
+    #         # Provide default values if parsing fails
+    #         return SpeechInstructions(
+    #             topic="Could not detect topic",
+    #             num_questions=5,
+    #             custom_instructions=None
+    #         )
 
-    def generate_questions_from_speech(
-        self,
-        duration: Optional[int] = None,
-        audio_path: Optional[str] = None,
-        question_type: QuestionType = "Multiple Choice",
-        **kwargs
-    ) -> Any:
-        """Generate questions from speech input (live recording or audio file)"""
-        if not duration and not audio_path:
-            raise ValueError("Either duration for recording or audio_path must be provided")
+    # def generate_questions_from_speech(
+    #     self,
+    #     duration: Optional[int] = None,
+    #     audio_path: Optional[str] = None,
+    #     question_type: QuestionType = "Multiple Choice",
+    #     **kwargs
+    # ) -> Any:
+    #     """Generate questions from speech input (live recording or audio file)"""
+    #     if not duration and not audio_path:
+    #         raise ValueError("Either duration for recording or audio_path must be provided")
 
-        try:
-            # Handle live recording or existing audio file
-            if duration:
-                print(f"Recording for {duration} seconds...")
-                temp_audio_path = self.record_audio(duration=duration)
-                transcribed_text = self.transcribe_audio(temp_audio_path)
-                os.unlink(temp_audio_path)
-            else:
-                transcribed_text = self.transcribe_audio(audio_path)
+    #     try:
+    #         # Handle live recording or existing audio file
+    #         if duration:
+    #             print(f"Recording for {duration} seconds...")
+    #             temp_audio_path = self.record_audio(duration=duration)
+    #             transcribed_text = self.transcribe_audio(temp_audio_path)
+    #             os.unlink(temp_audio_path)
+    #         else:
+    #             transcribed_text = self.transcribe_audio(audio_path)
 
-            if not transcribed_text or len(transcribed_text.strip()) < 10:
-                return "No clear speech detected. Please try again."
+    #         if not transcribed_text or len(transcribed_text.strip()) < 10:
+    #             return "No clear speech detected. Please try again."
 
-            print("Transcribed text:", transcribed_text)
+    #         print("Transcribed text:", transcribed_text)
 
-            # Extract structured information from speech
-            instructions = self._extract_speech_instructions(transcribed_text)
+    #         # Extract structured information from speech
+    #         instructions = self._extract_speech_instructions(transcribed_text)
             
-            if instructions.topic == "Could not detect topic":
-                return "Could not detect a clear topic. Please try again and specify the topic clearly."
+    #         if instructions.topic == "Could not detect topic":
+    #             return "Could not detect a clear topic. Please try again and specify the topic clearly."
 
-            # Generate questions using extracted information
-            questions = self.generate_questions(
-                topic=instructions.topic,
-                num=instructions.num_questions,
-                question_type=question_type,
-                custom_instructions=instructions.custom_instructions,
-                **kwargs
-            )
+    #         # Generate questions using extracted information
+    #         questions = self.generate_questions(
+    #             topic=instructions.topic,
+    #             num=instructions.num_questions,
+    #             question_type=question_type,
+    #             custom_instructions=instructions.custom_instructions,
+    #             **kwargs
+    #         )
 
-            if not questions or (hasattr(questions, 'questions') and len(questions.questions) == 0):
-                return "Could not generate questions from the audio. Please try again with clearer speech."
+    #         if not questions or (hasattr(questions, 'questions') and len(questions.questions) == 0):
+    #             return "Could not generate questions from the audio. Please try again with clearer speech."
 
-            # Return comprehensive response
-            response_info = {
-                "questions": questions,
-                "transcribed_text": transcribed_text,
-                "extracted_info": instructions.dict(),
-            }
+    #         # Return comprehensive response
+    #         response_info = {
+    #             "questions": questions,
+    #             "transcribed_text": transcribed_text,
+    #             "extracted_info": instructions.dict(),
+    #         }
 
-            return response_info
+    #         return response_info
 
-        except Exception as e:
-            print(f"Error processing audio: {str(e)}")
-            return f"Error: {str(e)}"
+    #     except Exception as e:
+    #         print(f"Error processing audio: {str(e)}")
+    #         return f"Error: {str(e)}"
