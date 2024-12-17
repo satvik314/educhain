@@ -19,10 +19,8 @@ setup(
         "requests",
         "chromadb==0.5.15",
         "protobuf<5",
-        "Pillow",  #image processing
-        "sounddevice",  # audio recording
-        "soundfile",  #audio file handling
-        "numpy",  # Required for audio processing
+        "Pillow"  #image processing
+       
     ],
     extras_require={
         "dev": [
