@@ -25,14 +25,209 @@ Educhain is a powerful Python package that leverages Generative AI to create eng
 
 ## 🚀 Features
 
-- 📝 Generate Multiple Choice Questions (MCQs)
-- 📊 Create Lesson Plans
-- 🔄 Support for various LLM models
-- 📁 Export questions to JSON, PDF, and CSV formats
-- 🎨 Customizable prompt templates
-- 📚 Generate questions from text/PDF/URL files
-- 📹 Generate questions from YouTube videos
-- 🥽 Generate questions from images
+<details>
+<summary>📝 Generate Multiple Choice Questions (MCQs)</summary>
+
+````python
+from educhain import Educhain
+
+client = Educhain()
+
+# Basic MCQ generation
+mcq = client.qna_engine.generate_questions(
+    topic="Solar System",
+    num=3,
+    question_type="Multiple Choice"
+)
+
+# Advanced MCQ with custom parameters
+advanced_mcq = client.qna_engine.generate_questions(
+    topic="Solar System",
+    num=3,
+    question_type="Multiple Choice",
+    difficulty_level="Hard",
+    custom_instructions="Include recent discoveries"
+)
+
+print(mcq.json())  # View in JSON format
+````
+</details>
+
+<details>
+<summary>📊 Create Lesson Plans</summary>
+
+````python
+from educhain import Educhain
+
+client = Educhain()
+
+# Basic lesson plan
+lesson = client.content_engine.generate_lesson_plan(
+    topic="Photosynthesis"
+)
+
+# Advanced lesson plan with specific parameters
+detailed_lesson = client.content_engine.generate_lesson_plan(
+    topic="Photosynthesis",
+    duration="60 minutes",
+    grade_level="High School",
+    learning_objectives=["Understanding the process", "Identifying key components"]
+)
+
+print(lesson.json())
+````
+</details>
+
+<details>
+<summary>🔄 Support for Various LLM Models</summary>
+
+````python
+from educhain import Educhain, LLMConfig
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
+
+# Using Gemini
+gemini_model = ChatGoogleGenerativeAI(
+    model="gemini-1.5-pro",
+    google_api_key="YOUR_GOOGLE_API_KEY"
+)
+gemini_config = LLMConfig(custom_model=gemini_model)
+gemini_client = Educhain(gemini_config)
+
+# Using GPT-4
+gpt4_model = ChatOpenAI(
+    model_name="gpt-4",
+    openai_api_key="YOUR_OPENAI_API_KEY"
+)
+gpt4_config = LLMConfig(custom_model=gpt4_model)
+gpt4_client = Educhain(gpt4_config)
+````
+</details>
+
+<details>
+<summary>📁 Export Questions to Different Formats</summary>
+
+````python
+from educhain import Educhain
+
+client = Educhain()
+questions = client.qna_engine.generate_questions(topic="Climate Change", num=5)
+
+# Export to JSON
+questions.json("climate_questions.json")
+
+# Export to PDF
+questions.to_pdf("climate_questions.pdf")
+
+# Export to CSV
+questions.to_csv("climate_questions.csv")
+````
+</details>
+
+<details>
+<summary>🎨 Customizable Prompt Templates</summary>
+
+````python
+from educhain import Educhain
+
+client = Educhain()
+
+# Custom template for questions
+custom_template = """
+Generate {num} {question_type} questions about {topic}.
+Ensure the questions are:
+- At {difficulty_level} level
+- Focus on {learning_objective}
+- Include practical examples
+- {custom_instructions}
+"""
+
+questions = client.qna_engine.generate_questions(
+    topic="Machine Learning",
+    num=3,
+    question_type="Multiple Choice",
+    difficulty_level="Intermediate",
+    learning_objective="Understanding Neural Networks",
+    custom_instructions="Include recent developments",
+    prompt_template=custom_template
+)
+````
+</details>
+
+<details>
+<summary>📚 Generate Questions from Files</summary>
+
+````python
+from educhain import Educhain
+
+client = Educhain()
+
+# From URL
+url_questions = client.qna_engine.generate_questions_from_data(
+    source="https://example.com/article",
+    source_type="url",
+    num=3
+)
+
+# From PDF
+pdf_questions = client.qna_engine.generate_questions_from_data(
+    source="path/to/document.pdf",
+    source_type="pdf",
+    num=3
+)
+
+# From Text File
+text_questions = client.qna_engine.generate_questions_from_data(
+    source="path/to/content.txt",
+    source_type="text",
+    num=3
+)
+````
+</details>
+
+<details>
+<summary>📹 Generate Questions from YouTube Videos</summary>
+
+````python
+from educhain import Educhain
+
+client = Educhain()
+
+# Basic usage - Generate 3 MCQs from a YouTube video
+questions = client.qna_engine.generate_questions_from_youtube(
+    url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    num=3
+)
+print(questions.json())
+
+# Generate questions preserving original language
+preserved_questions = client.qna_engine.generate_questions_from_youtube(
+    url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    num=2,
+    target_language='hi',
+    preserve_original_language=True  # Keeps original language
+)
+````
+</details>
+
+<details>
+<summary>🥽 Generate Questions from Images</summary>
+
+````python
+from educhain import Educhain
+
+client = Educhain() #Default is 4o-mini (make sure to use a multimodal LLM!)
+
+question = client.qna_engine.solve_doubt(
+    image_source="path-to-your-image",
+    prompt="Explain the diagram in detail",
+    detail_level = "High" 
+    )
+
+print(question)
+````
+</details>
+
 
 ## 📈 Workflow
 
