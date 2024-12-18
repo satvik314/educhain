@@ -12,14 +12,19 @@ from langchain_community.callbacks.manager import get_openai_callback
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import TextFormatter
 import re
-
+from langchain_core.messages import SystemMessage
+from langchain.schema import HumanMessage
 from educhain.core.config import LLMConfig
 from educhain.models.qna_models import (
     MCQList, ShortAnswerQuestionList, TrueFalseQuestionList, 
-    FillInBlankQuestionList, MCQListMath, Option
+    FillInBlankQuestionList, MCQListMath, Option ,SolvedDoubt, SpeechInstructions
 )
 from educhain.utils.loaders import PdfFileLoader, UrlLoader
 from educhain.utils.output_formatter import OutputFormatter
+import base64
+import os
+from PIL import Image
+import io
 
 # Update the QuestionType definition
 
@@ -546,3 +551,115 @@ class QnAEngine:
             raise ValueError(f"YouTube processing error: {str(ve)}")
         except Exception as e:
             raise Exception(f"Unexpected error processing YouTube video: {str(e)}")
+
+    def _load_image(self, source: str) -> str:
+        """Load and encode image from file or URL"""
+        try:
+            if source.startswith(('http://', 'https://')):
+                return source
+            elif source.startswith('data:image'):
+                return source
+            else:
+                image = Image.open(source)
+                if image.mode not in ('RGB', 'L'):
+                    image = image.convert('RGB')
+                
+                buffered = io.BytesIO()
+                image.save(buffered, format="JPEG")
+                return f"data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode()}"
+
+        except Exception as e:
+            raise ValueError(f"Error loading image: {str(e)}")
+
+    def solve_doubt(
+        self,
+        image_source: str,
+        prompt: str = "Explain how to solve this problem",
+        custom_instructions: Optional[str] = None,
+        detail_level: Literal["low", "medium", "high"] = "medium",
+        focus_areas: Optional[List[str]] = None,
+        **kwargs
+    ) -> SolvedDoubt:
+        """
+        Analyze an image and provide detailed explanation with solution steps.
+        
+        Args:
+            image_source: Path or URL to the image
+            prompt: Custom prompt for analysis
+            custom_instructions: Additional instructions for analysis
+            detail_level: Level of detail in explanation
+            focus_areas: Specific aspects to focus on
+            **kwargs: Additional parameters for the model
+        
+        Returns:
+            SolvedDoubt: Object containing explanation, steps, and additional notes
+        """
+        if not image_source:
+            raise ValueError("Image source (path or URL) is required")
+
+        try:
+            image_content = self._load_image(image_source)
+            
+            # Create parser for structured output
+            parser = PydanticOutputParser(pydantic_object=SolvedDoubt)
+            format_instructions = parser.get_format_instructions()
+
+            # Construct the prompt with all parameters
+            base_prompt = f"Analyze the image and {prompt}\n"
+            if focus_areas:
+                base_prompt += f"\nFocus on these aspects: {', '.join(focus_areas)}"
+            base_prompt += f"\nProvide a {detail_level}-detail explanation"
+            
+            system_message = SystemMessage(
+                content="You are a helpful assistant that responds in Markdown. Help with math homework."
+            )
+
+            human_message_content = f"""
+            {base_prompt}
+            
+            Provide:
+            1. A detailed explanation
+            2. Step-by-step solution (if applicable)
+            3. Any additional notes or tips
+            
+            {custom_instructions or ''}
+            
+            {format_instructions}
+            """
+
+            human_message = HumanMessage(content=[
+                {"type": "text", "text": human_message_content},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": image_content,
+                        "detail": "high" if detail_level == "high" else "low"
+                    }
+                }
+            ])
+
+            response = self.llm.invoke(
+                [system_message, human_message],
+                **kwargs
+            )
+
+            try:
+                return parser.parse(response.content)
+            except Exception as e:
+                # Fallback if parsing fails
+                return SolvedDoubt(
+                    explanation=response.content,
+                    steps=[],
+                    additional_notes="Note: Response format was not structured as requested."
+                )
+
+        except Exception as e:
+            error_msg = f"Error in solve_doubt: {type(e).__name__}: {str(e)}"
+            print(error_msg)
+            return SolvedDoubt(
+                explanation=error_msg,
+                steps=[],
+                additional_notes="An error occurred during processing."
+            )
+
+   

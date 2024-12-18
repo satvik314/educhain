@@ -76,3 +76,37 @@ class MCQListMath(BaseModel):
         for i, question in enumerate(self.questions, 1):
             print(f"Question {i}:")
             question.show()
+
+class SolvedDoubt(BaseModel):
+    """Model for representing a solved doubt with explanation and steps"""
+    explanation: str = Field(
+        description="Detailed explanation of the problem and its solution"
+    )
+    steps: List[str] = Field(
+        default_factory=list,
+        description="Step-by-step solution process"
+    )
+    additional_notes: Optional[str] = Field(
+        default=None,
+        description="Additional tips, warnings, or relevant information"
+    )
+
+    def show(self):
+        """Display the solved doubt in a formatted way"""
+        print("\n=== Problem Explanation ===")
+        print(self.explanation)
+        
+        if self.steps:
+            print("\n=== Solution Steps ===")
+            for i, step in enumerate(self.steps, 1):
+                print(f"{i}. {step}")
+        
+        if self.additional_notes:
+            print("\n=== Additional Notes ===")
+            print(self.additional_notes)
+
+class SpeechInstructions(BaseModel):
+    topic: str
+    num_questions: Optional[int] = 5
+    custom_instructions: Optional[str] = None
+    detected_language: Optional[str] = "english"
