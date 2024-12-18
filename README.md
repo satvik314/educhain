@@ -23,7 +23,11 @@ Educhain is a powerful Python package that leverages Generative AI to create eng
 
 <img src="images/logo.svg" alt="Educhain Logo" align="center" height="120" width="120" />
 
-## 🚀 Features
+
+## 🚀 Features  
+<img src="images/new.png" width="30" height="30" alt="New" background-color: transparent>
+
+
 
 <details>
 <summary>📝 Generate Multiple Choice Questions (MCQs)</summary>
@@ -54,7 +58,7 @@ print(mcq.json())  # View in JSON format
 </details>
 
 <details>
-<summary>📊 Create Lesson Plans</summary>
+<summary>📊 Create Lesson Plans </summary>
 
 ````python
 from educhain import Educhain
@@ -186,7 +190,7 @@ text_questions = client.qna_engine.generate_questions_from_data(
 </details>
 
 <details>
-<summary>📹 Generate Questions from YouTube Videos</summary>
+<summary>📹 Generate Questions from YouTube Videos    <img src="images/new.png" width="30" height="30" alt="New" background-color: transparent> </summary>
 
 ````python
 from educhain import Educhain
@@ -211,7 +215,7 @@ preserved_questions = client.qna_engine.generate_questions_from_youtube(
 </details>
 
 <details>
-<summary>🥽 Generate Questions from Images</summary>
+<summary>🥽 Generate Questions from Images    <img src="images/new.png" width="30" height="30" alt="New" background-color: transparent>  </summary>
 
 ````python
 from educhain import Educhain
