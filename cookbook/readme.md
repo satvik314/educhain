@@ -3,7 +3,7 @@
 
 Welcome to the **Educhain Cookbook Repository**! Your one-stop resource for creating quizzes, study guides, and more using AI. Below is a quick-access table to navigate through the categories. 👇
 
----
+-----
 
 ## 🗂️ Quick Navigation
 
