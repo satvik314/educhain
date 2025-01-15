@@ -25,7 +25,23 @@ import base64
 import os
 from PIL import Image
 import io
-
+import google.generativeai as genai
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import numpy as np
+import io
+from PIL import Image
+import requests
+from IPython.display import display, Image as DisplayImage, HTML
+import json
+import pandas as pd
+import random
+from langchain.prompts import PromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
+from educhain.models.qna_models import  GMATQuestion, GMATQuestionList,GraphInstructions
+from typing import Optional, Type, Any, List, Literal, Union, Tuple
+from pydantic import BaseModel, Field, field_validator
+from langchain.output_parsers import PydanticOutputParser
 # Update the QuestionType definition
 
 import random
@@ -662,4 +678,159 @@ class QnAEngine:
                 additional_notes="An error occurred during processing."
             )
 
-   
+    def _generate_graph(self,instruction):
+        """Generates a graph or table using matplotlib based on instruction."""
+        try:
+            plt.figure(figsize=(8, 6))
+
+            if instruction["type"] == "bar":
+                plt.bar(instruction["x_labels"], instruction["y_values"])
+                plt.xlabel("Subjects")
+                plt.ylabel(instruction["y_label"])
+                plt.title(instruction["title"])
+                plt.grid(axis='y', linestyle='--')
+                plt.tight_layout()
+                buf = io.BytesIO()
+                plt.savefig(buf, format='png')
+                buf.seek(0)
+                plt.close()
+                return buf
+
+            elif instruction["type"] == "line":
+                plt.plot(instruction["x_labels"], instruction["y_values"], marker='o')
+                plt.xlabel("X Values")
+                plt.ylabel(instruction["y_label"])
+                plt.title(instruction["title"])
+                plt.grid(axis='y', linestyle='--')
+                plt.tight_layout()
+                buf = io.BytesIO()
+                plt.savefig(buf, format='png')
+                buf.seek(0)
+                plt.close()
+                return buf
+
+            elif instruction["type"] == "pie":
+                plt.pie(instruction["sizes"], labels=instruction["labels"], autopct='%1.1f%%', startangle=90)
+                plt.title(instruction["title"])
+                plt.tight_layout()
+                buf = io.BytesIO()
+                plt.savefig(buf, format='png')
+                buf.seek(0)
+                plt.close()
+                return buf
+
+            elif instruction["type"] == "scatter":
+                plt.scatter(instruction["x_values"], instruction["y_values"])
+                plt.xlabel("X Values")
+                plt.ylabel(instruction["y_label"])
+                plt.title(instruction["title"])
+                plt.grid(axis='y', linestyle='--')
+                plt.tight_layout()
+                buf = io.BytesIO()
+                plt.savefig(buf, format='png')
+                buf.seek(0)
+                plt.close()
+                return buf
+
+            elif instruction["type"] == "table":
+                df = pd.DataFrame(instruction['data'])
+                display(HTML(df.to_html(index=False)))
+                return None
+
+        except Exception as e:
+            print(f"Error generating graph or table: {e}")
+            return None
+    def _format_question_and_options(self,question_data):
+        """Formats question and options for display."""
+        formatted_output = {
+            "formatted_question": question_data.question_text,
+            "formatted_options": [f"{chr(ord('a') + i)}. {option}" for i, option in enumerate(question_data.options)]
+        }
+        return formatted_output
+
+    def generate_visual_qa(self, topic, num=1, chart_type: Optional[Literal["bar", "line", "pie", "scatter", "table"]] = None):
+        """Generates GMAT visual question with graph instructions using Educhain then displays the output."""
+        
+        if isinstance(self.llm, ChatGoogleGenerativeAI):
+            parser = PydanticOutputParser(pydantic_object=GMATQuestion)
+            format_instructions = parser.get_format_instructions()
+
+            prompt_template = """
+                Generate {num} GMAT style quantitative question from one of the following topics, based on the data provided to you (select a topic at random):
+                 *   Arithmetic (Fractions, Decimals, Percentages, Ratios, Averages) - use only one of 'pie', 'bar', or 'line' chart as visual, pie if using fractions, bar or line if using others
+                 *   Algebra (Linear Equations, Inequalities) - use line or number lines as visual
+                 *   Statistics and Probability (Mean, Median, Mode, Range, Standard Deviation) use only 'bar' or 'scatter' plot as visual
+                 *   Data Insights (Reading and Interpreting Bar Charts, Line Graphs, Scatter Plots, Tables, Sorting, Filtering, Identifying Trends) - use bar, line, scatter or table.
+
+                The question should require some kind of visual (bar graph, pie chart, line graph, scatter plot or table) representation of the data along with a detailed instruction on how to create that visual and also options for the question.
+
+                The graph/table instruction MUST have the following structure in json format (select the relevant keys based on the visual type you are selecting for the question):
+                {{
+                     "type": "{chart_type}",
+                     "x_labels": ["label 1", "label 2", "label 3", "label 4"] for bar or line graphs,
+                     "x_values": [value 1, value 2, value 3, value 4] for scatter plot,
+                     "y_values": [value 1, value 2, value 3, value 4] for bar or line graphs,
+                     "labels": ["label 1", "label 2", "label 3", "label 4"] for pie chart,
+                     "sizes": [value 1, value 2, value 3, value 4] for pie chart,
+                     "data": [{{ "column1": value, "column2": value }}, ... ] for table,
+                     "y_label": "label for the y axis" for bar, line, scatter plot,
+                     "title": "title of the graph or table"
+                }}
+
+                Output the response in json format with the following structure:
+                {{
+                    "question_text": "gmat style question",
+                    "options": ["option a","option b", "option c", "option d"],
+                    "graph_instruction": {{"type": "bar" or "pie" or "line" or "scatter" or "table", ...}},
+                    "correct_answer": "Correct answer of the question"
+                }}
+            """
+
+            prompt = PromptTemplate(
+                input_variables=["num", "topic", "chart_type"],
+                template=prompt_template,
+                partial_variables={"format_instructions": format_instructions}
+            )
+
+            chain = prompt | self.llm
+
+            results = chain.invoke({"num": num, "topic": topic, "chart_type": chart_type})
+            results = results.content
+            try:
+              questions = []
+              try:
+                question_list = GMATQuestionList.model_validate_json(results)
+                for question_data in question_list.questions:
+                    image_buffer = self._generate_graph(question_data.graph_instruction.dict())  # Generate Graph or Table
+                    if image_buffer:
+                        display(DisplayImage(data=image_buffer.getvalue(), format='png'))  # Display Graph
+                    formatted_output = self._format_question_and_options(question_data)
+                    print("\nQuestion:")
+                    print(formatted_output['formatted_question'])
+                    print("\nOptions:")
+                    for option in formatted_output['formatted_options']:
+                        print(option)
+                    print("\nCorrect Answer:", question_data.correct_answer)
+                    questions.append(question_data)
+              except:
+                question_data = parser.parse(results)
+                image_buffer = self._generate_graph(question_data.graph_instruction.dict()) #Generate Graph or Table
+                if image_buffer:
+                    display(DisplayImage(data=image_buffer.getvalue(), format='png')) #Display Graph
+                formatted_output = self._format_question_and_options(question_data)
+                print("\nQuestion:")
+                print(formatted_output['formatted_question'])
+                print("\nOptions:")
+                for option in formatted_output['formatted_options']:
+                    print(option)
+                print("\nCorrect Answer:", question_data.correct_answer)
+                questions.append(question_data)
+              return questions
+
+            except Exception as e:
+              print(f"Error parsing output: {e}")
+              print("Raw output:", results)
+              return None
+        else:
+            print ("Visual Question Generation is only supported for Gemini models")
+            return None    
