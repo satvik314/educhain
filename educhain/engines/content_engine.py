@@ -258,7 +258,7 @@ class ContentEngine:
                 }]
             )
         
-    # Carrer connections
+    # Career Connections
     def generate_career_connections(
         self,
         topic: str,

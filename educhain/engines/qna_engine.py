@@ -9,14 +9,22 @@ from langchain.output_parsers import PydanticOutputParser
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
 from langchain_community.callbacks.manager import get_openai_callback
-
+from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api.formatters import TextFormatter
+import re
+from langchain_core.messages import SystemMessage
+from langchain.schema import HumanMessage
 from educhain.core.config import LLMConfig
 from educhain.models.qna_models import (
     MCQList, ShortAnswerQuestionList, TrueFalseQuestionList, 
-    FillInBlankQuestionList, MCQListMath, Option
+    FillInBlankQuestionList, MCQListMath, Option ,SolvedDoubt, SpeechInstructions
 )
 from educhain.utils.loaders import PdfFileLoader, UrlLoader
 from educhain.utils.output_formatter import OutputFormatter
+import base64
+import os
+from PIL import Image
+import io
 
 # Update the QuestionType definition
 
@@ -424,3 +432,234 @@ class QnAEngine:
                     ]
 
         return structured_output
+
+    def _extract_video_id(self, url: str) -> str:
+        """Extract YouTube video ID from URL."""
+        pattern = r'(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(?:embed\/)?(?:v\/)?(?:shorts\/)?(?:live\/)?(?:feature=player_embedded&v=)?(?:e\/)?(?:\/)?([^\s&amp;?#]+)'
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+        raise ValueError("Invalid YouTube URL")
+
+    def _get_youtube_transcript(self, video_id: str, target_language: str = 'en') -> tuple[str, str]:
+        """
+        Get and format YouTube video transcript with multi-language support.
+        Returns tuple of (transcript, language_code)
+        """
+        try:
+            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+            
+            # Get all available languages
+            available_languages = [transcript.language_code for transcript in transcript_list]
+            
+            if not available_languages:
+                raise ValueError("No transcripts available for this video")
+            
+            # First try to get transcript in target language
+            try:
+                transcript = transcript_list.find_transcript([target_language])
+                return TextFormatter().format_transcript(transcript.fetch()), target_language
+            except:
+                # If target language not found, get any available transcript
+                transcript = transcript_list.find_transcript(available_languages)
+                original_language = transcript.language_code
+                
+                # If translation to target language is available and requested
+                if transcript.is_translatable and target_language != original_language:
+                    translated = transcript.translate(target_language)
+                    return TextFormatter().format_transcript(translated.fetch()), target_language
+                
+                # Return original language transcript if no translation needed/available
+                return TextFormatter().format_transcript(transcript.fetch()), original_language
+                
+        except Exception as e:
+            error_message = str(e).lower()
+            if "transcriptsdisabled" in error_message:
+                raise ValueError(
+                    "This video does not have subtitles/closed captions enabled. "
+                    "Available languages: " + ", ".join(available_languages)
+                )
+            elif "notranscriptfound" in error_message:
+                raise ValueError(
+                    f"No transcript found for language '{target_language}'. "
+                    f"Available languages: {', '.join(available_languages)}"
+                )
+            else:
+                raise ValueError(f"Error fetching transcript: {str(e)}")
+
+    def generate_questions_from_youtube(
+        self,
+        url: str,
+        num: int = 1,
+        question_type: QuestionType = "Multiple Choice",
+        prompt_template: Optional[str] = None,
+        custom_instructions: Optional[str] = None,
+        response_model: Optional[Type[Any]] = None,
+        output_format: Optional[OutputFormatType] = None,
+        target_language: str = 'en',
+        preserve_original_language: bool = False,
+        **kwargs
+    ) -> Any:
+        """
+        Generate questions from a YouTube video transcript in specified language.
+        
+        Args:
+            url: YouTube video URL
+            num: Number of questions to generate
+            question_type: Type of questions to generate
+            prompt_template: Optional custom prompt template
+            custom_instructions: Optional additional instructions
+            response_model: Optional custom response model
+            output_format: Optional output format (pdf/csv)
+            target_language: Target language for questions (e.g., 'hi' for Hindi)
+            preserve_original_language: If True, keeps original language even if different from target
+            **kwargs: Additional arguments
+        """
+        try:
+            video_id = self._extract_video_id(url)
+            transcript, detected_language = self._get_youtube_transcript(video_id, target_language)
+            
+            if not transcript:
+                raise ValueError("No transcript content retrieved from the video")
+
+            # Language-specific instructions
+            language_context = f"\nContent language: {detected_language}"
+            if detected_language != target_language and not preserve_original_language:
+                language_context += f"\nGenerate questions in {target_language}"
+            
+            # Update custom instructions
+            video_context = f"\nThis content is from a YouTube video (ID: {video_id}). {language_context}"
+            if custom_instructions:
+                custom_instructions = video_context + "\n" + custom_instructions
+            else:
+                custom_instructions = video_context
+
+            return self.generate_questions_from_data(
+                source=transcript,
+                source_type="text",
+                num=num,
+                question_type=question_type,
+                prompt_template=prompt_template,
+                custom_instructions=custom_instructions,
+                response_model=response_model,
+                output_format=output_format,
+                target_language=target_language,
+                **kwargs
+            )
+            
+        except ValueError as ve:
+            raise ValueError(f"YouTube processing error: {str(ve)}")
+        except Exception as e:
+            raise Exception(f"Unexpected error processing YouTube video: {str(e)}")
+
+    def _load_image(self, source: str) -> str:
+        """Load and encode image from file or URL"""
+        try:
+            if source.startswith(('http://', 'https://')):
+                return source
+            elif source.startswith('data:image'):
+                return source
+            else:
+                image = Image.open(source)
+                if image.mode not in ('RGB', 'L'):
+                    image = image.convert('RGB')
+                
+                buffered = io.BytesIO()
+                image.save(buffered, format="JPEG")
+                return f"data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode()}"
+
+        except Exception as e:
+            raise ValueError(f"Error loading image: {str(e)}")
+
+    def solve_doubt(
+        self,
+        image_source: str,
+        prompt: str = "Explain how to solve this problem",
+        custom_instructions: Optional[str] = None,
+        detail_level: Literal["low", "medium", "high"] = "medium",
+        focus_areas: Optional[List[str]] = None,
+        **kwargs
+    ) -> SolvedDoubt:
+        """
+        Analyze an image and provide detailed explanation with solution steps.
+        
+        Args:
+            image_source: Path or URL to the image
+            prompt: Custom prompt for analysis
+            custom_instructions: Additional instructions for analysis
+            detail_level: Level of detail in explanation
+            focus_areas: Specific aspects to focus on
+            **kwargs: Additional parameters for the model
+        
+        Returns:
+            SolvedDoubt: Object containing explanation, steps, and additional notes
+        """
+        if not image_source:
+            raise ValueError("Image source (path or URL) is required")
+
+        try:
+            image_content = self._load_image(image_source)
+            
+            # Create parser for structured output
+            parser = PydanticOutputParser(pydantic_object=SolvedDoubt)
+            format_instructions = parser.get_format_instructions()
+
+            # Construct the prompt with all parameters
+            base_prompt = f"Analyze the image and {prompt}\n"
+            if focus_areas:
+                base_prompt += f"\nFocus on these aspects: {', '.join(focus_areas)}"
+            base_prompt += f"\nProvide a {detail_level}-detail explanation"
+            
+            system_message = SystemMessage(
+                content="You are a helpful assistant that responds in Markdown. Help with math homework."
+            )
+
+            human_message_content = f"""
+            {base_prompt}
+            
+            Provide:
+            1. A detailed explanation
+            2. Step-by-step solution (if applicable)
+            3. Any additional notes or tips
+            
+            {custom_instructions or ''}
+            
+            {format_instructions}
+            """
+
+            human_message = HumanMessage(content=[
+                {"type": "text", "text": human_message_content},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": image_content,
+                        "detail": "high" if detail_level == "high" else "low"
+                    }
+                }
+            ])
+
+            response = self.llm.invoke(
+                [system_message, human_message],
+                **kwargs
+            )
+
+            try:
+                return parser.parse(response.content)
+            except Exception as e:
+                # Fallback if parsing fails
+                return SolvedDoubt(
+                    explanation=response.content,
+                    steps=[],
+                    additional_notes="Note: Response format was not structured as requested."
+                )
+
+        except Exception as e:
+            error_msg = f"Error in solve_doubt: {type(e).__name__}: {str(e)}"
+            print(error_msg)
+            return SolvedDoubt(
+                explanation=error_msg,
+                steps=[],
+                additional_notes="An error occurred during processing."
+            )
+
+   

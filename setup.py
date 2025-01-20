@@ -2,22 +2,25 @@ from setuptools import setup, find_packages
 
 setup(
     name="educhain",
-    version="0.3.2",
+    version="0.3.4",
     packages=find_packages(),
     install_requires=[
         "langchain==0.3.4",
         "langchain-community==0.3.3",
-        "langchain-openai==0.2.3",
-        "openai==1.52.2",
+        "langchain-openai==0.2.11",
+        "openai==1.57.0",
         "python-dotenv==1.0.1", 
-        "pandas==2.2.3",
+        "pandas",
         "reportlab==4.2.5",
-        "PyPDF2==5.1.0",
-        "beautifulsoup4==3.2.2",
+        "PyPDF2",
+        "beautifulsoup4",
         "youtube_transcript_api==0.6.2",
         "pydantic==2.9.2",
-        "requests==2.32.2",
+        "requests",
         "chromadb==0.5.15",
+        "protobuf<5",
+        "Pillow"  #image processing
+       
     ],
     extras_require={
         "dev": [
@@ -45,3 +48,4 @@ setup(
     ],
     python_requires='>=3.7',
 )
+

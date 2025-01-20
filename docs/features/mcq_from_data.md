@@ -1,36 +1,50 @@
-# 📝 Multiple Choice Question (MCQ) Generation from Data
+# 🖋️ Multiple Choice Question (MCQ) Generation from Data
 
 Generate engaging MCQs from various data sources using AI! 🧠✨
 
 ## 🚀 Basic Usage
 
 ```python
-from educhain import generate_mcqs_from_data
+from educhain import Educhain
 
-questions = generate_mcqs_from_data(
-    source="https://en.wikipedia.org/wiki/Artificial_intelligence",
+client = Educhain()
+
+# From URL
+url_questions = client.qna_engine.generate_questions_from_data(
+    source="https://example.com/article",
     source_type="url",
-    num=5,
-    learning_objective="Understand the basics of AI",
-    difficulty_level="Intermediate"
+    num=3
 )
 
-questions.show()
+# From PDF
+pdf_questions = client.qna_engine.generate_questions_from_data(
+    source="path/to/document.pdf",
+    source_type="pdf",
+    num=3
+)
+
+# From Text File
+text_questions = client.qna_engine.generate_questions_from_data(
+    source="path/to/content.txt",
+    source_type="text",
+    num=3
+)
 ```
 
-## 🎛️ Customization Options
+## 🎡 Function Parameters
 
-| Option | Description | Example Values |
-|--------|-------------|----------------|
+| Parameter | Description | Example Values |
+|-----------|-------------|----------------|
 | `source` | Data source for question generation | PDF file path, URL, or text content |
 | `source_type` | Type of the data source | "pdf", "url", "text" |
 | `num` | Number of questions to generate | 5, 10, 20 |
-| `learning_objective` | Goal of the questions | "Understand AI basics", "Apply ML concepts" |
-| `difficulty_level` | Difficulty of the questions | "Beginner", "Intermediate", "Advanced" |
-| `llm` | Custom language model (optional) | ChatOpenAI(model="gpt-4") |
+| `question_type` | Type of questions to generate | "Multiple Choice", "True/False" |
 | `prompt_template` | Custom prompt template (optional) | "Generate questions about {topic}..." |
+| `custom_instructions` | Additional instructions for question generation (optional) | "Focus on technical details." |
+| `response_model` | Custom response model (optional) | CustomModelClass |
+| `output_format` | Format for the output questions (optional) | "JSON", "PDF", "Text" |
 
-## 📊 Output Format
+## 🖋️ Example Output
 
 ```python
 MCQList(
@@ -51,16 +65,26 @@ MCQList(
 )
 ```
 
-## 🌟 Pro Tips
-
-- Use specific URLs or PDF content for more focused questions
-- Adjust the `learning_objective` and `difficulty_level` to match your audience
-- Experiment with custom prompt templates for specialized question generation
-
-## 📚 Supported Data Sources
+## 🌍 Supported Data Sources
 
 1. **PDF Files** 📄: Provide a file path to generate questions from PDF content.
 2. **URLs** 🌐: Input a web page URL to create questions from online content.
-3. **Text** 📝: Directly input text to generate questions from custom content.
+3. **Text Files** 🖋️: Provide text files for generating questions from custom content.
 
-Ready to create MCQs from your own data? Start generating now! 🚀📚
+## ✨ Advanced Customization
+
+Enhance your MCQ generation with additional customization:
+
+- **Custom Prompt Templates:** Use the `prompt_template` parameter to provide specific instructions.
+- **Fine-Tune Outputs:** Leverage `custom_instructions` to focus on particular aspects of the source content.
+- **Flexible Output Formats:** Choose between JSON, PDF, or plain text for your generated questions.
+
+
+## 📊 Pro Tips
+
+- **Refine the Source Content:** Use specific URLs or curated text for targeted question generation.
+- **Optimize Learning Objectives:** Adjust the `learning_objective` to align with your educational goals.
+- **Experiment with Difficulty Levels:** Tailor `difficulty_level` to your audience, ranging from "Beginner" to "Advanced."
+
+Ready to create high-quality MCQs? Dive in and let Educhain streamline your educational content creation! 🚀📚
+
