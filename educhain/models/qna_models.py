@@ -1,7 +1,6 @@
 from educhain.models.base_models import BaseQuestion, QuestionList
 from pydantic import BaseModel, Field
-from typing import List, Optional, Literal, Dict, Any
-from pydantic import BaseModel, Field, field_validator
+from typing import List, Optional
 
 class MultipleChoiceQuestion(BaseQuestion):
     options: List[str]
@@ -112,32 +111,22 @@ class SpeechInstructions(BaseModel):
     custom_instructions: Optional[str] = None
     detected_language: Optional[str] = "english"
 
-
 class GraphInstructions(BaseModel):
-    """Pydantic model for graph instructions"""
-    type: Literal["bar", "line", "pie", "scatter", "table"] = Field(..., description="The type of graph (bar, line, pie, scatter, table).")
-    x_labels: Optional[List[str]] = Field(None, description="Labels for the x-axis (bar, line, scatter).")
-    y_values: Optional[List[float]] = Field(None, description="Data points for the y-axis (bar, line, scatter).")
-    labels: Optional[List[str]] = Field(None, description="Labels for the pie chart.")
-    sizes: Optional[List[float]] = Field(None, description="Sizes for the pie chart.")
-    data: Optional[List[Dict[str, Any]]] = Field(None, description="Data points for table.")
-    y_label: Optional[str] = Field(None, description="Label for the y-axis (bar, line, scatter).")
-    title: str = Field(..., description="Title of the graph or table.")
-    x_values: Optional[List[float]] = Field(None, description="X Values for scatter plot")
-
+    type: str
+    x_labels: Optional[List[str]] = None
+    x_values: Optional[List[float]] = None
+    y_values: Optional[List[float]] = None
+    labels: Optional[List[str]] = None
+    sizes: Optional[List[float]] = None
+    data: Optional[List[dict]] = None
+    y_label: Optional[str] = None
+    title: Optional[str] = None
 
 class GMATQuestion(BaseModel):
-    """Pydantic model for a GMAT visual question."""
-    question_text: str = Field(..., description="The text of the question.")
-    options: List[str] = Field(..., description="Options for the multiple choice question.")
-    graph_instruction: GraphInstructions = Field(..., description="Instructions for how to generate the graph or table.")
-    correct_answer: str = Field(..., description="The correct answer")
-
-    @field_validator("graph_instruction", mode='before')
-    def validate_graph_instructions(cls, value):
-        if isinstance(value, dict):
-          return GraphInstructions(**value)
-        return value
+    question_text: str = Field(description = "Question text")
+    options: List[str] = Field(description = "List of options for the question")
+    graph_instruction: GraphInstructions = Field(description = "Instruction to generate the graph")
+    correct_answer: str = Field(description = "Correct answer of the question")
 
 class GMATQuestionList(BaseModel):
-      questions: List[GMATQuestion]
+    questions: List[GMATQuestion]
