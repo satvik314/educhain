@@ -889,9 +889,9 @@ class QnAEngine:
                   print(f"Error reading or decoding generated JSON file : {e}")
                   exit()
 
-          with open (output_file, 'w') as f:
-              json.dump(all_questions, f, indent=4)
-              print(f"All {num} questions with images saved to {output_file}")
+      with open (output_file, 'w') as f:
+        json.dump(all_questions, f, indent=4)
+        print(f"All {num} questions with images saved to {output_file}")
 
       except Exception as e:
         print(f"Error in generating visual question : {e}")
