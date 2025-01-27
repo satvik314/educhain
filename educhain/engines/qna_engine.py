@@ -768,7 +768,7 @@ class QnAEngine:
         """Generates GMAT visual question with graph instructions using Educhain then displays the output."""
         
         if isinstance(self.llm, ChatGoogleGenerativeAI):
-            parser = PydanticOutputParser(pydantic_object=GMATQuestion)
+            parser = PydanticOutputParser(pydantic_object=VisualQuestion)
             format_instructions = parser.get_format_instructions()
 
             prompt_template = """
@@ -815,7 +815,7 @@ class QnAEngine:
             try:
               questions = []
               try:
-                question_list = GMATQuestionList.model_validate_json(results)
+                question_list = VisualQuestionList.model_validate_json(results)
                 for question_data in question_list.questions:
                     image_buffer = self._generate_graph(question_data.graph_instruction.dict())  # Generate Graph or Table
                     if image_buffer:
