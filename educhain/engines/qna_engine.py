@@ -1,3 +1,5 @@
+# educhain/engines/qna_engine.py
+
 from typing import Optional, Type, Any, List, Literal, Union, Tuple
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -13,9 +15,10 @@ import re
 from langchain_core.messages import SystemMessage
 from langchain.schema import HumanMessage
 from educhain.core.config import LLMConfig
-from educhain.models.qna_models import 
+from educhain.models.qna_models import (
     MCQList, ShortAnswerQuestionList, TrueFalseQuestionList, 
     FillInBlankQuestionList, MCQListMath, Option ,SolvedDoubt, SpeechInstructions
+)
 from educhain.utils.loaders import PdfFileLoader, UrlLoader
 from educhain.utils.output_formatter import OutputFormatter
 import base64
@@ -336,10 +339,12 @@ class QnAEngine:
             elif 'result' in math_result:
                 return math_result['result'].strip()
         
+        # Handle string response
         result_str = str(math_result)
         if 'Answer:' in result_str:
             return result_str.split('Answer:')[-1].strip()
         
+        # Remove any question repetition and extract the numerical result
         lines = result_str.split('\n')
         for line in reversed(lines):
             if line.strip().replace('.', '').isdigit():
@@ -466,7 +471,7 @@ class QnAEngine:
 
     def _extract_video_id(self, url: str) -> str:
         """Extract YouTube video ID from URL."""
-        pattern = r'(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(?:embed\/)?(?:v\/)?(?:shorts\/)?(?:live\/)?(?:feature=player_embedded&v=)?(?:e\/)?(?:\/)?([^\s&amp;?#]+)'
+        pattern = r'(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(?:embed\/)?(?:v\/)?(?:shorts\/)?(?:live\/)?(?:feature=player_embedded&v=)?(?:e\/)?(?:\/)?([^\s&?#]+)'
         match = re.search(pattern, url)
         if match:
             return match.group(1)
@@ -767,7 +772,7 @@ class QnAEngine:
         """Generates GMAT visual question with graph instructions using Educhain then displays the output."""
         
         if isinstance(self.llm, ChatGoogleGenerativeAI):
-            parser = PydanticOutputParser(pydantic_object=VisualQuestion)
+            parser = PydanticOutputParser(pydantic_object=GMATQuestion)
             format_instructions = parser.get_format_instructions()
 
             prompt_template = """
@@ -814,7 +819,7 @@ class QnAEngine:
             try:
               questions = []
               try:
-                question_list = VisualQuestionList.model_validate_json(results)
+                question_list = GMATQuestionList.model_validate_json(results)
                 for question_data in question_list.questions:
                     image_buffer = self._generate_graph(question_data.graph_instruction.dict())  # Generate Graph or Table
                     if image_buffer:
@@ -853,6 +858,7 @@ class QnAEngine:
     def generate_visual_questions_new(self, topic, num=5):
       """Generates visual based questions with graph instructions then displays the output."""
       try:
+            # Load API Key from a local 'userdata.json' file or similar
             try:
                 gemini_api_key = self.llm.google_api_key #userdata.get("GOOGLE_API_KEY")
             except (FileNotFoundError, json.JSONDecodeError):
@@ -870,6 +876,7 @@ class QnAEngine:
             question_number = 1
 
 
+            # Generate questions in batches, since the limit is 10 for gemini
             batch_size = 10
             for i in range(0, num, batch_size):
               current_batch_size = min(batch_size, num - i)
@@ -878,6 +885,7 @@ class QnAEngine:
                     print(f"Error: {result['error']}")
                     exit()
 
+              # Load generated questions and concatenate
               try:
                 with open(output_file, 'r') as f:
                   batch_questions = json.load(f)
@@ -888,9 +896,10 @@ class QnAEngine:
                   print(f"Error reading or decoding generated JSON file : {e}")
                   exit()
 
-      with open (output_file, 'w') as f:
-        json.dump(all_questions, f, indent=4)
-        print(f"All {num} questions with images saved to {output_file}")
+            # Save all generated questions to one file
+            with open (output_file, 'w') as f:
+              json.dump(all_questions, f, indent=4)
+              print(f"All {num} questions with images saved to {output_file}")
 
       except Exception as e:
         print(f"Error in generating visual question : {e}")
@@ -902,7 +911,12 @@ class QnAEngine:
         return response_text
 
     def _generate_visual_questions(self, topic, gemini_api_key, num_questions=5):
-        gemini_flash = self.llm 
+        gemini_flash = self.llm #ChatGoogleGenerativeAI(
+            #model="gemini-2.0-flash-exp",
+            #google_api_key=gemini_api_key,
+            #temperature=0.7,
+            #max_output_tokens=8192
+        #)
 
         prompt = f"""
             Generate exactly {num_questions} quantitative questions based on the topic: {topic}.
@@ -966,6 +980,7 @@ class QnAEngine:
             return {"error": "Empty response received from Gemini."}
 
 
+    # Function to process multiple questions and add images
     def _process_and_save_questions(self,topic, gemini_api_key, output_file="question_data.json", num_questions=5, start_number = 1):
       try:
             question_data = self._generate_visual_questions(topic, gemini_api_key, num_questions)
@@ -973,6 +988,7 @@ class QnAEngine:
                 return {"error": question_data["error"]}
 
             processed_questions = []
+            # Add question numbers and generate images
             for idx, question in enumerate(question_data["questions"], start=start_number):
                 question["question_number"] = idx
                 img_base64 = self._generate_and_save_visual(
@@ -986,6 +1002,7 @@ class QnAEngine:
                 processed_questions.append(question)
 
 
+            # Save to json file
             with open(output_file, 'w') as f:
                 json.dump(processed_questions, f, indent=4)
             logging.info(f"Saved questions with images to file: {output_file}")
@@ -995,6 +1012,7 @@ class QnAEngine:
             logging.error(f"Error processing multiple question: {e}")
             return {"error": f"Error processing multiple questions: {e}"}
 
+    # Function to generate visualizations based on instructions and save as base64
     def _generate_and_save_visual(self, instruction, question_text, options, correct_answer):
         try:
             plt.figure(figsize=(10, 8))  # Set a large figure size for readability
@@ -1052,17 +1070,20 @@ class QnAEngine:
                 img_buffer = BytesIO()
                 import dataframe_image as dfi
                 dfi.export(df, img_buffer, table_conversion="matplotlib")
+                #dfi.export(df, "table.png", table_conversion="matplotlib")
 
             plt.close()
             img_buffer.seek(0)
             img_base64 = base64.b64encode(img_buffer.read()).decode('utf-8')
 
+            # Display the image in the console using HTML (for Colab)
             if instruction["type"] != "table":
                 display(HTML(f'<img src="data:image/png;base64,{img_base64}" style="max-width:500px; max-height:400px;">'))
             else:
                 display(HTML(f'<img src="data:image/png;base64,{img_base64}" style="max-width:500px;">'))
 
 
+            # Display the question, options, and correct answer
             print("\nQuestion:", question_text)
             for idx, option in enumerate(options, start=1):
                 print(f"{chr(64+idx)}. {option}")
