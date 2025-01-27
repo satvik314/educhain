@@ -13,7 +13,7 @@ import re
 from langchain_core.messages import SystemMessage
 from langchain.schema import HumanMessage
 from educhain.core.config import LLMConfig
-from educhain.models.qna_models import (
+from educhain.models.qna_models import 
     MCQList, ShortAnswerQuestionList, TrueFalseQuestionList, 
     FillInBlankQuestionList, MCQListMath, Option ,SolvedDoubt, SpeechInstructions
 )
