@@ -1,3 +1,5 @@
+# educhain/models/qna_models.py
+
 from educhain.models.base_models import BaseQuestion, QuestionList
 from pydantic import BaseModel, Field
 from typing import List, Optional
@@ -122,11 +124,11 @@ class GraphInstructions(BaseModel):
     y_label: Optional[str] = None
     title: Optional[str] = None
 
-class VisualQuestion(BaseModel):
+class GMATQuestion(BaseModel):
     question_text: str = Field(description = "Question text")
     options: List[str] = Field(description = "List of options for the question")
     graph_instruction: GraphInstructions = Field(description = "Instruction to generate the graph")
     correct_answer: str = Field(description = "Correct answer of the question")
 
-class VisualQuestionList(BaseModel):
-    questions: List[VisualQuestion]
+class GMATQuestionList(BaseModel):
+    questions: List[GMATQuestion]
