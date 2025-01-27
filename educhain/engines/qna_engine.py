@@ -1,5 +1,3 @@
-# educhain/engines/qna_engine.py
-
 from typing import Optional, Type, Any, List, Literal, Union, Tuple
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -16,8 +14,9 @@ from langchain_core.messages import SystemMessage
 from langchain.schema import HumanMessage
 from educhain.core.config import LLMConfig
 from educhain.models.qna_models import (
-    MCQList, ShortAnswerQuestionList, TrueFalseQuestionList, 
-    FillInBlankQuestionList, MCQListMath, Option ,SolvedDoubt, SpeechInstructions
+    MCQList, ShortAnswerQuestionList, TrueFalseQuestionList,
+    FillInBlankQuestionList, MCQListMath, Option ,SolvedDoubt, SpeechInstructions,
+    VisualQuestion, VisualQuestionList, GraphInstructions # Import VisualQuestion and related models
 )
 from educhain.utils.loaders import PdfFileLoader, UrlLoader
 from educhain.utils.output_formatter import OutputFormatter
@@ -47,7 +46,7 @@ from google.colab import userdata
 import logging
 from io import BytesIO
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)')
 
 QuestionType = Literal["Multiple Choice", "Short Answer", "True/False", "Fill in the Blank"]
 OutputFormatType = Literal["pdf", "csv"]
@@ -72,24 +71,24 @@ class QnAEngine:
                 exit()
 
              if not gemini_api_key:
-                print("Error: Google API key not found in 'userdata.json'.")
-                exit()
+                 print("Error: Google API key not found in 'userdata.json'.")
+                 exit()
              return ChatGoogleGenerativeAI(
-                model=llm_config.model_name,
-                google_api_key=gemini_api_key,
-                temperature=llm_config.temperature,
-                max_output_tokens=llm_config.max_tokens
-            )
+                 model=llm_config.model_name,
+                 google_api_key=gemini_api_key,
+                 temperature=llm_config.temperature,
+                 max_output_tokens=llm_config.max_tokens
+             )
 
-        else:
-            return ChatOpenAI(
-                model=llm_config.model_name,
-                api_key=llm_config.api_key,
-                max_tokens=llm_config.max_tokens,
-                temperature=llm_config.temperature,
-                base_url=llm_config.base_url,
-                default_headers=llm_config.default_headers
-            )
+         else:
+             return ChatOpenAI(
+                 model=llm_config.model_name,
+                 api_key=llm_config.api_key,
+                 max_tokens=llm_config.max_tokens,
+                 temperature=llm_config.temperature,
+                 base_url=llm_config.base_url,
+                 default_headers=llm_config.default_headers
+             )
 
     def _get_parser_and_model(self, question_type: QuestionType, response_model: Optional[Type[Any]] = None):
         if response_model:
@@ -110,14 +109,14 @@ class QnAEngine:
             return custom_template
 
         base_template = f"""
-        Generate {{num}} {question_type} question(s) based on the given topic.
-        Topic: {{topic}}
+         Generate {{num}} {question_type} question(s) based on the given topic.
+         Topic: {{topic}}
 
-        For each question, provide:
-        1. The question
-        2. The correct answer
-        3. An explanation (optional)
-        """
+         For each question, provide:
+         1. The question
+         2. The correct answer
+         3. An explanation (optional)
+         """
 
         if question_type == "Multiple Choice":
             base_template += "\n4. A list of options (including the correct answer)"
@@ -159,12 +158,12 @@ class QnAEngine:
             return source
         else:
             raise ValueError("Unsupported source type. Please use 'pdf', 'url', or 'text'.")
-        
+
     def _handle_output_format(self, data: Any, output_format: Optional[OutputFormatType]) -> Union[Any, Tuple[Any, str]]:
         """Handle output format conversion if specified"""
         if output_format is None:
             return data
-            
+
         formatter = OutputFormatter()
         if output_format == "pdf":
             output_file = formatter.to_pdf(data)
@@ -172,7 +171,7 @@ class QnAEngine:
             output_file = formatter.to_csv(data)
         else:
             raise ValueError(f"Unsupported output format: {output_format}")
-            
+
         return data, output_file
 
     def generate_questions(
@@ -194,11 +193,11 @@ class QnAEngine:
                 template = prompt_template
             else:
                 template = """
-                Generate {num} questions based on the given topic.
-                Topic: {topic}
+                 Generate {num} questions based on the given topic.
+                 Topic: {topic}
 
-                Ensure that each question follows the structure specified in the format instructions.
-                """
+                 Ensure that each question follows the structure specified in the format instructions.
+                 """
         else:
             template = self._get_prompt_template(question_type, prompt_template)
 
@@ -224,7 +223,7 @@ class QnAEngine:
 
             if output_format:
                 self._handle_output_format(structured_output, output_format)
-                
+
             return structured_output
         except Exception as e:
             print(f"Error parsing output: {e}")
@@ -285,14 +284,14 @@ class QnAEngine:
             prompt_template = self._get_prompt_template(question_type)
 
         prompt_template += """
-        Learning Objective: {learning_objective}
-        Difficulty Level: {difficulty_level}
+         Learning Objective: {learning_objective}
+         Difficulty Level: {difficulty_level}
 
-        Ensure that the questions are relevant to the learning objective and match the specified difficulty level.
+         Ensure that the questions are relevant to the learning objective and match the specified difficulty level.
 
-        The response should be in JSON format.
-        {format_instructions}
-        """
+         The response should be in JSON format.
+         {format_instructions}
+         """
 
         if custom_instructions:
             prompt_template += f"\n\nAdditional Instructions:\n{custom_instructions}"
@@ -318,7 +317,7 @@ class QnAEngine:
 
             if output_format:
                 self._handle_output_format(structured_output, output_format)
-            
+
             return structured_output
         except Exception as e:
             print(f"Error parsing output: {e}")
@@ -338,20 +337,20 @@ class QnAEngine:
                 return math_result['answer'].split('Answer: ')[-1].strip()
             elif 'result' in math_result:
                 return math_result['result'].strip()
-        
+
         # Handle string response
         result_str = str(math_result)
         if 'Answer:' in result_str:
             return result_str.split('Answer:')[-1].strip()
-        
+
         # Remove any question repetition and extract the numerical result
         lines = result_str.split('\n')
         for line in reversed(lines):
             if line.strip().replace('.', '').isdigit():
                 return line.strip()
-        
+
         raise ValueError("Could not extract numerical result from LLMMathChain response")
-    
+
     def generate_mcq_math(
         self,
         topic: str,
@@ -371,24 +370,24 @@ class QnAEngine:
 
         if prompt_template is None:
             prompt_template = """
-            You are an Academic AI assistant specialized in generating multiple-choice math questions.
-            Generate {num} multiple-choice questions (MCQ) based on the given topic.
-            Each question MUST be a mathematical computation question.
-            
-            For each question:
-            1. Make sure it requires mathematical calculation
-            2. Set requires_math to true
-            3. Provide clear numerical values
-            4. Ensure the question has a single, unambiguous answer
-            
-            Topic: {topic}
-            
-            Format each question to include:
-            - A clear mathematical problem
-            - Four distinct numerical options
-            - The correct answer
-            - A step-by-step explanation
-            """
+             You are an Academic AI assistant specialized in generating multiple-choice math questions.
+             Generate {num} multiple-choice questions (MCQ) based on the given topic.
+             Each question MUST be a mathematical computation question.
+
+             For each question:
+             1. Make sure it requires mathematical calculation
+             2. Set requires_math to true
+             3. Provide clear numerical values
+             4. Ensure the question has a single, unambiguous answer
+
+             Topic: {topic}
+
+             Format each question to include:
+             - A clear mathematical problem
+             - Four distinct numerical options
+             - The correct answer
+             - A step-by-step explanation
+             """
 
         if custom_instructions:
             prompt_template += f"\n\nAdditional Instructions:\n{custom_instructions}"
@@ -422,24 +421,24 @@ class QnAEngine:
                 try:
                     # Extract numerical expression from the question
                     math_result = llm_math.invoke({"question": question.question})
-                    
+
                     try:
                         # Process the result using the helper method
                         solution = self._process_math_result(math_result)
-                        
+
                         # Convert to float and format
                         numerical_solution = float(solution)
                         formatted_solution = f"{numerical_solution:.2f}"
-                        
+
                         question.explanation += f"\n\nMath solution: {formatted_solution}"
-                        
+
                         # Generate options with the correct string format
                         correct_option = Option(text=formatted_solution, correct='true')
-                        
+
                         # Generate incorrect options
                         variations = [0.9, 1.1, 1.2]
                         incorrect_options = []
-                        
+
                         for var in variations:
                             wrong_val = numerical_solution * var
                             incorrect_options.append(
@@ -448,15 +447,15 @@ class QnAEngine:
                                     correct='false'
                                 )
                             )
-                        
+
                         # Combine and shuffle options
                         question.options = [correct_option] + incorrect_options
                         random.shuffle(question.options)
-                        
+
                     except (ValueError, TypeError) as e:
                         print(f"Error processing numerical result: {e}")
                         raise
-                        
+
                 except Exception as e:
                     print(f"LLMMathChain failed to answer: {str(e)}")
                     question.explanation += "\n\nMath solution: Unable to compute."
@@ -479,18 +478,18 @@ class QnAEngine:
 
     def _get_youtube_transcript(self, video_id: str, target_language: str = 'en') -> tuple[str, str]:
         """
-        Get and format YouTube video transcript with multi-language support.
-        Returns tuple of (transcript, language_code)
-        """
+         Get and format YouTube video transcript with multi-language support.
+         Returns tuple of (transcript, language_code)
+         """
         try:
             transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-            
+
             # Get all available languages
             available_languages = [transcript.language_code for transcript in transcript_list]
-            
+
             if not available_languages:
                 raise ValueError("No transcripts available for this video")
-            
+
             # First try to get transcript in target language
             try:
                 transcript = transcript_list.find_transcript([target_language])
@@ -499,15 +498,15 @@ class QnAEngine:
                 # If target language not found, get any available transcript
                 transcript = transcript_list.find_transcript(available_languages)
                 original_language = transcript.language_code
-                
+
                 # If translation to target language is available and requested
                 if transcript.is_translatable and target_language != original_language:
                     translated = transcript.translate(target_language)
                     return TextFormatter().format_transcript(translated.fetch()), target_language
-                
+
                 # Return original language transcript if no translation needed/available
                 return TextFormatter().format_transcript(transcript.fetch()), original_language
-                
+
         except Exception as e:
             error_message = str(e).lower()
             if "transcriptsdisabled" in error_message:
@@ -537,24 +536,24 @@ class QnAEngine:
         **kwargs
     ) -> Any:
         """
-        Generate questions from a YouTube video transcript in specified language.
-        
-        Args:
-            url: YouTube video URL
-            num: Number of questions to generate
-            question_type: Type of questions to generate
-            prompt_template: Optional custom prompt template
-            custom_instructions: Optional additional instructions
-            response_model: Optional custom response model
-            output_format: Optional output format (pdf/csv)
-            target_language: Target language for questions (e.g., 'hi' for Hindi)
-            preserve_original_language: If True, keeps original language even if different from target
-            **kwargs: Additional arguments
-        """
+         Generate questions from a YouTube video transcript in specified language.
+
+         Args:
+             url: YouTube video URL
+             num: Number of questions to generate
+             question_type: Type of questions to generate
+             prompt_template: Optional custom prompt template
+             custom_instructions: Optional additional instructions
+             response_model: Optional custom response model
+             output_format: Optional output format (pdf/csv)
+             target_language: Target language for questions (e.g., 'hi' for Hindi)
+             preserve_original_language: If True, keeps original language even if different from target
+             **kwargs: Additional arguments
+         """
         try:
             video_id = self._extract_video_id(url)
             transcript, detected_language = self._get_youtube_transcript(video_id, target_language)
-            
+
             if not transcript:
                 raise ValueError("No transcript content retrieved from the video")
 
@@ -562,7 +561,7 @@ class QnAEngine:
             language_context = f"\nContent language: {detected_language}"
             if detected_language != target_language and not preserve_original_language:
                 language_context += f"\nGenerate questions in {target_language}"
-            
+
             # Update custom instructions
             video_context = f"\nThis content is from a YouTube video (ID: {video_id}). {language_context}"
             if custom_instructions:
@@ -582,7 +581,7 @@ class QnAEngine:
                 target_language=target_language,
                 **kwargs
             )
-            
+
         except ValueError as ve:
             raise ValueError(f"YouTube processing error: {str(ve)}")
         except Exception as e:
@@ -599,7 +598,7 @@ class QnAEngine:
                 image = Image.open(source)
                 if image.mode not in ('RGB', 'L'):
                     image = image.convert('RGB')
-                
+
                 buffered = io.BytesIO()
                 image.save(buffered, format="JPEG")
                 return f"data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode()}"
@@ -617,25 +616,25 @@ class QnAEngine:
         **kwargs
     ) -> SolvedDoubt:
         """
-        Analyze an image and provide detailed explanation with solution steps.
-        
-        Args:
-            image_source: Path or URL to the image
-            prompt: Custom prompt for analysis
-            custom_instructions: Additional instructions for analysis
-            detail_level: Level of detail in explanation
-            focus_areas: Specific aspects to focus on
-            **kwargs: Additional parameters for the model
-        
-        Returns:
-            SolvedDoubt: Object containing explanation, steps, and additional notes
-        """
+         Analyze an image and provide detailed explanation with solution steps.
+
+         Args:
+             image_source: Path or URL to the image
+             prompt: Custom prompt for analysis
+             custom_instructions: Additional instructions for analysis
+             detail_level: Level of detail in explanation
+             focus_areas: Specific aspects to focus on
+             **kwargs: Additional parameters for the model
+
+         Returns:
+             SolvedDoubt: Object containing explanation, steps, and additional notes
+         """
         if not image_source:
             raise ValueError("Image source (path or URL) is required")
 
         try:
             image_content = self._load_image(image_source)
-            
+
             # Create parser for structured output
             parser = PydanticOutputParser(pydantic_object=SolvedDoubt)
             format_instructions = parser.get_format_instructions()
@@ -645,23 +644,23 @@ class QnAEngine:
             if focus_areas:
                 base_prompt += f"\nFocus on these aspects: {', '.join(focus_areas)}"
             base_prompt += f"\nProvide a {detail_level}-detail explanation"
-            
+
             system_message = SystemMessage(
                 content="You are a helpful assistant that responds in Markdown. Help with math homework."
             )
 
             human_message_content = f"""
-            {base_prompt}
-            
-            Provide:
-            1. A detailed explanation
-            2. Step-by-step solution (if applicable)
-            3. Any additional notes or tips
-            
-            {custom_instructions or ''}
-            
-            {format_instructions}
-            """
+             {base_prompt}
+
+             Provide:
+             1. A detailed explanation
+             2. Step-by-step solution (if applicable)
+             3. Any additional notes or tips
+
+             {custom_instructions or ''}
+
+             {format_instructions}
+             """
 
             human_message = HumanMessage(content=[
                 {"type": "text", "text": human_message_content},
@@ -704,7 +703,7 @@ class QnAEngine:
             "formatted_options": [f"{chr(ord('a') + i)}. {option}" for i, option in enumerate(question_data.options)]
         }
         return formatted_output
-    
+
     def _generate_graph(self,instruction):
         """Generates a graph or table using matplotlib based on instruction."""
         try:
@@ -769,42 +768,42 @@ class QnAEngine:
             return None
 
     def generate_visual_qa(self, topic, num=1, chart_type: Optional[Literal["bar", "line", "pie", "scatter", "table"]] = None):
-        """Generates GMAT visual question with graph instructions using Educhain then displays the output."""
-        
+        """Generates visual question with graph instructions using Educhain then displays the output."""
+
         if isinstance(self.llm, ChatGoogleGenerativeAI):
-            parser = PydanticOutputParser(pydantic_object=GMATQuestion)
+            parser = PydanticOutputParser(pydantic_object=VisualQuestion)
             format_instructions = parser.get_format_instructions()
 
             prompt_template = """
-                Generate {num} GMAT style quantitative question from one of the following topics, based on the data provided to you (select a topic at random):
-                 *   Arithmetic (Fractions, Decimals, Percentages, Ratios, Averages) - use only one of 'pie', 'bar', or 'line' chart as visual, pie if using fractions, bar or line if using others
-                 *   Algebra (Linear Equations, Inequalities) - use line or number lines as visual
-                 *   Statistics and Probability (Mean, Median, Mode, Range, Standard Deviation) use only 'bar' or 'scatter' plot as visual
-                 *   Data Insights (Reading and Interpreting Bar Charts, Line Graphs, Scatter Plots, Tables, Sorting, Filtering, Identifying Trends) - use bar, line, scatter or table.
+                 Generate {num} quantitative question that requires a visual representation from one of the following topics, based on the data provided to you (select a topic at random):
+                  *   Arithmetic (Fractions, Decimals, Percentages, Ratios, Averages) - use only one of 'pie', 'bar', or 'line' chart as visual, pie if using fractions, bar or line if using others
+                  *   Algebra (Linear Equations, Inequalities) - use line or number lines as visual
+                  *   Statistics and Probability (Mean, Median, Mode, Range, Standard Deviation) use only 'bar' or 'scatter' plot as visual
+                  *   Data Insights (Reading and Interpreting Bar Charts, Line Graphs, Scatter Plots, Tables, Sorting, Filtering, Identifying Trends) - use bar, line, scatter or table.
 
-                The question should require some kind of visual (bar graph, pie chart, line graph, scatter plot or table) representation of the data along with a detailed instruction on how to create that visual and also options for the question.
+                 The question should require some kind of visual (bar graph, pie chart, line graph, scatter plot or table) representation of the data along with a detailed instruction on how to create that visual and also options for the question.
 
-                The graph/table instruction MUST have the following structure in json format (select the relevant keys based on the visual type you are selecting for the question):
-                {{
-                     "type": "{chart_type}",
-                     "x_labels": ["label 1", "label 2", "label 3", "label 4"] for bar or line graphs,
-                     "x_values": [value 1, value 2, value 3, value 4] for scatter plot,
-                     "y_values": [value 1, value 2, value 3, value 4] for bar or line graphs,
-                     "labels": ["label 1", "label 2", "label 3", "label 4"] for pie chart,
-                     "sizes": [value 1, value 2, value 3, value 4] for pie chart,
-                     "data": [{{ "column1": value, "column2": value }}, ... ] for table,
-                     "y_label": "label for the y axis" for bar, line, scatter plot,
-                     "title": "title of the graph or table"
-                }}
+                 The graph/table instruction MUST have the following structure in json format (select the relevant keys based on the visual type you are selecting for the question):
+                 {{
+                      "type": "{chart_type}",
+                      "x_labels": ["label 1", "label 2", "label 3", "label 4"] for bar or line graphs,
+                      "x_values": [value 1, value 2, value 3, value 4] for scatter plot,
+                      "y_values": [value 1, value 2, value 3, value 4] for bar or line graphs,
+                      "labels": ["label 1", "label 2", "label 3", "label 4"] for pie chart,
+                      "sizes": [value 1, value 2, value 3, value 4] for pie chart,
+                      "data": [{{ "column1": value, "column2": value }}, ... ] for table,
+                      "y_label": "label for the y axis" for bar, line, scatter plot,
+                      "title": "title of the graph or table"
+                  }}
 
-                Output the response in json format with the following structure:
-                {{
-                    "question_text": "gmat style question",
-                    "options": ["option a","option b", "option c", "option d"],
-                    "graph_instruction": {{"type": "bar" or "pie" or "line" or "scatter" or "table", ...}},
-                    "correct_answer": "Correct answer of the question"
-                }}
-            """
+                 Output the response in json format with the following structure:
+                 {{
+                     "question_text": "visual question",
+                     "options": ["option a","option b", "option c", "option d"],
+                     "graph_instruction": {{"type": "bar" or "pie" or "line" or "scatter" or "table", ...}},
+                     "correct_answer": "Correct answer of the question"
+                 }}
+             """
 
             prompt = PromptTemplate(
                 input_variables=["num", "topic", "chart_type"],
@@ -819,7 +818,7 @@ class QnAEngine:
             try:
               questions = []
               try:
-                question_list = GMATQuestionList.model_validate_json(results)
+                question_list = VisualQuestionList.model_validate_json(results)
                 for question_data in question_list.questions:
                     image_buffer = self._generate_graph(question_data.graph_instruction.dict())  # Generate Graph or Table
                     if image_buffer:
@@ -854,7 +853,7 @@ class QnAEngine:
         else:
             print ("Visual Question Generation is only supported for Gemini models")
             return None
-    
+
     def generate_visual_questions_new(self, topic, num=5):
       """Generates visual based questions with graph instructions then displays the output."""
       try:
@@ -903,7 +902,7 @@ class QnAEngine:
 
       except Exception as e:
         print(f"Error in generating visual question : {e}")
-        
+
     def _strip_code(self, response_text):
         response_text = response_text.strip()
         if response_text.startswith('```json') and response_text.endswith('```'):
@@ -920,27 +919,28 @@ class QnAEngine:
 
         prompt = f"""
             Generate exactly {num_questions} quantitative questions based on the topic: {topic}.
-            Each question should require a visual representation of the data (bar graph, pie chart, line graph, or scatter plot) along with a detailed instruction on how to create that visual and options for the question. The question should be solvable based on the data in the visual.
+            Each question MUST require a visual representation of the data (bar graph, pie chart, line graph, or scatter plot) or table along with a detailed instruction on how to create that visual and options for the question. The question should be solvable based on the data in the visual.
 
-            The visual type should be chosen based on the topic. 
+            The visual type should be chosen based on the topic.
             Here is the general guidance for the visualization type:
             - Use pie chart when visualizing proportions or parts of a whole.
             - Use bar or column chart for comparing discrete categories or for displaying the frequency distribution.
             - Use line graph for displaying changes over time or continuous data or relationship between two continuous variables.
             - Use scatter plot for showing the relationship between two continuous variables, to identify any patterns and cluster of data.
 
-            The graph instruction MUST have the following structure in JSON format, selecting the relevant keys based on the visual type:
+            The graph/table instruction MUST have the following structure in JSON format, selecting the relevant keys based on the visual type:
             {{
-                "type": "bar" or "pie" or "line" or "scatter",
+                "type": "bar" or "pie" or "line" or "scatter" or "table",
                 "x_labels": ["label 1", "label 2", "label 3", "label 4"] for bar or line graphs,
                 "x_values": [value 1, value 2, value 3, value 4] for scatter plot,
                 "y_values": [value 1, value 2, value 3, value 4] for bar or line graphs,
                 "labels": ["label 1", "label 2", "label 3", "label 4"] for pie chart,
                 "sizes": [value 1, value 2, value 3, value 4] for pie chart,
+                "data": [{{ "column1": value, "column2": value }}, ... ] for table,
                 "y_label": "label for the y axis" for bar, line, scatter,
                 "title": "title of the graph or table",
                 "labels" : [ "label 1", "label 2", "label 3" ] for multiple lines in line graphs
-            }}
+             }}
 
            The values in x_values, y_values and sizes should be numerical.
            The labels key should be used for multiple lines in line chart.
@@ -951,20 +951,20 @@ class QnAEngine:
                 {{
                     "question_text": "question text",
                     "options": ["option a","option b", "option c", "option d"],
-                    "graph_instruction": {{"type": "bar" or "pie" or "line" or "scatter", ...}},
+                    "graph_instruction": {{"type": "bar" or "pie" or "line" or "scatter" or "table", ...}},
                     "correct_answer": "Correct answer of the question"
                 }},
                   {{
                     "question_text": "question text",
                     "options": ["option a","option b", "option c", "option d"],
-                    "graph_instruction": {{"type": "bar" or "pie" or "line" or "scatter", ...}},
+                    "graph_instruction": {{"type": "bar" or "pie" or "line" or "scatter" or "table", ...}},
                     "correct_answer": "Correct answer of the question"
                 }}
                ]
             }}
         """
 
-        response = gemini_flash.invoke(prompt)
+        response = self.llm.invoke(prompt)
 
         if response and response.content:
             json_output = self._strip_code(response.content)
@@ -1079,7 +1079,7 @@ class QnAEngine:
             # Display the image in the console using HTML (for Colab)
             if instruction["type"] != "table":
                 display(HTML(f'<img src="data:image/png;base64,{img_base64}" style="max-width:500px; max-height:400px;">'))
-            else:
+            elif instruction["type"] == "table":
                 display(HTML(f'<img src="data:image/png;base64,{img_base64}" style="max-width:500px;">'))
 
 
