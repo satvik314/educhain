@@ -122,11 +122,11 @@ class GraphInstructions(BaseModel):
     y_label: Optional[str] = None
     title: Optional[str] = None
 
-class GMATQuestion(BaseModel):
+class VisualQuestion(BaseModel):
     question_text: str = Field(description = "Question text")
     options: List[str] = Field(description = "List of options for the question")
     graph_instruction: GraphInstructions = Field(description = "Instruction to generate the graph")
     correct_answer: str = Field(description = "Correct answer of the question")
 
-class GMATQuestionList(BaseModel):
-    questions: List[GMATQuestion]
+class VisualQuestionList(BaseModel):
+    questions: List[VisualQuestion]
