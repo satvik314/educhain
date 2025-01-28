@@ -1,8 +1,7 @@
-# educhain/models/qna_models.py
-
+# in educhain/models/qna_models.py
 from educhain.models.base_models import BaseQuestion, QuestionList
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 class MultipleChoiceQuestion(BaseQuestion):
     options: List[str]
@@ -15,6 +14,32 @@ class MultipleChoiceQuestion(BaseQuestion):
         if self.explanation:
             print(f"Explanation: {self.explanation}")
         print()
+
+# Add these new models:
+class GraphInstruction(BaseModel):
+    type: str = Field(..., description="Type of visualization (bar, pie, line, scatter, table)")
+    x_labels: Optional[List[str]] = Field(None, description="Labels for x-axis (for bar, line)")
+    x_values: Optional[List[Any]] = Field(None, description="Values for x-axis (for scatter)")
+    y_values: Optional[List[Any]] = Field(None, description="Values for y-axis (for bar, line, scatter, multiple lines in line)")
+    labels: Optional[List[str]] = Field(None, description="Labels for pie chart segments or line graph legend")
+    sizes: Optional[List[float]] = Field(None, description="Sizes for pie chart segments")
+    y_label: Optional[str] = Field(None, description="Label for y-axis")
+    title: Optional[str] = Field(None, description="Title of the visualization")
+    data: Optional[List[Dict[str, Any]]] = Field(None, description="Data for table visualization")
+
+
+class VisualMCQ(MultipleChoiceQuestion):
+    graph_instruction: Optional[GraphInstruction] = Field(None, description="Instructions for generating a graph")
+
+    def show(self):
+        super().show()
+        if self.graph_instruction:
+            print(f"Graph Instruction: {self.graph_instruction}")
+        print()
+
+class VisualMCQList(QuestionList):
+    questions: List[VisualMCQ]
+
 
 class ShortAnswerQuestion(BaseQuestion):
     keywords: List[str] = Field(default_factory=list)
@@ -97,12 +122,12 @@ class SolvedDoubt(BaseModel):
         """Display the solved doubt in a formatted way"""
         print("\n=== Problem Explanation ===")
         print(self.explanation)
-        
+
         if self.steps:
             print("\n=== Solution Steps ===")
             for i, step in enumerate(self.steps, 1):
                 print(f"{i}. {step}")
-        
+
         if self.additional_notes:
             print("\n=== Additional Notes ===")
             print(self.additional_notes)
@@ -112,23 +137,3 @@ class SpeechInstructions(BaseModel):
     num_questions: Optional[int] = 5
     custom_instructions: Optional[str] = None
     detected_language: Optional[str] = "english"
-
-class GraphInstructions(BaseModel):
-    type: str
-    x_labels: Optional[List[str]] = None
-    x_values: Optional[List[float]] = None
-    y_values: Optional[List[float]] = None
-    labels: Optional[List[str]] = None
-    sizes: Optional[List[float]] = None
-    data: Optional[List[dict]] = None
-    y_label: Optional[str] = None
-    title: Optional[str] = None
-
-class GMATQuestion(BaseModel):
-    question_text: str = Field(description = "Question text")
-    options: List[str] = Field(description = "List of options for the question")
-    graph_instruction: GraphInstructions = Field(description = "Instruction to generate the graph")
-    correct_answer: str = Field(description = "Correct answer of the question")
-
-class GMATQuestionList(BaseModel):
-    questions: List[GMATQuestion]
