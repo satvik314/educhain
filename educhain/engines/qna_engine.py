@@ -18,7 +18,7 @@ from educhain.core.config import LLMConfig
 from educhain.models.qna_models import (
     MCQList, ShortAnswerQuestionList, TrueFalseQuestionList,
     FillInBlankQuestionList, MCQListMath, Option ,SolvedDoubt, SpeechInstructions,
-    VisualMCQList, VisualMCQ # Import VisualMCQList and VisualMCQ
+    VisualMCQList, VisualMCQ
 )
 from educhain.utils.loaders import PdfFileLoader, UrlLoader
 from educhain.utils.output_formatter import OutputFormatter
@@ -27,12 +27,10 @@ import os
 from PIL import Image
 import io
 
-# --- Imports for visualization ---
 import matplotlib.pyplot as plt
 import pandas as pd
 import dataframe_image as dfi
 from IPython.display import display, HTML
-# --- End of visualization imports ---
 
 
 import random
@@ -40,7 +38,6 @@ import random
 QuestionType = Literal["Multiple Choice", "Short Answer", "True/False", "Fill in the Blank"]
 OutputFormatType = Literal["pdf", "csv"]
 
-# Define the custom template here as a constant string
 VISUAL_QUESTION_PROMPT_TEMPLATE = """Generate exactly {num} quantitative questions based on the topic: {topic}.
         Each question should require a visual representation of the data (bar graph, pie chart, line graph, or scatter plot or table) along with a detailed instruction on how to create that visual and options for the question. The question should be solvable based on the data in the visual.
 
@@ -95,11 +92,11 @@ VISUAL_QUESTION_PROMPT_TEMPLATE = """Generate exactly {num} quantitative questio
 class QnAEngine:
     def __init__(self, llm_config: Optional[LLMConfig] = None):
         if llm_config is None:
-            llm_config = LLMConfig()  # Use default OpenAI configuration
+            llm_config = LLMConfig()
         self.llm = self._initialize_llm(llm_config)
         self.pdf_loader = PdfFileLoader()
         self.url_loader = UrlLoader()
-        self.embeddings = None  # Initialize as None
+        self.embeddings = None
 
     def _initialize_llm(self, llm_config: LLMConfig):
         if llm_config.custom_model:
@@ -125,20 +122,18 @@ class QnAEngine:
             return PydanticOutputParser(pydantic_object=TrueFalseQuestionList), TrueFalseQuestionList
         elif question_type == "Fill in the Blank":
             return PydanticOutputParser(pydantic_object=FillInBlankQuestionList), FillInBlankQuestionList
-        elif response_model == VisualMCQList: # Add condition for VisualMCQList
+        elif response_model == VisualMCQList:
             return PydanticOutputParser(pydantic_object=VisualMCQList), VisualMCQList
         else:
             raise ValueError(f"Unsupported question type or response model: {question_type}, {response_model}")
 
 
     def _get_prompt_template(self, question_type: QuestionType, custom_template: Optional[str] = None):
-        # Check if custom_template is the keyword "graph"
         if custom_template == "graph":
-            return VISUAL_QUESTION_PROMPT_TEMPLATE # Return the predefined visual question template
+            return VISUAL_QUESTION_PROMPT_TEMPLATE
         elif custom_template:
-            return custom_template # If it's a string template, use it
+            return custom_template
         else:
-            # Fallback to default base template if no custom template is provided or if it's not "graph"
             base_template = f"""
             Generate {{num}} {question_type} question(s) based on the given topic.
             Topic: {{topic}}
@@ -162,14 +157,12 @@ class QnAEngine:
 
 
     def _create_vector_store(self, content: str) -> Chroma:
-        # Ensure embeddings are initialized
         if self.embeddings is None:
             self.embeddings = OpenAIEmbeddings()
 
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
         texts = text_splitter.split_text(content)
 
-        # Create the vector store
         vectorstore = Chroma.from_texts(texts, self.embeddings)
 
         return vectorstore
@@ -192,7 +185,6 @@ class QnAEngine:
             raise ValueError("Unsupported source type. Please use 'pdf', 'url', or 'text'.")
 
     def _handle_output_format(self, data: Any, output_format: Optional[OutputFormatType]) -> Union[Any, Tuple[Any, str]]:
-        """Handle output format conversion if specified"""
         if output_format is None:
             return data
 
@@ -207,13 +199,9 @@ class QnAEngine:
         return data, output_file
 
 
-    def generate_and_save_visual(self, instruction, question_text, options, correct_answer):
-        """
-        Generates visualizations based on instructions and saves as base64.
-        Now a method of the QnAEngine class.
-        """
+    def _generate_and_save_visual(self, instruction, question_text, options, correct_answer):
         try:
-            plt.figure(figsize=(10, 8))  # Set a large figure size for readability
+            plt.figure(figsize=(10, 8))
             img_buffer = io.BytesIO()
 
             if instruction["type"] == "bar":
@@ -227,7 +215,6 @@ class QnAEngine:
 
             elif instruction["type"] == "line":
                 if isinstance(instruction["y_values"][0], list):
-                    # Handle multiple lines
                     for i, y_vals in enumerate(instruction["y_values"]):
                         plt.plot(instruction["x_labels"], y_vals, marker="o", linestyle="-", label=instruction["labels"][i])
                 else:
@@ -266,19 +253,16 @@ class QnAEngine:
                 df = pd.DataFrame(instruction["data"])
                 img_buffer = io.BytesIO()
                 dfi.export(df, img_buffer, table_conversion="matplotlib")
-                # dfi.export(df, "table.png", table_conversion="matplotlib")
 
             plt.close()
             img_buffer.seek(0)
             img_base64 = base64.b64encode(img_buffer.read()).decode('utf-8')
 
-            # Display the image in the console using HTML (for Colab)
             if instruction["type"] != "table":
                 display(HTML(f'<img src="data:image/png;base64,{img_base64}" style="max-width:500px; max-height:400px;">'))
             else:
                 display(HTML(f'<img src="data:image/png;base64,{img_base64}" style="max-width:500px;">'))
 
-            # Display the question, options, and correct answer
             print("\nQuestion:", question_text)
             for idx, option in enumerate(options, start=1):
                 print(f"{chr(64 + idx)}. {option}")
@@ -292,39 +276,31 @@ class QnAEngine:
             return None
 
 
-    def display_visual_questions(self, ques: VisualMCQList):
-        """
-        Displays visual questions, generates visualizations, and prints question details.
-        This method is part of QnAEngine now.
-        """
-        if ques and ques.questions:  # Check if questions were generated successfully
+    def _display_visual_questions(self, ques: VisualMCQList):
+        if ques and ques.questions:
             for q_data in ques.questions:
                 instruction = q_data.graph_instruction
                 question_text = q_data.question
                 options = q_data.options
                 correct_answer = q_data.answer
 
-                self.generate_and_save_visual(instruction.dict(), question_text, options, correct_answer)  # Call the method from self
-                print(q_data)  # print the entire VisualMCQ object
+                self._generate_and_save_visual(instruction.dict(), question_text, options, correct_answer)
+                print(q_data)
         else:
-            print("Failed to generate questions or no questions were returned.")
+            print("Failed to generate visual questions or no questions were returned.")
 
 
-    def generate_questions( # Modified to use display_visual_questions for VisualMCQList
+    def generate_visual_questions(
         self,
         topic: str,
         num: int = 1,
-        question_type: QuestionType = "Multiple Choice",
-        prompt_template: Optional[str] = None,
         custom_instructions: Optional[str] = None,
-        response_model: Optional[Type[Any]] = None,
         output_format: Optional[OutputFormatType] = None,
         **kwargs
-    ) -> Any:
-        parser, model = self._get_parser_and_model(question_type, response_model)
+    ) -> Optional[VisualMCQList]:
+        parser, model = self._get_parser_and_model("Multiple Choice", VisualMCQList)
         format_instructions = parser.get_format_instructions()
-
-        template = self._get_prompt_template(question_type, prompt_template) # Get template using the new logic
+        template = self._get_prompt_template("Multiple Choice", "graph")
 
         if custom_instructions:
             template += f"\n\nAdditional Instructions:\n{custom_instructions}"
@@ -349,15 +325,62 @@ class QnAEngine:
             if output_format:
                 self._handle_output_format(structured_output, output_format)
 
-            if isinstance(structured_output, VisualMCQList): # Display visual questions if VisualMCQList
-                self.display_visual_questions(structured_output) # Call display method from QnAEngine
+            if isinstance(structured_output, VisualMCQList):
+                self._display_visual_questions(structured_output)
 
             return structured_output
         except Exception as e:
-            print(f"Error parsing output: {e}")
+            print(f"Error parsing output in generate_visual_questions: {e}")
             print("Raw output:")
             print(results)
+            return None
+
+
+    def generate_questions(
+        self,
+        topic: str,
+        num: int = 1,
+        question_type: QuestionType = "Multiple Choice",
+        prompt_template: Optional[str] = None,
+        custom_instructions: Optional[str] = None,
+        response_model: Optional[Type[Any]] = None,
+        output_format: Optional[OutputFormatType] = None,
+        **kwargs
+    ) -> Any:
+        parser, model = self._get_parser_and_model(question_type, response_model)
+        format_instructions = parser.get_format_instructions()
+        template = self._get_prompt_template(question_type, prompt_template)
+
+        if custom_instructions:
+            template += f"\n\nAdditional Instructions:\n{custom_instructions}"
+
+        template += "\n\nThe response should be in JSON format.\n{format_instructions}"
+
+        question_prompt = PromptTemplate(
+            input_variables=["num", "topic"],
+            template=template,
+            partial_variables={"format_instructions": format_instructions}
+        )
+
+        question_chain = question_prompt | self.llm
+        results = question_chain.invoke(
+            {"num": num, "topic": topic, **kwargs},
+        )
+        results = results.content
+
+        try:
+            structured_output = parser.parse(results)
+
+            if output_format:
+                self._handle_output_format(structured_output, output_format)
+
+
+            return structured_output
+        except Exception as e:
+            print(f"Error parsing output in generate_questions: {e}")
+            print("Raw output:")
             return model()
+
 
     def generate_questions_from_data(
         self,
@@ -397,7 +420,6 @@ class QnAEngine:
         output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
-        # Initialize embeddings only when this method is called
         if self.embeddings is None:
             self.embeddings = OpenAIEmbeddings()
 
@@ -409,7 +431,7 @@ class QnAEngine:
         parser, model = self._get_parser_and_model(question_type, response_model)
         format_instructions = parser.get_format_instructions()
 
-        template = self._get_prompt_template(question_type, prompt_template) # Get template using the new logic
+        template = self._get_prompt_template(question_type, prompt_template)
 
 
         prompt_template += """
@@ -433,7 +455,7 @@ class QnAEngine:
 
         query = question_prompt.format(
             num=num,
-            topic=content[:1000],  # Use a subset of content to fit in context
+            topic=content[:1000],
             learning_objective=learning_objective,
             difficulty_level=difficulty_level,
             **kwargs
@@ -447,12 +469,10 @@ class QnAEngine:
             if output_format:
                 self._handle_output_format(structured_output, output_format)
 
-            if isinstance(structured_output, VisualMCQList): # Display visual questions if VisualMCQList
-                self.display_visual_questions(structured_output) # Call display method from QnAEngine
 
             return structured_output
         except Exception as e:
-            print(f"Error parsing output: {e}")
+            print(f"Error parsing output in generate_questions_with_rag: {e}")
             print("Raw output:", results)
             return model()
 
@@ -463,19 +483,16 @@ class QnAEngine:
         return response.split(';')
 
     def _process_math_result(self, math_result: Any) -> str:
-        """Helper method to process and extract numerical answer from LLMMathChain result"""
         if isinstance(math_result, dict):
             if 'answer' in math_result:
                 return math_result['answer'].split('Answer: ')[-1].strip()
             elif 'result' in math_result:
                 return math_result['result'].strip()
 
-        # Handle string response
         result_str = str(math_result)
         if 'Answer:' in result_str:
             return result_str.split('Answer:')[-1].strip()
 
-        # Remove any question repetition and extract the numerical result
         lines = result_str.split('\n')
         for line in reversed(lines):
             if line.strip().replace('.', '').isdigit():
@@ -500,7 +517,7 @@ class QnAEngine:
 
         format_instructions = parser.get_format_instructions()
 
-        template = self._get_prompt_template(question_type, prompt_template) # Get template using the new logic
+        template = self._get_prompt_template(question_type, prompt_template)
 
 
         prompt_template = """
@@ -545,7 +562,6 @@ class QnAEngine:
         except Exception as e:
             print(f"Error parsing output: {e}")
             print("Raw output:")
-            print(results)
             return MCQListMath()
 
         llm_math = LLMMathChain.from_llm(llm=self.llm, verbose=True)
@@ -553,23 +569,18 @@ class QnAEngine:
         for question in structured_output.questions:
             if question.requires_math:
                 try:
-                    # Extract numerical expression from the question
                     math_result = llm_math.invoke({"question": question.question})
 
                     try:
-                        # Process the result using the helper method
                         solution = self._process_math_result(math_result)
 
-                        # Convert to float and format
                         numerical_solution = float(solution)
                         formatted_solution = f"{numerical_solution:.2f}"
 
                         question.explanation += f"\n\nMath solution: {formatted_solution}"
 
-                        # Generate options with the correct string format
                         correct_option = Option(text=formatted_solution, correct='true')
 
-                        # Generate incorrect options
                         variations = [0.9, 1.1, 1.2]
                         incorrect_options = []
 
@@ -582,7 +593,6 @@ class QnAEngine:
                                 )
                             )
 
-                        # Combine and shuffle options
                         question.options = [correct_option] + incorrect_options
                         random.shuffle(question.options)
 
@@ -603,7 +613,6 @@ class QnAEngine:
         return structured_output
 
     def _extract_video_id(self, url: str) -> str:
-        """Extract YouTube video ID from URL."""
         pattern = r'(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(?:embed\/)?(?:v\/)?(?:shorts\/)?(?:live\/)?(?:feature=player_embedded&v=)?(?:e\/)?(?:\/)?([^\s&?#]+)'
         match = re.search(pattern, url)
         if match:
@@ -611,34 +620,25 @@ class QnAEngine:
         raise ValueError("Invalid YouTube URL")
 
     def _get_youtube_transcript(self, video_id: str, target_language: str = 'en') -> tuple[str, str]:
-        """
-        Get and format YouTube video transcript with multi-language support.
-        Returns tuple of (transcript, language_code)
-        """
         try:
             transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
 
-            # Get all available languages
             available_languages = [transcript.language_code for transcript in transcript_list]
 
             if not available_languages:
                 raise ValueError("No transcripts available for this video")
 
-            # First try to get transcript in target language
             try:
                 transcript = transcript_list.find_transcript([target_language])
                 return TextFormatter().format_transcript(transcript.fetch()), target_language
             except:
-                # If target language not found, get any available transcript
                 transcript = transcript_list.find_transcript(available_languages)
                 original_language = transcript.language_code
 
-                # If translation to target language is available and requested
                 if transcript.is_translatable and target_language != original_language:
                     translated = transcript.translate(target_language)
                     return TextFormatter().format_transcript(translated.fetch()), target_language
 
-                # Return original language transcript if no translation needed/available
                 return TextFormatter().format_transcript(transcript.fetch()), original_language
 
         except Exception as e:
@@ -669,21 +669,6 @@ class QnAEngine:
         preserve_original_language: bool = False,
         **kwargs
     ) -> Any:
-        """
-        Generate questions from a YouTube video transcript in specified language.
-
-        Args:
-            url: YouTube video URL
-            num: Number of questions to generate
-            question_type: Type of questions to generate
-            prompt_template: Optional custom prompt template
-            custom_instructions: Optional additional instructions
-            response_model: Optional custom response model
-            output_format: Optional output format (pdf/csv)
-            target_language: Target language for questions (e.g., 'hi' for Hindi)
-            preserve_original_language: If True, keeps original language even if different from target
-            **kwargs: Additional arguments
-        """
         try:
             video_id = self._extract_video_id(url)
             transcript, detected_language = self._get_youtube_transcript(video_id, target_language)
@@ -691,12 +676,10 @@ class QnAEngine:
             if not transcript:
                 raise ValueError("No transcript content retrieved from the video")
 
-            # Language-specific instructions
             language_context = f"\nContent language: {detected_language}"
             if detected_language != target_language and not preserve_original_language:
                 language_context += f"\nGenerate questions in {target_language}"
 
-            # Update custom instructions
             video_context = f"\nThis content is from a YouTube video (ID: {video_id}). {language_context}"
             if custom_instructions:
                 custom_instructions = video_context + "\n" + custom_instructions
@@ -722,7 +705,6 @@ class QnAEngine:
             raise Exception(f"Unexpected error processing YouTube video: {str(e)}")
 
     def _load_image(self, source: str) -> str:
-        """Load and encode image from file or URL"""
         try:
             if source.startswith(('http://', 'https://')):
                 return source
@@ -732,7 +714,7 @@ class QnAEngine:
                 image = Image.open(source)
                 if image.mode not in ('RGB', 'L'):
                     image = image.convert('RGB')
-
+                
                 buffered = io.BytesIO()
                 image.save(buffered, format="JPEG")
                 return f"data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode()}"
@@ -751,7 +733,7 @@ class QnAEngine:
     ) -> SolvedDoubt:
         """
         Analyze an image and provide detailed explanation with solution steps.
-
+        
         Args:
             image_source: Path or URL to the image
             prompt: Custom prompt for analysis
@@ -759,7 +741,7 @@ class QnAEngine:
             detail_level: Level of detail in explanation
             focus_areas: Specific aspects to focus on
             **kwargs: Additional parameters for the model
-
+        
         Returns:
             SolvedDoubt: Object containing explanation, steps, and additional notes
         """
@@ -768,7 +750,7 @@ class QnAEngine:
 
         try:
             image_content = self._load_image(image_source)
-
+            
             # Create parser for structured output
             parser = PydanticOutputParser(pydantic_object=SolvedDoubt)
             format_instructions = parser.get_format_instructions()
@@ -778,21 +760,21 @@ class QnAEngine:
             if focus_areas:
                 base_prompt += f"\nFocus on these aspects: {', '.join(focus_areas)}"
             base_prompt += f"\nProvide a {detail_level}-detail explanation"
-
+            
             system_message = SystemMessage(
                 content="You are a helpful assistant that responds in Markdown. Help with math homework."
             )
 
             human_message_content = f"""
             {base_prompt}
-
+            
             Provide:
             1. A detailed explanation
             2. Step-by-step solution (if applicable)
             3. Any additional notes or tips
-
+            
             {custom_instructions or ''}
-
+            
             {format_instructions}
             """
 
@@ -830,3 +812,5 @@ class QnAEngine:
                 steps=[],
                 additional_notes="An error occurred during processing."
             )
+
+   
