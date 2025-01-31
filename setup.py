@@ -19,7 +19,9 @@ setup(
         "requests",
         "chromadb==0.5.15",
         "protobuf<5",
-        "Pillow"  #image processing
+        "Pillow", 
+        "dataframe_image",
+        "langchain_google_genai"
        
     ],
     extras_require={
