@@ -1,6 +1,7 @@
+# in educhain/models/qna_models.py
 from educhain.models.base_models import BaseQuestion, QuestionList
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 class MultipleChoiceQuestion(BaseQuestion):
     options: List[str]
@@ -13,6 +14,32 @@ class MultipleChoiceQuestion(BaseQuestion):
         if self.explanation:
             print(f"Explanation: {self.explanation}")
         print()
+
+# Add these new models:
+class GraphInstruction(BaseModel):
+    type: str = Field(..., description="Type of visualization (bar, pie, line, scatter, table)")
+    x_labels: Optional[List[str]] = Field(None, description="Labels for x-axis (for bar, line)")
+    x_values: Optional[List[Any]] = Field(None, description="Values for x-axis (for scatter)")
+    y_values: Optional[List[Any]] = Field(None, description="Values for y-axis (for bar, line, scatter, multiple lines in line)")
+    labels: Optional[List[str]] = Field(None, description="Labels for pie chart segments or line graph legend")
+    sizes: Optional[List[float]] = Field(None, description="Sizes for pie chart segments")
+    y_label: Optional[str] = Field(None, description="Label for y-axis")
+    title: Optional[str] = Field(None, description="Title of the visualization")
+    data: Optional[List[Dict[str, Any]]] = Field(None, description="Data for table visualization")
+
+
+class VisualMCQ(MultipleChoiceQuestion):
+    graph_instruction: Optional[GraphInstruction] = Field(None, description="Instructions for generating a graph")
+
+    def show(self):
+        super().show()
+        if self.graph_instruction:
+            print(f"Graph Instruction: {self.graph_instruction}")
+        print()
+
+class VisualMCQList(QuestionList):
+    questions: List[VisualMCQ]
+
 
 class ShortAnswerQuestion(BaseQuestion):
     keywords: List[str] = Field(default_factory=list)
@@ -95,12 +122,12 @@ class SolvedDoubt(BaseModel):
         """Display the solved doubt in a formatted way"""
         print("\n=== Problem Explanation ===")
         print(self.explanation)
-        
+
         if self.steps:
             print("\n=== Solution Steps ===")
             for i, step in enumerate(self.steps, 1):
                 print(f"{i}. {step}")
-        
+
         if self.additional_notes:
             print("\n=== Additional Notes ===")
             print(self.additional_notes)
