@@ -1,0 +1,275 @@
+## Educhain Standard
+
+from educhain import Educhain
+
+client = Educhain()
+
+mcqs = client.qna_engine.generate_questions(topic = "Thermodynamics", num_questions = 5)
+
+mcqs.json()
+mcqs.show()
+
+
+## Educhain - Different Type of Questions
+
+####  Supports "Multiple Choice" (default); "True/False"; "Fill in the Blank"; "Short Answer"
+
+from educhain import Educhain
+
+client = Educhain()
+
+ques = client.qna_engine.generate_questions(topic = "Psychology", 
+                                            num = 10,
+                                            question_type="Fill in the Blank"
+                                            custom_instructions = "Only basic questions")
+
+print(ques)
+ques.json() #ques.dict()
+
+
+## Educhain Custom Models
+
+from langchain_openai import ChatOpenAI
+from educhain import Educhain, LLMConfig
+
+llama3 = ChatOpenAI(
+    model = "llama-3.3-70b-versatile",
+    openai_api_base = "https://api.groq.com/openai/v1",
+    openai_api_key = os.getenv("GROQ_API_KEY")
+)
+
+llama3_config = LLMConfig(custom_model=llama3)
+client_llama3 = Educhain(llama3_config)
+
+questions = client_llama3.qna_engine.generate_questions(
+    topic="Algebra",
+    num=15,
+    custom_instructions="Solving polynomial equations"
+)
+
+questions.show()
+
+
+## Educhain with Custom Prompt Templates  
+
+from educhain import Educhain
+
+client = Educhain()
+
+custom_template = """
+Generate {num} multiple-choice question (MCQ) based on the given topic and level.
+Provide the question, four answer options, and the correct answer.
+Topic: {topic}
+Learning Objective: {learning_objective}
+Difficulty Level: {difficulty_level}
+"""
+
+ques = client.qna_engine.generate_questions(
+    topic="Python Programming",
+    num=2,
+    learning_objective="Usage of Python classes",
+    difficulty_level="Hard",
+    prompt_template=custom_template,
+)
+
+print(ques)
+
+
+## Educhain with Custom Response Models 
+
+from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field, validator
+
+class Optioncustom(BaseModel):
+    text: str = Field(description="The text of the option.")
+    correct: str = Field(description="Whether the option is correct or not. Either 'true' or 'false'")
+
+
+class MCQcustom(BaseModel):
+    question: str = Field(description="The quiz question")
+    options: List[Optioncustom] = Field(description="The possible answers to the question. The list should contain 4 options.")
+    explanation: str = Field(default=None, description="Explanation of the question")
+    blooms_level: str = Field(default=None, description="The Bloom's taxonomy level of the question")
+    difficulty_level: str = Field(default=None, description="The difficulty level of the question. Can be 'easy', 'medium' or 'hard' mapping to the difficulty rating")
+    difficulty_rating: int = Field(ge=1, le=5, description="The difficulty rating of the question (1-3)")
+    metadata: Dict[str, Any] = Field(default={}, description="Additional metadata for the question. Like topic, subtopic etc")
+
+    @property
+    def correct_answer(self):
+        for option in self.options:
+            if option.correct.lower() == 'true':
+                return option.text
+        return None
+
+    def show(self):
+        options_str = "\n".join(f"  {chr(65 + i)}. {option.text}" for i, option in enumerate(self.options))
+        print(f"Question: {self.question}\nOptions:\n{options_str}")
+        print(f"Correct Answer: {self.correct_answer}")
+        print(f"Explanation: {self.explanation}")
+        print(f"Bloom's Level: {self.blooms_level}")
+        print(f"Difficulty Level: {self.difficulty_level}")
+        print(f"Difficulty Rating: {self.difficulty_rating}")
+        print(f"Metadata: {self.metadata}\n")
+
+
+class MCQListcustom(BaseModel):
+    questions: List[MCQcustom]
+
+    def show(self):
+        print("MCQs:\n")
+        for i, mcq in enumerate(self.questions, start=1):
+            print(f"Question {i}:")
+            mcq.show()
+
+
+from educhain import Educhain
+
+client = Educhain()
+
+result = client.qna_engine.generate_questions(
+    topic="Indian Geography",
+    num=3,
+    response_model = MCQListcustom
+)
+
+result
+
+## Educhain with Custom Response Models, Custom LLM and Custom Prompt Templates
+
+from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field
+
+class Option(BaseModel):
+    text: str = Field(description="The text of the option")
+    correct: bool = Field(description="Whether this option is correct")
+
+class GmatQuestion(BaseModel):
+    # Basic question components
+    question_text: str = Field(description="The actual question text")
+    options: List[Option] = Field(description="List of 4-5 answer options")
+    explanation: str = Field(description="Detailed explanation of the solution")
+    
+    # Question metadata and analytics
+    difficulty_level: str = Field(description="Easy, Medium, Hard")
+    difficulty_rating: int = Field(ge=1, le=5, description="Numerical difficulty (1-5)")
+    estimated_time: int = Field(description="Estimated time to solve in seconds")
+    metadata: Dict[str, Any] = Field(
+        default={},
+        description="Additional metadata 4 fields -  including section, subsection, topic and subtopic."
+    )
+
+class GmatQuestionList(BaseModel):
+    questions: List[GmatQuestion]
+    
+    def show(self):
+        for i, q in enumerate(self.questions, 1):
+            print(f"\nQuestion {i}:")
+            print(f"Q: {q.question_text}\n")
+            for j, opt in enumerate(q.options):
+                print(f"{chr(65+j)}. {opt.text}")
+            print(f"\nExplanation: {q.explanation}")
+            print(f"Metadata: {q.metadata}")
+            print(f"Difficulty: {q.difficulty_level} ({q.difficulty_rating}/5)")
+            print(f"Estimated Time: {q.estimated_time} seconds")
+
+GMAT_PROMPT_TEMPLATE = """
+Generate {num} GMAT-style questions following these specifications:
+
+Section: {section}
+Subsection: {subsection}
+Topic: {topic}
+Subtopic: {subtopic}
+Difficulty: {difficulty_level}
+
+Requirements:
+1. Questions should follow official GMAT style and format
+2. For Problem Solving: Provide 5 answer choices with one correct answer
+3. For Data Sufficiency: Use standard GMAT format (A,B,C,D,E)
+4. For Verbal: Follow section-specific formats
+5. Include realistic distractors that test common misconceptions
+6. Explanations should include:
+   - Step-by-step solution approach
+   - Key concepts tested
+   - Common pitfalls to avoid
+7. Time required should match official GMAT guidelines
+8. Include all relevant formulas in explanations
+"""
+
+from educhain import Educhain, LLMConfig
+from langchain_openai import ChatOpenAI
+
+deepseek_v3 = ChatOpenAI(
+    model="deepseek-chat",
+    openai_api_key=os.getenv("DEEPSEEK_API_KEY"),
+    openai_api_base="https://api.deepseek.com",
+    temperature=0.85
+)
+
+deepseek_config = LLMConfig(custom_model=deepseek_v3)
+
+client_deepseek = Educhain(deepseek_config)
+
+result = client_deepseek.qna_engine.generate_questions(
+    section="Quantitative Reasoning",
+    subsection="Problem Solving",
+    topic="arithmetic",
+    subtopic="ratios",
+    num=10,
+    difficulty_level="Medium",
+    prompt_template=GMAT_PROMPT_TEMPLATE,
+    response_model=GmatQuestionList
+)
+
+result.show()
+
+
+## Educhain Generate Questions from Data
+
+### Supports url, text, pdf. 
+
+from educhain import Educhain
+client = Educhain()
+
+ques = client.qna_engine.generate_questions_from_data(
+    source="https://en.wikipedia.org/wiki/Big_Mac_Index",
+    source_type="url",
+    num=5)
+
+print(ques)
+ques.json() # ques.dict()
+
+
+from educhain import Educhain
+
+client = Educhain()
+
+
+pdf_questions = client.qna_engine.generate_questions_from_data(
+    source="/content/1706.03762v7.pdf",
+    source_type="pdf",
+    num=5,
+    question_type="Multiple Choice",
+    learning_objective="",
+    difficulty_level="Intermediate",
+    custom_instructions= "what is this pdf about"
+)
+
+pdf_questions.show()
+
+
+from educhain import Educhain
+
+client = Educhain()
+
+text_questions = client.qna_engine.generate_questions_from_data(
+    source="""Navigate the AI Landscape
+            After Week 1, you'll possess a deep understanding of LLMs, Transformers, and Prompt Engineering, enabling you to guide AI initiatives with confidence.""",
+    source_type="text",
+    num=3,
+    question_type="Multiple Choice",
+    learning_objective="",
+    difficulty_level="Intermediate",
+    custom_instructions= "Focus on LLMS"
+)
+
+text_questions.show()
