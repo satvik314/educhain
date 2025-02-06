@@ -12,225 +12,23 @@
 
 </div>
 
-# Educhain 🎓🔗  
-
-[![Educhain Website](https://img.shields.io/badge/Educhain-Website-blue?style=for-the-badge&logo=google-chrome)](https://educhain.in)  [![Documentation](https://img.shields.io/badge/Educhain-Documentation-brightgreen?style=for-the-badge&logo=readthedocs)](docs/index.md)  
-
-Welcome to Educhain! Transform your educational content effortlessly with cutting-edge AI tools. Explore our **[Website](https://educhain.in)** and dive into the **[Documentation](docs/index.md)** to get started.  
-
+# Educhain 🎓🔗
+[Website](https://educhain.in) | [Documentation](docs/index.md)
 
 Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content. From generating multiple-choice questions to crafting comprehensive lesson plans, Educhain makes it easy to apply AI in various educational scenarios.
 
 <img src="images/logo.svg" alt="Educhain Logo" align="center" height="120" width="120" />
 
+## 🚀 Features
 
-## 🚀 Features  
-
-
-
-<details>
-<summary>📝 Generate Multiple Choice Questions (MCQs)</summary>
-
-````python
-from educhain import Educhain
-
-client = Educhain()
-
-# Basic MCQ generation
-mcq = client.qna_engine.generate_questions(
-    topic="Solar System",
-    num=3,
-    question_type="Multiple Choice"
-)
-
-# Advanced MCQ with custom parameters
-advanced_mcq = client.qna_engine.generate_questions(
-    topic="Solar System",
-    num=3,
-    question_type="Multiple Choice",
-    difficulty_level="Hard",
-    custom_instructions="Include recent discoveries"
-)
-
-print(mcq.json())  # View in JSON format
-````
-</details>
-
-<details>
-<summary>📊 Create Lesson Plans </summary>
-
-````python
-from educhain import Educhain
-
-client = Educhain()
-
-# Basic lesson plan
-lesson = client.content_engine.generate_lesson_plan(
-    topic="Photosynthesis"
-)
-
-# Advanced lesson plan with specific parameters
-detailed_lesson = client.content_engine.generate_lesson_plan(
-    topic="Photosynthesis",
-    duration="60 minutes",
-    grade_level="High School",
-    learning_objectives=["Understanding the process", "Identifying key components"]
-)
-
-print(lesson.json())
-````
-</details>
-
-<details>
-<summary>🔄 Support for Various LLM Models</summary>
-
-````python
-from educhain import Educhain, LLMConfig
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import ChatOpenAI
-
-# Using Gemini
-gemini_model = ChatGoogleGenerativeAI(
-    model="gemini-1.5-pro",
-    google_api_key="YOUR_GOOGLE_API_KEY"
-)
-gemini_config = LLMConfig(custom_model=gemini_model)
-gemini_client = Educhain(gemini_config)
-
-# Using GPT-4
-gpt4_model = ChatOpenAI(
-    model_name="gpt-4",
-    openai_api_key="YOUR_OPENAI_API_KEY"
-)
-gpt4_config = LLMConfig(custom_model=gpt4_model)
-gpt4_client = Educhain(gpt4_config)
-````
-</details>
-
-<details>
-<summary>📁 Export Questions to Different Formats</summary>
-
-````python
-from educhain import Educhain
-
-client = Educhain()
-questions = client.qna_engine.generate_questions(topic="Climate Change", num=5)
-
-# Export to JSON
-questions.json("climate_questions.json")
-
-# Export to PDF
-questions.to_pdf("climate_questions.pdf")
-
-# Export to CSV
-questions.to_csv("climate_questions.csv")
-````
-</details>
-
-<details>
-<summary>🎨 Customizable Prompt Templates</summary>
-
-````python
-from educhain import Educhain
-
-client = Educhain()
-
-# Custom template for questions
-custom_template = """
-Generate {num} {question_type} questions about {topic}.
-Ensure the questions are:
-- At {difficulty_level} level
-- Focus on {learning_objective}
-- Include practical examples
-- {custom_instructions}
-"""
-
-questions = client.qna_engine.generate_questions(
-    topic="Machine Learning",
-    num=3,
-    question_type="Multiple Choice",
-    difficulty_level="Intermediate",
-    learning_objective="Understanding Neural Networks",
-    custom_instructions="Include recent developments",
-    prompt_template=custom_template
-)
-````
-</details>
-
-<details>
-<summary>📚 Generate Questions from Files</summary>
-
-````python
-from educhain import Educhain
-
-client = Educhain()
-
-# From URL
-url_questions = client.qna_engine.generate_questions_from_data(
-    source="https://example.com/article",
-    source_type="url",
-    num=3
-)
-
-# From PDF
-pdf_questions = client.qna_engine.generate_questions_from_data(
-    source="path/to/document.pdf",
-    source_type="pdf",
-    num=3
-)
-
-# From Text File
-text_questions = client.qna_engine.generate_questions_from_data(
-    source="path/to/content.txt",
-    source_type="text",
-    num=3
-)
-````
-</details>
-
-<details>
-<summary>📹 Generate Questions from YouTube Videos    <img src="images/new.png" width="30" height="30" alt="New" background-color: transparent> </summary>
-
-````python
-from educhain import Educhain
-
-client = Educhain()
-
-# Basic usage - Generate 3 MCQs from a YouTube video
-questions = client.qna_engine.generate_questions_from_youtube(
-    url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    num=3
-)
-print(questions.json())
-
-# Generate questions preserving original language
-preserved_questions = client.qna_engine.generate_questions_from_youtube(
-    url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    num=2,
-    target_language='hi',
-    preserve_original_language=True  # Keeps original language
-)
-````
-</details>
-
-<details>
-<summary>🥽 Generate Questions from Images    <img src="images/new.png" width="30" height="30" alt="New" background-color: transparent>  </summary>
-
-````python
-from educhain import Educhain
-
-client = Educhain() #Default is 4o-mini (make sure to use a multimodal LLM!)
-
-question = client.qna_engine.solve_doubt(
-    image_source="path-to-your-image",
-    prompt="Explain the diagram in detail",
-    detail_level = "High" 
-    )
-
-print(question)
-````
-</details>
-
+- 📝 Generate Multiple Choice Questions (MCQs)
+- 📊 Create Lesson Plans
+- 🔄 Support for various LLM models
+- 📁 Export questions to JSON, PDF, and CSV formats
+- 🎨 Customizable prompt templates
+- 📚 Generate questions from text/PDF/URL files
+- 📹 Generate questions from YouTube videos
+- 🥽 Generate questions from images
 
 ## 📈 Workflow
 
@@ -251,9 +49,7 @@ pip install educhain
 
 ## Starter Guide
 
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1JNjQz20SRnyRyAN9YtgCzYq4gj8iBTRH?usp=sharing)
-
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1JNjQz20SRnyRyAN9YtgCzYq4gj8iBTRH?usp=chrome_ntp#scrollTo=UtLn9rOF-gPm)
 
 ### Quick Start
 
@@ -413,9 +209,14 @@ Educhain's adoption has been growing rapidly:
 - [ ] Integration with popular Learning Management Systems
 - [ ] Mobile app for on-the-go content generation
 
-## 🤝 Contributing
+## 🤝 Open Source Contributions Welcome!
 
-We welcome contributions! Please see our [Contribution Guide](CONTRIBUTING.md) for more details.
+We invite you to help enhance our library. If you have **any ideas, improvements, or suggestions for enhancements** to contribute, please open a [GitHub issue](https://github.com/satvik314/educhain/issues) or submit a pull request. Be sure to adhere to our existing project structure and include a detailed README.md for any new Contribution.
+
+Thank you for your continued support, community!
+
+[![Star History Chart](https://api.star-history.com/svg?repos=satvik314/educhain&type=Date)](https://star-history.com/#satvik314/educhain&Date)
+
 
 ## 📄 License
 
@@ -425,9 +226,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - For general inquiries: [educhain.in](https://educhain.in)
 - For technical support: [satvik@buildfastwithai.com](mailto:satvik@buildfastwithai.com)
-- Follow us on [Twitter](https://twitter.com/educhain_ai)
-
-For bug reports or feature requests, please open an issue on our [GitHub repository](https://github.com/educhain/educhain).
+- Follow us on [Twitter](https://x.com/EduchainWithAI)
 
 ---
 
@@ -436,3 +235,6 @@ For bug reports or feature requests, please open an issue on our [GitHub reposit
 Made with ❤️ by Buildfastwithai
 
 [www.educhain.in](https://educhain.in)
+```
+
+You can now copy and paste this directly into your project!
