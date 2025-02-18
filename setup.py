@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="educhain",
-    version="0.3.5",
+    version="0.3.6",
     packages=find_packages(),
     install_requires=[
         "langchain==0.3.4",
@@ -19,9 +19,12 @@ setup(
         "requests",
         "chromadb==0.5.15",
         "protobuf<5",
-        "Pillow", 
-        "dataframe_image",
-        "langchain_google_genai"
+        "pillow==11.1.0", 
+        "dataframe-image==0.2.7",
+        "langchain-google-genai==2.0.9",
+        "pandas==2.2.3",
+        "ipython==8.32.0",
+        "matplotlib==3.8.0",
        
     ],
     extras_require={
