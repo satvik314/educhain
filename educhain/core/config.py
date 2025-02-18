@@ -6,7 +6,7 @@ class LLMConfig:
         api_key: Optional[str] = None,
         model_name: str = "gpt-4o-mini",
         max_tokens: int = 1500,
-        temperature: Optional[float] = None,        
+        temperature: float = 0.7,
         custom_model: Optional[Any] = None,
         base_url: Optional[str] = None,
         default_headers: Optional[dict] = None
