@@ -21,8 +21,9 @@ setup(
         "protobuf<5",
         "Pillow", 
         "dataframe_image",
-        "langchain_google_genai"
-       
+        "langchain_google_genai",
+        "langchain-ollama>=0.0.1",
+        "langchain-core>=0.1.7",
     ],
     extras_require={
         "dev": [

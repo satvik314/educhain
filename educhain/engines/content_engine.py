@@ -5,6 +5,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
 from educhain.core.config import LLMConfig
+from langchain_ollama import OllamaLLM
 
 from educhain.models.content_models import StudyGuide, CareerConnections
 import json
@@ -21,15 +22,20 @@ class ContentEngine:
     def _initialize_llm(self, llm_config: LLMConfig):
         if llm_config.custom_model:
             return llm_config.custom_model
-        else:
-            return ChatOpenAI(
+        
+        if llm_config.base_url and "localhost" in llm_config.base_url:
+            return OllamaLLM(
                 model=llm_config.model_name,
-                api_key=llm_config.api_key,
-                max_tokens=llm_config.max_tokens,
-                temperature=llm_config.temperature,
                 base_url=llm_config.base_url,
-                default_headers=llm_config.default_headers
+                temperature=llm_config.temperature
             )
+        
+        return ChatOpenAI(
+            model=llm_config.model_name,
+            api_key=llm_config.api_key,
+            temperature=llm_config.temperature,
+            max_tokens=llm_config.max_tokens,
+        )
 
     # Lesson Plan
     def generate_lesson_plan(

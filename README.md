@@ -45,6 +45,14 @@ Educhain is a powerful Python package that leverages Generative AI to create eng
 pip install educhain
 ```
 
+[**NEW**] **Local Model Support Requirements:**
+```bash
+# Install Ollama from https://ollama.ai
+# Then run:
+ollama pull mistral   # or any other supported model
+ollama serve          # starts the Ollama server
+```
+
 ## 🎮 Usage
 
 ## Starter Guide
@@ -91,8 +99,27 @@ ques.json() #ques.dict()
 
 To use a custom model, you can pass a model configuration through the `LLMConfig` class
 
-Here's an example using the Gemini Model
+[**NEW**] **Using Local Models with Ollama:**
+```python
+from educhain import Educhain, LLMConfig
 
+# Configure for local model
+config = LLMConfig(
+    model_name="mistral",  # or any other Ollama-supported model
+    base_url="http://localhost:11434"  # default Ollama URL
+)
+
+client = Educhain(config)
+ques = client.qna_engine.generate_questions(
+    topic="Psychology",
+    num=10
+)
+
+print(ques)
+ques.json()
+```
+
+**Using Cloud Models (e.g. Gemini):**
 ```python
 from langchain_google_genai import ChatGoogleGenerativeAI
 from educhain import Educhain, LLMConfig
@@ -206,6 +233,7 @@ Educhain's adoption has been growing rapidly:
 - [x] Exports questions to JSON/PDF/CSV
 - [x] Support for other LLM models
 - [x] Generate questions from text/PDF file
+- [x] [**NEW**] **Local model support via Ollama**
 - [ ] Integration with popular Learning Management Systems
 - [ ] Mobile app for on-the-go content generation
 

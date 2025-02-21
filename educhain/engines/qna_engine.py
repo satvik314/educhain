@@ -34,6 +34,11 @@ from IPython.display import display, HTML
 
 
 import random
+from langchain_ollama import OllamaLLM
+import logging
+
+# Set up module logger
+logger = logging.getLogger(__name__)
 
 QuestionType = Literal["Multiple Choice", "Short Answer", "True/False", "Fill in the Blank"]
 OutputFormatType = Literal["pdf", "csv"]
@@ -91,25 +96,58 @@ VISUAL_QUESTION_PROMPT_TEMPLATE = """Generate exactly {num} quantitative questio
 
 class QnAEngine:
     def __init__(self, llm_config: Optional[LLMConfig] = None):
+        logger.debug("Initializing QnAEngine")
         if llm_config is None:
             llm_config = LLMConfig()
         self.llm = self._initialize_llm(llm_config)
+        logger.debug(f"Initialized LLM: {type(self.llm).__name__}")
         self.pdf_loader = PdfFileLoader()
         self.url_loader = UrlLoader()
         self.embeddings = None
 
+    def _check_ollama_connection(self, base_url: str) -> bool:
+        """Check if Ollama server is running and accessible.
+        
+        Args:
+            base_url (str): The base URL of the Ollama server
+            
+        Returns:
+            bool: True if server is accessible, False otherwise
+        """
+        import requests
+        try:
+            response = requests.get(f"{base_url}/api/version")
+            return response.status_code == 200
+        except requests.RequestException:
+            return False
+
     def _initialize_llm(self, llm_config: LLMConfig):
+        logger.debug("Initializing LLM with config")
         if llm_config.custom_model:
+            logger.debug("Using custom model")
             return llm_config.custom_model
-        else:
-            return ChatOpenAI(
+        
+        # Check if it's a local model (Ollama)
+        if llm_config.base_url and "localhost" in llm_config.base_url:
+            logger.debug(f"Initializing local model: {llm_config.model_name}")
+            if not self._check_ollama_connection(llm_config.base_url):
+                raise ConnectionError(
+                    f"Cannot connect to local model server at {llm_config.base_url}"
+                )
+            return OllamaLLM(
                 model=llm_config.model_name,
-                api_key=llm_config.api_key,
-                max_tokens=llm_config.max_tokens,
-                temperature=llm_config.temperature,
                 base_url=llm_config.base_url,
-                default_headers=llm_config.default_headers
+                temperature=llm_config.temperature
             )
+        
+        # Default to OpenAI
+        logger.debug(f"Using OpenAI model: {llm_config.model_name}")
+        return ChatOpenAI(
+            model=llm_config.model_name,
+            api_key=llm_config.api_key,
+            temperature=llm_config.temperature,
+            max_tokens=llm_config.max_tokens,
+        )
 
     def _get_parser_and_model(self, question_type: QuestionType, response_model: Optional[Type[Any]] = None):
         if response_model:
@@ -317,7 +355,6 @@ class QnAEngine:
         results = question_chain.invoke(
             {"num": num, "topic": topic, **kwargs},
         )
-        results = results.content
 
         try:
             structured_output = parser.parse(results)
@@ -347,39 +384,41 @@ class QnAEngine:
         output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
-        parser, model = self._get_parser_and_model(question_type, response_model)
-        format_instructions = parser.get_format_instructions()
-        template = self._get_prompt_template(question_type, prompt_template)
-
-        if custom_instructions:
-            template += f"\n\nAdditional Instructions:\n{custom_instructions}"
-
-        template += "\n\nThe response should be in JSON format.\n{format_instructions}"
-
-        question_prompt = PromptTemplate(
-            input_variables=["num", "topic"],
-            template=template,
-            partial_variables={"format_instructions": format_instructions}
-        )
-
-        question_chain = question_prompt | self.llm
-        results = question_chain.invoke(
-            {"num": num, "topic": topic, **kwargs},
-        )
-        results = results.content
-
         try:
-            structured_output = parser.parse(results)
+            parser, model = self._get_parser_and_model(question_type, response_model)
+            format_instructions = parser.get_format_instructions()
+            template = self._get_prompt_template(question_type, prompt_template)
+            
+            if custom_instructions:
+                template += f"\n\nAdditional Instructions:\n{custom_instructions}"
+            
+            template += "\n\nThe response should be in JSON format.\n{format_instructions}"
+            
+            question_prompt = PromptTemplate(
+                input_variables=["num", "topic"],
+                template=template,
+                partial_variables={"format_instructions": format_instructions}
+            )
 
-            if output_format:
-                self._handle_output_format(structured_output, output_format)
+            # Get raw response from LLM
+            results = self.llm.predict(question_prompt.format(num=num, topic=topic))
+            
+            # Print raw response for debugging
+            print("\nRaw LLM Response:")
+            print(results)
+            print("\n")
 
-
-            return structured_output
+            try:
+                structured_output = parser.parse(results)
+                return structured_output
+            except Exception as e:
+                print(f"Failed to parse LLM response: {e}")
+                print(f"Raw output that failed parsing: {results}")
+                raise
+                
         except Exception as e:
-            print(f"Error parsing output in generate_questions: {e}")
-            print("Raw output:")
-            return model()
+            print(f"Error in generate_questions: {e}")
+            raise
 
 
     def generate_questions_from_data(
@@ -555,7 +594,6 @@ class QnAEngine:
         results = question_chain.invoke(
             {"num": num, "topic": topic, **kwargs},
         )
-        results = results.content
 
         try:
             structured_output = parser.parse(results)
