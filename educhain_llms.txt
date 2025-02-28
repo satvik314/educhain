@@ -256,7 +256,6 @@ pdf_questions = client.qna_engine.generate_questions_from_data(
 
 pdf_questions.show()
 
-
 from educhain import Educhain
 
 client = Educhain()
