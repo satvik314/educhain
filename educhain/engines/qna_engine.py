@@ -26,6 +26,7 @@ import base64
 import os
 from PIL import Image
 import io
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 import matplotlib.pyplot as plt
 import pandas as pd
