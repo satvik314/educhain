@@ -1,7 +1,14 @@
 # educhain/engines/qna_engine.py
 
-from typing import Optional, Type, Any, List, Literal, Union, Tuple
-from pydantic import BaseModel
+from typing import Optional, Type, Any, List, Literal, Union, Tuple, Dict
+from pydantic import BaseModel, Field, ValidationError
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from datetime import datetime
+import concurrent.futures
+import json
+from pathlib import Path
+from tqdm import tqdm
+from tenacity import retry, stop_after_attempt, wait_exponential
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain, RetrievalQA, LLMMathChain
@@ -18,7 +25,7 @@ from educhain.core.config import LLMConfig
 from educhain.models.qna_models import (
     MCQList, ShortAnswerQuestionList, TrueFalseQuestionList,
     FillInBlankQuestionList, MCQListMath, Option ,SolvedDoubt, SpeechInstructions,
-    VisualMCQList, VisualMCQ
+    VisualMCQList, VisualMCQ, BulkMCQ, BulkMCQList
 )
 from educhain.utils.loaders import PdfFileLoader, UrlLoader
 from educhain.utils.output_formatter import OutputFormatter
@@ -26,7 +33,6 @@ import base64
 import os
 from PIL import Image
 import io
-from tenacity import retry, stop_after_attempt, wait_exponential
 
 import matplotlib.pyplot as plt
 import pandas as pd
