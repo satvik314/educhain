@@ -385,11 +385,11 @@ Educhain offers advanced configuration options to fine-tune its behavior. Check 
 
 Educators worldwide are using Educhain to transform their teaching. Read our [case studies](https://educhain.ai/case-studies) to learn more.
 
-## 📈 Usage Statistics
+<!-- ## 📈 Usage Statistics
 
 Educhain's adoption has been growing rapidly:
 
-<img src="/api/placeholder/600/400" alt="Usage Growth Graph" />
+<img src="/api/placeholder/600/400" alt="Usage Growth Graph" /> -->
 
 ## 🗺 Roadmap
 
