@@ -224,6 +224,26 @@ print(question)
 ````
 </details>
 
+<details>
+<summary>🥽 Generate Visual Questions   <img src="images/new.png" width="30" height="30" alt="New" background-color: transparent>  </summary>
+
+````python
+from langchain_google_genai import ChatGoogleGenerativeAI
+from educhain import Educhain, LLMConfig
+
+gemini_flash = ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key=GOOGLE_API_KEY)
+
+flash_config = LLMConfig(custom_model=gemini_flash)
+
+client = Educhain(flash_config)
+
+ques = client.qna_engine.generate_visual_questions(
+        topic="GMAT Statistics", num=10 )
+
+print(ques.json)
+````
+</details>
+
 ## 📈 Workflow
 
 **Reimagining Education with AI** 🤖
