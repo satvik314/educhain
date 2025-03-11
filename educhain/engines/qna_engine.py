@@ -425,7 +425,6 @@ class QnAEngine:
         print(f"Total generated: {len(accumulated_questions)} out of {num} requested")
         return response_model(questions=accumulated_questions)
 
-
     def generate_questions_from_data(
         self,
         source: str,
@@ -1563,3 +1562,47 @@ class QnAEngine:
         structured_output.total_questions = len(structured_output.results)
         structured_output.passed_questions = sum(1 for r in structured_output.results if r.passed)
         structured_output.failed_questions = structured_output.total_questions - structured_output.passed_questions
+        
+        return structured_output
+
+# Extending SanityCheckSummary to include a show() method
+from typing import List
+from pydantic import BaseModel
+
+class SanityCheckResult(BaseModel):
+    question: str
+    answer: str
+    options: Optional[List[str]] = None
+    keywords: Optional[List[str]] = None
+    answer_correctness: str
+    question_clarity: str
+    distractor_plausibility: str
+    passed: bool
+
+class SanityCheckSummary(BaseModel):
+    results: List[SanityCheckResult]
+    total_questions: int
+    passed_questions: int
+    failed_questions: int
+
+    def show(self):
+        """Displays the sanitized questions with their options and sanity check results."""
+        print("\nSanity Check Summary:")
+        print(f"Total Questions: {self.total_questions}")
+        print(f"Passed Questions: {self.passed_questions}")
+        print(f"Failed Questions: {self.failed_questions}\n")
+
+        for i, result in enumerate(self.results):
+            print(f"Question {i + 1}:")
+            print(f"  Question Text: {result.question}")
+            print(f"  Answer: {result.answer}")
+
+            if result.options:
+                print("  Options:")
+                for option in result.options:
+                    print(f"    - {option}")
+
+            print(f"  Answer Correctness: {result.answer_correctness}")
+            print(f"  Question Clarity: {result.question_clarity}")
+            print(f"  Distractor Plausibility: {result.distractor_plausibility}")
+            print(f"  Passed: {result.passed}\n")
