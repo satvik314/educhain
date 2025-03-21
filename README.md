@@ -263,7 +263,7 @@ pip install educhain
 
 ## Starter Guide
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1JNjQz20SRnyRyAN9YtgCzYq4gj8iBTRH?usp=chrome_ntp#scrollTo=UtLn9rOF-gPm)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1sQTX9O_RDDSDNwP8tY3qkeoSv54EvbrF?authuser=2#scrollTo=W3RchxE680fG)
 
 ### Quick Start
 
@@ -277,7 +277,7 @@ client = Educhain()
 ques = client.qna_engine.generate_questions(topic="Newton's Law of Motion",
                                             num=5)
 print(ques)
-ques.json() # ques.dict()
+ques.model_dump_json() # ques.model_dump()
 ```
 
 ### Supports Different Question Types
@@ -298,7 +298,7 @@ ques = client.qna_engine.generate_questions(topic = "Psychology",
                                             custom_instructions = "Only basic questions")
 
 print(ques)
-ques.json() #ques.dict()
+ques.model_dump_json() #ques.model_dump()
 ```
 
 ### Use Different LLM Models
@@ -323,7 +323,7 @@ ques = client.qna_engine.generate_questions(topic="Psychology",
                                             num=10)
 
 print(ques)
-ques.json() #ques.dict()
+ques.model_dump_json() #ques.model_dump()
 ```
 
 ### Customizable Prompt Templates 
@@ -369,7 +369,7 @@ ques = client.qna_engine.generate_questions_from_data(
     num=5)
 
 print(ques)
-ques.json() # ques.dict()
+ques.model_dump_json() # ques.model_dump()
 ```
 
 
@@ -386,7 +386,7 @@ plan = client.content_engine.generate_lesson_plan(
                               topic = "Newton's Law of Motion")
 
 print(plan)
-plan.json()  # plan.dict()
+plan.model_dump_json()  # plan.model_dump()
 ```
 
 
