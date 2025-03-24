@@ -5,7 +5,7 @@ setup(
     version="0.3.7",
     packages=find_packages(),
     install_requires=[
-         "langchain==0.3.19",
+        "langchain==0.3.19",
         "langchain-community==0.3.18",
         "langchain-openai==0.3.7",
         "openai==1.64.0",
