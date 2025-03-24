@@ -18,13 +18,13 @@ setup(
         "requests",
         "chromadb==0.6.3",
         "protobuf<5",
-        "pillow==11.1.0", 
+        "pillow", 
         "dataframe-image==0.2.7",
         "langchain-google-genai==2.0.9",
         "pandas",
-        "ipython==7.34.0",
-        "matplotlib==3.10.1",
-        "numpy==2.2.4",
+        "ipython",
+        "matplotlib",
+        "numpy",
     ],
     extras_require={
         "dev": [
