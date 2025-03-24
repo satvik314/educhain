@@ -21,7 +21,7 @@ setup(
         "pillow==11.1.0", 
         "dataframe-image==0.2.7",
         "langchain-google-genai==2.0.9",
-        "pandas==2.2.3",
+        "pandas",
         "ipython==7.34.0",
         "matplotlib==3.10.1",
         "nump==2.2.4",
