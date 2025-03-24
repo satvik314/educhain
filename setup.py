@@ -24,7 +24,7 @@ setup(
         "langchain-google-genai==2.0.9",
         "pandas==2.2.3",
         "ipython==7.34.0",
-        "matplotlib==3.8.0",
+        "matplotlib==3.10.1",
     ],
     extras_require={
         "dev": [
