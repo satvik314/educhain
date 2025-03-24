@@ -10,7 +10,6 @@ setup(
         "langchain-openai==0.3.7",
         "openai==1.64.0",
         "python-dotenv==1.0.1", 
-        "pandas",
         "reportlab==4.3.1",
         "PyPDF2",
         "beautifulsoup4",
@@ -25,6 +24,7 @@ setup(
         "pandas==2.2.3",
         "ipython==7.34.0",
         "matplotlib==3.10.1",
+        "nump==2.2.4",
     ],
     extras_require={
         "dev": [
