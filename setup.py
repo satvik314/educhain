@@ -24,7 +24,7 @@ setup(
         "pandas",
         "ipython==7.34.0",
         "matplotlib==3.10.1",
-        "nump==2.2.4",
+        "numpy==2.2.4",
     ],
     extras_require={
         "dev": [
