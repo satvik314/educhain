@@ -978,7 +978,6 @@ class QnAEngine:
                             validated_questions.append(validated_question)
                             remaining_questions -= 1
     
-                    print(f"Remaining questions: {remaining_questions}, Validated questions: {len(validated_questions)}")
                     total_attempts += 1
     
                 except Exception as e:
@@ -1034,7 +1033,6 @@ class QnAEngine:
 
         # Determine question distribution based on input parameters
         if questions_per_objective is not None:
-            print(f"Questions per objective: {questions_per_objective}")
             # Override total_questions if questions_per_objective is specified
             total_questions = questions_per_objective * total_objectives
             base_questions = questions_per_objective
@@ -1066,8 +1064,6 @@ class QnAEngine:
                 objective_key = f"{combo['topic']}:{combo['subtopic']}:{combo['learning_objective']}"
                 question_distribution[objective_key] = base_questions + extra
 
-        print(f"Total questions to generate: {total_questions}")
-        print(f"Question distribution: {question_distribution}")
 
         all_questions = []
         failed_batches_count = 0
@@ -1086,7 +1082,6 @@ class QnAEngine:
             objective_key = f"{combo['topic']}:{combo['subtopic']}:{combo['learning_objective']}"
             target_questions = question_distribution[objective_key]
             accumulated_questions = []
-            print(f"Generating {target_questions} questions for objective: {objective_key}")
 
             failure_record = {
                 "topic": combo["topic"],
