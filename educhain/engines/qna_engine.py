@@ -883,36 +883,36 @@ class QnAEngine:
                 print(f"Validation error: {str(e)}")
                 return None
     
-        def _process_topics_data(self, topics_data):
-            """Process topics data into a list of topic-subtopic-objective combinations"""
-            combinations = []
-            total_specified_questions = 0
-            has_question_counts = False
-    
-            for topic in topics_data:
-                for subtopic in topic["subtopics"]:
-                    for objective in subtopic["learning_objectives"]:
-                        if isinstance(objective, dict) and "objective" in objective and "num_questions" in objective:
-                            has_question_counts = True
-                            combinations.append({
-                                "topic": topic["topic"],
-                                "subtopic": subtopic["name"],
-                                "learning_objective": objective["objective"],
-                                "num_questions": objective["num_questions"]
-                            })
-                            total_specified_questions += objective["num_questions"]
-                        else:
-                            # Handle the case where no question count is specified
-                            objective_text = objective if isinstance(objective, str) else objective["objective"]
-                            combinations.append({
-                                "topic": topic["topic"],
-                                "subtopic": subtopic["name"],
-                                "learning_objective": objective_text,
-                                "num_questions": None
-                            })
-            
-            # Add the missing return statement
-            return combinations, total_specified_questions, has_question_counts
+    def _process_topics_data(self, topics_data):
+        """Process topics data into a list of topic-subtopic-objective combinations"""
+        combinations = []
+        total_specified_questions = 0
+        has_question_counts = False
+
+        for topic in topics_data:
+            for subtopic in topic["subtopics"]:
+                for objective in subtopic["learning_objectives"]:
+                    if isinstance(objective, dict) and "objective" in objective and "num_questions" in objective:
+                        has_question_counts = True
+                        combinations.append({
+                            "topic": topic["topic"],
+                            "subtopic": subtopic["name"],
+                            "learning_objective": objective["objective"],
+                            "num_questions": objective["num_questions"]
+                        })
+                        total_specified_questions += objective["num_questions"]
+                    else:
+                        # Handle the case where no question count is specified
+                        objective_text = objective if isinstance(objective, str) else objective["objective"]
+                        combinations.append({
+                            "topic": topic["topic"],
+                            "subtopic": subtopic["name"],
+                            "learning_objective": objective_text,
+                            "num_questions": None
+                        })
+        
+        # Add the missing return statement
+        return combinations, total_specified_questions, has_question_counts
     
     @retry(stop=stop_after_attempt(3),
        wait=wait_exponential(multiplier=1, min=4, max=10),
