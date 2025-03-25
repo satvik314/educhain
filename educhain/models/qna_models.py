@@ -137,3 +137,16 @@ class SpeechInstructions(BaseModel):
     num_questions: Optional[int] = 5
     custom_instructions: Optional[str] = None
     detected_language: Optional[str] = "english"
+
+class BulkMCQ(BaseModel):
+    question: str = Field(description="The quiz question, strictly avoid Latex formatting")
+    options: List[Option] = Field(description="The possible answers to the question. The list should contain 4 options.")
+    explanation: str = Field(default=None, description="Explanation of the correct answer")
+    difficulty: str = Field(description="The difficulty level of the question (easy, medium, hard)")
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Metadata including topic, subtopic, and learning objective"
+    )
+
+class BulkMCQList(BaseModel):
+    questions: List[BulkMCQ]
