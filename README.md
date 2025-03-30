@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="https://github.com/Shubhwithai/educhain/blob/main/images/Black%20Modern%20Handwritten%20Motivation%20Quote%20Social%20Media%20(800%20x%20400%20px)%20(1).svg" alt="Educhain Logo" width="800" height="400">
+  <img src="https://github.com/Shubhwithai/educhain/blob/main/images/Black%20Modern%20Handwritten%20Motivation%20Quote%20Social%20Media%20(800%20x%20400%20px).svg" alt="Educhain Logo" width="800" height="400">
 </p>
 
 <div align="center">
@@ -405,11 +405,11 @@ Educhain offers advanced configuration options to fine-tune its behavior. Check 
 
 Educators worldwide are using Educhain to transform their teaching. Read our [case studies](https://educhain.ai/case-studies) to learn more. -->
 
-## 📈 Usage Statistics
+<!-- ## 📈 Usage Statistics
 
 Educhain's adoption has been growing rapidly:
 
-<img src="/api/placeholder/600/400" alt="Usage Growth Graph" />
+<img src="/api/placeholder/600/400" alt="Usage Growth Graph" /> -->
 
 ## 🗺 Roadmap
 
