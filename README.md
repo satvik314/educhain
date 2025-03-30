@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="https://github.com/Shubhwithai/educhain/blob/main/images/educhain%20banner.jpg" alt="Educhain Logo" width="800" height="400">
+  <img src="https://github.com/Shubhwithai/educhain/blob/main/images/Black%20Modern%20Handwritten%20Motivation%20Quote%20Social%20Media%20(800%20x%20400%20px)%20(2).png" alt="Educhain Logo" width="800" height="400">
 </p>
 
 <div align="center">
