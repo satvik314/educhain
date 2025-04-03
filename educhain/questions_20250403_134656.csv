@@ -1,0 +1,31 @@
+question,options,explanation,difficulty,topic,subtopic,learning_objective
+What is the value of 8 multiplied by 7?,54; 56(correct); 64; 48,8 multiplied by 7 equals 56.,easy,Multiplication,Basic Arithmetic,
+What is the square root of 144?,10; 12(correct); 14; 16,The square root of 144 is 12 because 12 times 12 equals 144.,medium,Square Roots,Algebra,
+What is the value of pi (π) to two decimal places?,3.12; 3.14(correct); 3.16; 3.18,The value of pi (π) is approximately 3.14 when rounded to two decimal places.,medium,Geometry,Mathematical Constants,
+What is the value of the expression 3 + 5 * 2?,13; 16; 10(correct); 8,"According to the order of operations, you should first multiply 5 by 2, which equals 10, and then add 3 to get 13.",medium,Arithmetic,Order of Operations,
+What is the area of a rectangle with a length of 10 units and a width of 5 units?,15 square units; 50 square units(correct); 25 square units; 30 square units,"The area of a rectangle is calculated by multiplying the length by the width. Here, 10 * 5 = 50 square units.",easy,Geometry,Area of Shapes,
+What is the solution to the equation 2x + 3 = 11?,2; 3; 4(correct); 5,"To solve for x, first subtract 3 from both sides to get 2x = 8. Then, divide both sides by 2 to find x = 4.",medium,Algebra,Linear Equations,
+What is the value of 5 + 7?,10; 12; 11; 13(correct),5 + 7 equals 12.,easy,Arithmetic,Addition,
+What is the area of a rectangle with a length of 10 units and a width of 5 units?,50 square units(correct); 15 square units; 25 square units; 30 square units,The area of a rectangle is calculated by multiplying the length by the width (10 * 5 = 50).,medium,Geometry,Area,
+"If the perimeter of a square is 40 units, what is the length of one side?",5 units; 10 units(correct); 15 units; 20 units,"The perimeter of a square is 4 times the length of one side. If the perimeter is 40, then the side length is 40 / 4 = 10 units.",hard,Geometry,Perimeter,
+What is the value of the expression 3 + 5 × 2?,16; 13; 10(correct); 8,"According to the order of operations (PEMDAS/BODMAS), you first multiply 5 by 2 to get 10, then add 3, resulting in 13.",medium,Mathematics,Order of Operations,Understand and apply the order of operations in mathematical expressions.
+What is the value of 7 multiplied by 8?,54; 56(correct); 64; 48,7 times 8 equals 56.,easy,Arithmetic,Multiplication,To understand the concept of multiplication.
+What is the square root of 144?,10; 12(correct); 14; 16,The square root of 144 is 12.,medium,Algebra,Square Roots,To learn how to calculate square roots.
+"If a triangle has angles measuring 90 degrees and 45 degrees, what is the measure of the third angle?",45 degrees(correct); 30 degrees; 60 degrees; 75 degrees,"The sum of the angles in a triangle is 180 degrees. So, 180 - (90 + 45) = 45 degrees.",medium,Geometry,Triangles,To understand the properties of triangle angles.
+What is the value of 7 multiplied by 8?,54; 62; 56(correct); 48,7 multiplied by 8 equals 56.,easy,Multiplication,Basic Arithmetic,
+What is the area of a rectangle with a length of 5 units and a width of 3 units?,15 square units(correct); 8 square units; 10 square units; 12 square units,"The area of a rectangle is calculated by multiplying length by width. Thus, 5 * 3 = 15.",medium,Geometry,Area Calculation,
+"If x + 5 = 12, what is the value of x?",7(correct); 5; 12; 17,"To find x, subtract 5 from both sides of the equation: x = 12 - 5 = 7.",medium,Algebra,Solving Equations,
+What is the value of 7 multiplied by 6?,42(correct); 36; 48; 56,7 multiplied by 6 equals 42.,easy,Arithmetic,Multiplication,
+What is the square root of 144?,10; 12(correct); 14; 16,"The square root of 144 is 12, because 12 times 12 equals 144.",medium,Algebra,Square Roots,
+"If a triangle has angles of 90 degrees and 45 degrees, what is the measure of the third angle?",45 degrees(correct); 30 degrees; 60 degrees; 75 degrees,"The sum of the angles in a triangle is always 180 degrees. Therefore, 180 - 90 - 45 = 45 degrees.",medium,Geometry,Triangle Properties,
+What is the value of 7 multiplied by 6?,42(correct); 36; 48; 54,7 multiplied by 6 equals 42. This can be calculated by adding 7 six times or multiplying as a single operation.,easy,Mathematics,Multiplication,
+What is the sum of the angles in a triangle?,180 degrees(correct); 90 degrees; 360 degrees; 270 degrees,The sum of the interior angles of a triangle always equals 180 degrees.,easy,Geometry,Triangles,
+What is the derivative of x^2 with respect to x?,2x(correct); x; x^2; 3x,"The derivative of x^n is n*x^(n-1). For x^2, n=2, so the derivative is 2*x^(2-1) = 2x.",medium,Calculus,Derivatives,
+"If a rectangle has a length of 10 and a width of 5, what is its area?",50(correct); 15; 25; 30,The area of a rectangle is calculated by multiplying length by width. Area = 10 * 5 = 50.,easy,Geometry,Area,
+What is the value of 7 multiplied by 8?,54; 56(correct); 64; 48,7 multiplied by 8 equals 56.,easy,Arithmetic,Multiplication,To understand basic multiplication.
+What is the square root of 144?,10; 12(correct); 14; 16,The square root of 144 is 12 because 12 multiplied by 12 equals 144.,medium,Algebra,Square Roots,To find the square roots of perfect squares.
+What is 15% of 200?,25; 30(correct); 35; 40,15% of 200 is calculated as (15/100) * 200 = 30.,medium,Percentages,Calculating Percentages,To understand how to calculate percentages of a given number.
+What is the value of the expression 5 + 3 × 2?,11; 16; 8(correct); 10,"According to the order of operations (PEMDAS/BODMAS), multiplication comes before addition. Therefore, the expression is evaluated as 5 + (3 × 2) = 5 + 6 = 11.",medium,Arithmetic,Order of Operations,
+What is the area of a triangle with a base of 10 units and a height of 5 units?,25 square units(correct); 50 square units; 15 square units; 30 square units,"The area of a triangle is calculated using the formula: Area = 1/2 × base × height. Therefore, Area = 1/2 × 10 × 5 = 25 square units.",easy,Geometry,Triangles,
+"If x + 5 = 12, what is the value of x?",7; 12; 5; 7(correct),"To find x, subtract 5 from both sides of the equation: x = 12 - 5, which gives x = 7.",easy,Algebra,Simple Equations,
+What is the value of 7 multiplied by 6?,42(correct); 36; 48; 54,"Multiplication is a basic arithmetic operation, and 7 times 6 equals 42.",easy,Mathematics,Multiplication,

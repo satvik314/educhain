@@ -22,7 +22,7 @@ import re
 from langchain_core.messages import SystemMessage
 from langchain.schema import HumanMessage
 from educhain.core.config import LLMConfig
-from educhain.models.qna_models import (
+from models.qna_models import (
     MCQList, ShortAnswerQuestionList, TrueFalseQuestionList,
     FillInBlankQuestionList, MCQListMath, Option ,SolvedDoubt, SpeechInstructions,
     VisualMCQList, VisualMCQ, BulkMCQ, BulkMCQList
@@ -33,7 +33,7 @@ import base64
 import os
 from PIL import Image
 import io
-
+import csv
 import matplotlib.pyplot as plt
 import pandas as pd
 import dataframe_image as dfi
@@ -1171,11 +1171,229 @@ class QnAEngine:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
             if output_format == "pdf":
-                output_file = formatter.to_pdf(question_list_model(questions=all_questions),
-                                            filename=f"questions_{timestamp}.pdf")
+                output_file = f"questions_{timestamp}.pdf"
+                
+                try:
+                    from reportlab.lib.pagesizes import letter
+                    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+                    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+                    from reportlab.lib import colors
+                    
+                    # Create PDF document
+                    doc = SimpleDocTemplate(output_file, pagesize=letter)
+                    styles = getSampleStyleSheet()
+                    
+                    # Create custom styles
+                    title_style = styles["Heading1"]
+                    question_style = ParagraphStyle(
+                        'QuestionStyle',
+                        parent=styles['Normal'],
+                        fontName='Helvetica-Bold',
+                        fontSize=12,
+                        leading=14,
+                        spaceAfter=6
+                    )
+                    explanation_style = ParagraphStyle(
+                        'ExplanationStyle',
+                        parent=styles['Normal'],
+                        fontName='Helvetica-Oblique',
+                        fontSize=10,
+                        leading=12,
+                        leftIndent=20,
+                        spaceAfter=12
+                    )
+                    normal_style = styles["Normal"]
+                    
+                    # Build PDF content
+                    elements = []
+                    
+                    # Add title
+                    elements.append(Paragraph(f"Generated Questions - {timestamp}", title_style))
+                    elements.append(Spacer(1, 12))
+                    
+                    # Add questions
+                    for i, question in enumerate(all_questions, 1):
+                        # Get question data as dictionary
+                        q_dict = question.dict() if hasattr(question, 'dict') else question
+                        
+                        # Add question number and find main question text
+                        # Try common field names for question text
+                        question_fields = ['question', 'question_text', 'stem', 'prompt']
+                        question_text = None
+                        for field in question_fields:
+                            if field in q_dict:
+                                question_text = q_dict.get(field)
+                                break
+                                
+                        # Default if no standard field found
+                        if question_text is None:
+                            # Try to find the most likely question field (the longest text field)
+                            text_fields = {k: v for k, v in q_dict.items() 
+                                        if isinstance(v, str) and len(v) > 10 and k not in ['explanation']}
+                            if text_fields:
+                                question_text = text_fields[max(text_fields, key=lambda k: len(text_fields[k]))]
+                            else:
+                                question_text = str(q_dict)
+                        
+                        # Add the question text
+                        elements.append(Paragraph(f"Question {i}: {question_text}", question_style))
+                        elements.append(Spacer(1, 6))
+                        
+                        # Handle additional fields that aren't standard (like statements in data sufficiency)
+                        for key, value in q_dict.items():
+                            # Skip already shown question text and common fields we'll handle separately
+                            if (key in question_fields or 
+                                key in ['options', 'explanation', 'difficulty', 'difficulty_level', 'metadata']):
+                                continue
+                            
+                            # Only show string values with reasonable length (to avoid IDs, etc.)
+                            if isinstance(value, str) and 5 < len(value) < 1000:
+                                label = key.replace('_', ' ').title()
+                                elements.append(Paragraph(f"{label}: {value}", normal_style))
+                                elements.append(Spacer(1, 4))
+                        
+                        # Add options in a table format
+                        if 'options' in q_dict and q_dict.get('options'):
+                            options_data = []
+                            options = q_dict.get('options', [])
+                            correct_answer = None
+                            
+                            for j, option in enumerate(options):
+                                option_letter = chr(65 + j)  # A, B, C, D
+                                
+                                # Handle different option formats
+                                if isinstance(option, dict):
+                                    option_text = option.get('text', None)
+                                    if option_text is None:  # If no 'text' field, use first string field found
+                                        for field, value in option.items():
+                                            if isinstance(value, str) and len(value) > 1:
+                                                option_text = value
+                                                break
+                                    if option_text is None:  # If still no text found, use the string representation
+                                        option_text = str(option)
+                                        
+                                    # Try all possible correct field names
+                                    correct_fields = ['correct', 'is_correct', 'isCorrect', 'is_answer']
+                                    is_correct = False
+                                    for field in correct_fields:
+                                        if field in option:
+                                            value = option.get(field)
+                                            if isinstance(value, bool):
+                                                is_correct = value
+                                            elif isinstance(value, str):
+                                                is_correct = value.lower() in ['true', 't', 'yes', 'y', '1']
+                                            break
+                                elif hasattr(option, 'dict'):  # Pydantic model
+                                    option_dict = option.dict()
+                                    option_text = option_dict.get('text', str(option))
+                                    is_correct = option_dict.get('correct', False)
+                                else:
+                                    option_text = str(option)
+                                    is_correct = False
+                                    
+                                # Format the option
+                                option_row = [f"{option_letter}.", option_text]
+                                options_data.append(option_row)
+                                
+                                # Track correct answer
+                                if is_correct:
+                                    correct_answer = f"Correct Answer: {option_letter}"
+                            
+                            # Create options table only if we have options
+                            if options_data:
+                                options_table = Table(options_data, colWidths=[30, 450])
+                                options_table.setStyle(TableStyle([
+                                    ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                                    ('FONTSIZE', (0, 0), (-1, -1), 10),
+                                    ('LEFTPADDING', (0, 0), (0, -1), 0),
+                                    ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                                ]))
+                                elements.append(options_table)
+                                elements.append(Spacer(1, 6))
+                                
+                                # Add correct answer if found
+                                if correct_answer:
+                                    elements.append(Paragraph(correct_answer, styles["Heading4"]))
+                                    elements.append(Spacer(1, 6))
+                        
+                        # Add explanation if it exists
+                        explanation = q_dict.get('explanation', '')
+                        if explanation:
+                            elements.append(Paragraph(f"Explanation: {explanation}", explanation_style))
+                            elements.append(Spacer(1, 6))
+                        
+                        # Add difficulty if it exists - try multiple common field names
+                        difficulty_fields = ['difficulty', 'difficulty_level']
+                        for field in difficulty_fields:
+                            if field in q_dict and q_dict[field]:
+                                elements.append(Paragraph(f"Difficulty: {q_dict[field]}", normal_style))
+                                elements.append(Spacer(1, 4))
+                                break
+                        
+                        # Add other numeric or rating fields
+                        for key, value in q_dict.items():
+                            if (key.endswith('_rating') or key.startswith('difficulty_') or 
+                                key.endswith('_time') or key.endswith('_score')) and key not in difficulty_fields:
+                                if isinstance(value, (int, float)) or (isinstance(value, str) and value.replace('.', '').isdigit()):
+                                    label = key.replace('_', ' ').title()
+                                    elements.append(Paragraph(f"{label}: {value}", normal_style))
+                                    elements.append(Spacer(1, 4))
+                        
+                        # Add metadata if it exists
+                        metadata = q_dict.get('metadata', {})
+                        if metadata:
+                            if isinstance(metadata, dict):
+                                metadata_text = ", ".join([f"{k}: {v}" for k, v in metadata.items()])
+                                elements.append(Paragraph(f"Metadata: {metadata_text}", normal_style))
+                            elif isinstance(metadata, str):
+                                elements.append(Paragraph(f"Metadata: {metadata}", normal_style))
+                        
+                        # Add separator between questions
+                        elements.append(Spacer(1, 20))
+                    
+                    # Build the PDF
+                    doc.build(elements)
+                    print(f"Questions saved to PDF: {output_file}")
+                
+                except Exception as e:
+                    print(f"Error generating PDF: {str(e)}")
+                    # Fallback to JSON if PDF generation fails
+                    output_file = f"questions_{timestamp}.json"
+                    with open(output_file, 'w') as f:
+                        json.dump([q.dict() if hasattr(q, 'dict') else q for q in all_questions], f, indent=4)
+                    print(f"PDF generation failed. Questions saved to JSON: {output_file}")
+
             elif output_format == "csv":
-                output_file = formatter.to_csv(question_list_model(questions=all_questions),
-                                            filename=f"questions_{timestamp}.csv")
+                output_file = f"questions_{timestamp}.csv"
+                
+                # Dynamically determine fieldnames from the model
+                model_fields = list(question_model.__annotations__.keys())
+                
+                with open(output_file, 'w', newline='') as csvfile:
+                    writer = csv.DictWriter(csvfile, fieldnames=model_fields)
+                    writer.writeheader()
+                    
+                    # Write each question to the CSV file
+                    for question in all_questions:
+                        q_dict = question.dict() if hasattr(question, 'dict') else question
+                        
+                        # Process complex fields to convert to JSON strings
+                        row_data = {}
+                        for field_name in model_fields:
+                            value = q_dict.get(field_name)
+                            
+                            # Convert complex objects to JSON
+                            if isinstance(value, (dict, list)) or hasattr(value, 'dict'):
+                                if hasattr(value, 'dict'):
+                                    value = value.dict()
+                                row_data[field_name] = json.dumps(value)
+                            else:
+                                row_data[field_name] = value
+                                
+                        writer.writerow(row_data)
+                
+                print(f"Questions saved to CSV: {output_file}")
+
             elif output_format == "json":
                 output_file = f"questions_{timestamp}.json"
                 with open(output_file, 'w') as f:
