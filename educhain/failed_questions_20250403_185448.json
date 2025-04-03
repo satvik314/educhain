@@ -1,0 +1,227 @@
+{
+    "timestamp": "20250403_185448",
+    "failed_objectives": [
+        {
+            "topic": "Arithmetic DS",
+            "subtopic": "Fractions (DS)",
+            "learning_objective": "Understand how to interpret and manipulate fractions in data sufficiency problems.",
+            "target_questions": 3,
+            "generated_questions": 0,
+            "retry_attempts": [
+                {
+                    "attempt_number": 1,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                },
+                {
+                    "attempt_number": 2,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                },
+                {
+                    "attempt_number": 3,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                }
+            ],
+            "duplicates_found": 0
+        },
+        {
+            "topic": "Arithmetic DS",
+            "subtopic": "Fractions (DS)",
+            "learning_objective": "Solve GMAT-style data sufficiency problems involving fraction operations.",
+            "target_questions": 3,
+            "generated_questions": 0,
+            "retry_attempts": [
+                {
+                    "attempt_number": 1,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                },
+                {
+                    "attempt_number": 2,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                },
+                {
+                    "attempt_number": 3,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                }
+            ],
+            "duplicates_found": 0
+        },
+        {
+            "topic": "Arithmetic DS",
+            "subtopic": "Fractions (DS)",
+            "learning_objective": "Analyze data sufficiency questions to determine if the given information is sufficient to solve problems involving fractions.",
+            "target_questions": 3,
+            "generated_questions": 0,
+            "retry_attempts": [
+                {
+                    "attempt_number": 1,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                },
+                {
+                    "attempt_number": 2,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                },
+                {
+                    "attempt_number": 3,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                }
+            ],
+            "duplicates_found": 0
+        },
+        {
+            "topic": "Arithmetic DS",
+            "subtopic": "Decimals (DS)",
+            "learning_objective": "Understand how to interpret and manipulate decimals in data sufficiency problems.",
+            "target_questions": 3,
+            "generated_questions": 0,
+            "retry_attempts": [
+                {
+                    "attempt_number": 1,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                },
+                {
+                    "attempt_number": 2,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                },
+                {
+                    "attempt_number": 3,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                }
+            ],
+            "duplicates_found": 0
+        },
+        {
+            "topic": "Arithmetic DS",
+            "subtopic": "Decimals (DS)",
+            "learning_objective": "Solve GMAT-style data sufficiency problems involving decimal operations.",
+            "target_questions": 3,
+            "generated_questions": 0,
+            "retry_attempts": [
+                {
+                    "attempt_number": 1,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                },
+                {
+                    "attempt_number": 2,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                },
+                {
+                    "attempt_number": 3,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                }
+            ],
+            "duplicates_found": 0
+        },
+        {
+            "topic": "Arithmetic DS",
+            "subtopic": "Decimals (DS)",
+            "learning_objective": "Analyze data sufficiency questions to determine if the given information is sufficient to solve problems involving decimals.",
+            "target_questions": 3,
+            "generated_questions": 0,
+            "retry_attempts": [
+                {
+                    "attempt_number": 1,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                },
+                {
+                    "attempt_number": 2,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                },
+                {
+                    "attempt_number": 3,
+                    "timestamp": "20250403_185448",
+                    "questions_requested": 3,
+                    "questions_generated": 0,
+                    "duplicates_found": 0,
+                    "status": "failed",
+                    "error": null
+                }
+            ],
+            "duplicates_found": 0
+        }
+    ]
+}

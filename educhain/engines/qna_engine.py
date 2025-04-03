@@ -22,7 +22,7 @@ import re
 from langchain_core.messages import SystemMessage
 from langchain.schema import HumanMessage
 from educhain.core.config import LLMConfig
-from models.qna_models import (
+from educhain.models.qna_models import (
     MCQList, ShortAnswerQuestionList, TrueFalseQuestionList,
     FillInBlankQuestionList, MCQListMath, Option ,SolvedDoubt, SpeechInstructions,
     VisualMCQList, VisualMCQ, BulkMCQ, BulkMCQList
@@ -988,6 +988,115 @@ class QnAEngine:
     
             return question_list_model(questions=validated_questions)
     
+    def _normalize_text(self, text: str) -> str:
+        """
+        Normalize text for duplicate detection by:
+        - Converting to lowercase
+        - Removing extra whitespace and punctuation
+        - Removing common filler words
+        
+        Args:
+            text: Original question text
+            
+        Returns:
+            Normalized text for fingerprint comparison
+        """
+        import re
+        if not text:
+            return ""
+            
+        # Convert to string if not already
+        text = str(text)
+        
+        # Convert to lowercase
+        text = text.lower()
+        
+        # Remove punctuation
+        text = re.sub(r'[^\w\s]', '', text)
+        
+        # Remove extra whitespace
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        # Remove common filler words for better matching
+        filler_words = ['the', 'a', 'an', 'and', 'or', 'but', 'is', 'are', 'was', 'were', 'in', 'on', 'at', 'to', 'for']
+        for word in filler_words:
+            text = re.sub(r'\b' + word + r'\b', '', text)
+        
+        # Remove any resulting double spaces
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        return text
+
+    def _calculate_question_fingerprint(self, question_dict: dict) -> str:
+        """
+        Calculate a unique fingerprint for a question based on its essential content.
+        This provides a more reliable way to detect duplicates than simple text matching.
+        
+        Args:
+            question_dict: Dictionary containing question data
+            
+        Returns:
+            A string fingerprint representing the question's essential content
+        """
+        # Extract core question text
+        question_text = ""
+        for field in ['question', 'question_text', 'stem', 'prompt']:
+            if field in question_dict and question_dict[field]:
+                question_text = question_dict[field]
+                break
+        
+        # Get normalized question text
+        normalized_text = self._normalize_text(question_text)
+        
+        # Extract answer content from options if available
+        answer_content = ""
+        if 'options' in question_dict and question_dict['options']:
+            for option in question_dict['options']:
+                if isinstance(option, dict) and option.get('correct', '').lower() == 'true':
+                    answer_content = self._normalize_text(option.get('text', ''))
+                    break
+        
+        # Combine for a unique fingerprint
+        fingerprint = f"{normalized_text}|{answer_content}"
+        
+        # Use a hash function for fixed-length fingerprint
+        import hashlib
+        return hashlib.md5(fingerprint.encode()).hexdigest()
+
+    def _is_duplicate_question(self, question_dict: dict, existing_fingerprints: set, 
+                            existing_questions_text: list) -> bool:
+        """
+        Check if a question is a duplicate using multiple detection methods.
+        
+        Args:
+            question_dict: The question to check
+            existing_fingerprints: Set of fingerprints from existing questions
+            existing_questions_text: List of normalized question texts
+            
+        Returns:
+            True if question is a duplicate, False otherwise
+        """
+        # Generate fingerprint for the new question
+        fingerprint = self._calculate_question_fingerprint(question_dict)
+        
+        # Quick check using fingerprints
+        if fingerprint in existing_fingerprints:
+            return True
+        
+        # Extract question text
+        question_text = ""
+        for field in ['question', 'question_text', 'stem', 'prompt']:
+            if field in question_dict and question_dict[field]:
+                question_text = question_dict[field]
+                break
+        
+        normalized_text = self._normalize_text(question_text)
+        
+        # Check for exact text matches after normalization
+        if normalized_text in existing_questions_text:
+            return True
+        
+        return False
        
     def bulk_generate_questions(
         self,
@@ -1001,6 +1110,7 @@ class QnAEngine:
         question_list_model: Type[BaseModel] = BulkMCQList,
         min_questions_per_batch: int = 3,
         max_retries: int = 3,
+        prevent_duplicates: bool = True,
         **kwargs
     ):
         """
@@ -1017,11 +1127,18 @@ class QnAEngine:
             question_list_model: Pydantic model for list of questions
             min_questions_per_batch: Minimum questions per batch
             max_retries: Maximum number of retries per batch
+            prevent_duplicates: Whether to check for and prevent duplicate questions
             **kwargs: Additional arguments to pass to question generation
         """
         # Initialize variables that might be needed in summary
         base_questions = 0
         remainder = 0
+        
+        # Initialize tracking structures for duplicate detection
+        existing_fingerprints = set() if prevent_duplicates else None
+        existing_questions_text = [] if prevent_duplicates else None
+        total_duplicates_found = 0
+        
         if isinstance(topic, (Path, str)) and Path(topic).exists():
             with open(Path(topic), 'r') as f:
                 topics_data = json.load(f)
@@ -1077,11 +1194,12 @@ class QnAEngine:
 
         def generate_questions_for_objective(combo):
             """Generate questions for a specific learning objective with failure tracking"""
-            nonlocal failed_batches_count, partial_success_count
+            nonlocal failed_batches_count, partial_success_count, existing_fingerprints, existing_questions_text, total_duplicates_found
             retries = 0
             objective_key = f"{combo['topic']}:{combo['subtopic']}:{combo['learning_objective']}"
             target_questions = question_distribution[objective_key]
             accumulated_questions = []
+            duplicates_in_objective = 0
 
             failure_record = {
                 "topic": combo["topic"],
@@ -1090,6 +1208,7 @@ class QnAEngine:
                 "target_questions": target_questions,
                 "generated_questions": 0,
                 "retry_attempts": [],
+                "duplicates_found": 0
             }
 
             while retries < max_retries and len(accumulated_questions) < target_questions:
@@ -1111,14 +1230,70 @@ class QnAEngine:
                         "timestamp": datetime.now().strftime('%Y%m%d_%H%M%S'),
                         "questions_requested": remaining_questions,
                         "questions_generated": 0,
+                        "duplicates_found": 0,
                         "status": "success",
                         "error": None
                     }
 
                     if batch_result and hasattr(batch_result, 'questions') and batch_result.questions:
-                        new_questions = len(batch_result.questions)
-                        accumulated_questions.extend(batch_result.questions)
+                        questions_to_add = []
+                        duplicates_in_batch = 0
+                        
+                        for question in batch_result.questions:
+                            if len(accumulated_questions) >= target_questions:
+                                break
+                                
+                            question_dict = question.dict() if hasattr(question, 'dict') else question
+                            
+                            # Add metadata if missing
+                            if 'metadata' not in question_dict and hasattr(question_model, '__fields__') and 'metadata' in question_model.__fields__:
+                                question_dict['metadata'] = {
+                                    "topic": combo["topic"],
+                                    "subtopic": combo["subtopic"],
+                                    "learning_objective": combo["learning_objective"]
+                                }
+                            
+                            # Check for duplicates if enabled
+                            is_duplicate = False
+                            if prevent_duplicates:
+                                is_duplicate = self._is_duplicate_question(
+                                    question_dict, 
+                                    existing_fingerprints, 
+                                    existing_questions_text
+                                )
+                                
+                            if is_duplicate:
+                                duplicates_in_batch += 1
+                                continue
+                                
+                            # Add fingerprint and normalized text to tracking sets if not a duplicate
+                            if prevent_duplicates:
+                                # Generate fingerprint
+                                fingerprint = self._calculate_question_fingerprint(question_dict)
+                                existing_fingerprints.add(fingerprint)
+                                
+                                # Extract question text for normalized text comparison
+                                question_text = ""
+                                for field in ['question', 'question_text', 'stem', 'prompt']:
+                                    if field in question_dict and question_dict[field]:
+                                        question_text = question_dict[field]
+                                        break
+                                existing_questions_text.append(self._normalize_text(question_text))
+                            
+                            # Validate and add the question
+                            validated_question = self._validate_individual_question(question_dict, question_model=question_model)
+                            if validated_question:
+                                questions_to_add.append(validated_question)
+                        
+                        # Update accumulated questions with unique ones
+                        new_questions = len(questions_to_add)
+                        accumulated_questions.extend(questions_to_add)
+                        
+                        # Update attempt record
                         attempt_record["questions_generated"] = new_questions
+                        attempt_record["duplicates_found"] = duplicates_in_batch
+                        duplicates_in_objective += duplicates_in_batch
+                        total_duplicates_found += duplicates_in_batch
 
                         if len(accumulated_questions) < target_questions:
                             partial_success_count += 1
@@ -1134,6 +1309,7 @@ class QnAEngine:
                         "timestamp": datetime.now().strftime('%Y%m%d_%H%M%S'),
                         "questions_requested": remaining_questions,
                         "questions_generated": 0,
+                        "duplicates_found": 0,
                         "status": "error",
                         "error": str(e)
                     }
@@ -1142,6 +1318,7 @@ class QnAEngine:
                 failure_record["retry_attempts"].append(attempt_record)
 
             failure_record["generated_questions"] = len(accumulated_questions)
+            failure_record["duplicates_found"] = duplicates_in_objective
             if len(accumulated_questions) < target_questions:
                 failed_objectives["failed_objectives"].append(failure_record)
                 if not accumulated_questions:
@@ -1149,6 +1326,7 @@ class QnAEngine:
                     return None
 
             return question_list_model(questions=accumulated_questions)
+
 
         # Use ThreadPoolExecutor for parallel processing
         with tqdm(total=len(combinations), desc="Generating questions") as progress_bar:
@@ -1414,6 +1592,9 @@ class QnAEngine:
         print(f"Target Total Questions: {total_questions}")
         print(f"Base Questions per Objective: {base_questions} (plus {remainder} objectives with +1)")
         print(f"Total Questions Generated: {total_generated}")
+        if prevent_duplicates:
+            print(f"Total Duplicates Prevented: {total_duplicates_found}")
+        print(f"Failed Batches: {failed_batches_count}")
         print(f"Failed Batches: {failed_batches_count}")
         print(f"Partial Success Batches: {partial_success_count}")
         print(f"Average Questions per Successful Batch: {total_generated/(total_objectives-failed_batches_count) if total_generated > 0 else 0:.2f}")
