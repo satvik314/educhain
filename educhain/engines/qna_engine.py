@@ -1,6 +1,6 @@
 # educhain/engines/qna_engine.py
 
-from typing import Optional, Type, Any, List, Literal, Union, Tuple, Dict
+from typing import Optional, Type, Any, List, Literal, Union, Tuple, Dict, Set
 from pydantic import BaseModel, Field, ValidationError
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from datetime import datetime
@@ -104,8 +104,7 @@ Each question should:
 1. Be clear and concise
 2. Test understanding of the specific learning objective
 3. Include a detailed explanation of the answer
-4. Be appropriate for 5th grade level
-5. Be of medium difficulty
+4. Be unique
 
 Generate {num} questions in the following JSON format:
 {{
@@ -138,6 +137,7 @@ class QnAEngine:
         self.pdf_loader = PdfFileLoader()
         self.url_loader = UrlLoader()
         self.embeddings = None
+        self.processed_questions = set()  # Track processed questions to avoid duplicates
 
     def _initialize_llm(self, llm_config: LLMConfig):
         if llm_config.custom_model:
@@ -914,6 +914,70 @@ class QnAEngine:
         # Add the missing return statement
         return combinations, total_specified_questions, has_question_counts
     
+    def _is_duplicate_question(self, new_question, existing_questions) -> bool:
+        """
+        Check if a question is a duplicate of any in the existing set.
+        
+        Args:
+            new_question: The question to check (can be dict or Pydantic model)
+            existing_questions: List of existing questions to check against
+            
+        Returns:
+            bool: True if duplicate is found, False otherwise
+        """
+        # Convert question to dict if it's a Pydantic model
+        if hasattr(new_question, 'dict'):
+            new_question_dict = new_question.dict()
+        else:
+            new_question_dict = new_question
+            
+        # Extract the question text
+        question_text = None
+        for field in ['question', 'question_text', 'stem', 'prompt']:
+            if field in new_question_dict:
+                question_text = new_question_dict.get(field, '').strip().lower()
+                break
+                
+        if not question_text:
+            return False  # Can't determine if duplicate without question text
+            
+        # Create a simplified version for comparison (remove punctuation, extra spaces)
+        simplified_text = re.sub(r'[^\w\s]', '', question_text)
+        simplified_text = re.sub(r'\s+', ' ', simplified_text).strip()
+        
+        # Check exact duplicates in processed questions set
+        if simplified_text in self.processed_questions:
+            return True
+            
+        # Check similarity with existing questions in this batch
+        for existing in existing_questions:
+            existing_dict = existing.dict() if hasattr(existing, 'dict') else existing
+            
+            # Extract question text from existing question
+            existing_text = None
+            for field in ['question', 'question_text', 'stem', 'prompt']:
+                if field in existing_dict:
+                    existing_text = existing_dict.get(field, '').strip().lower()
+                    break
+                    
+            if not existing_text:
+                continue
+                
+            # Create simplified version of existing text
+            existing_simplified = re.sub(r'[^\w\s]', '', existing_text)
+            existing_simplified = re.sub(r'\s+', ' ', existing_simplified).strip()
+            
+            # Check if texts are highly similar (exact or very close match)
+            if simplified_text == existing_simplified:
+                return True
+                
+            # Check substring relationship (one is contained in the other)
+            if len(simplified_text) > 20 and len(existing_simplified) > 20:
+                if simplified_text in existing_simplified or existing_simplified in simplified_text:
+                    return True
+                    
+        return False
+
     @retry(stop=stop_after_attempt(3),
        wait=wait_exponential(multiplier=1, min=4, max=10),
        retry=lambda e: isinstance(e, (ValidationError, json.JSONDecodeError)))
@@ -925,18 +989,25 @@ class QnAEngine:
                                    target_questions=None,
                                    **kwargs):
             """
-            Generate questions with improved retry mechanism and chunking
+            Generate questions with improved retry mechanism, chunking, and duplicate detection
             """
             MAX_QUESTIONS_PER_BATCH = 3
             validated_questions = []
             remaining_questions = num_questions if not target_questions else target_questions
             total_attempts = 0
             max_attempts = max(5, (remaining_questions // MAX_QUESTIONS_PER_BATCH) * 2)
+            duplicates_found = 0
     
             while remaining_questions > 0 and len(validated_questions) < (target_questions or num_questions) and total_attempts < max_attempts:
                 try:
                     # Calculate batch size based on remaining questions
                     current_batch_size = min(MAX_QUESTIONS_PER_BATCH, remaining_questions)
+                    
+                    # Add duplicate-prevention instructions if duplicates were found
+                    custom_instructions = kwargs.get('custom_instructions', '')
+                    if duplicates_found > 0:
+                        duplicate_warning = f"\nIMPORTANT: {duplicates_found} duplicate questions were found in your previous responses. Ensure questions are unique and not similar to questions already generated."
+                        kwargs['custom_instructions'] = custom_instructions + duplicate_warning
                     
                     # Generate the batch
                     batch_questions = self.generate_questions(
@@ -959,7 +1030,10 @@ class QnAEngine:
                         questions_to_validate = []
                         print(f"Unexpected response format: {type(batch_questions)}")
     
-                    # Validate questions
+                    # Validate questions and check for duplicates
+                    batch_duplicates = 0
+                    valid_batch_questions = []
+                    
                     for question in questions_to_validate:
                         if len(validated_questions) >= (target_questions or num_questions):
                             break
@@ -974,10 +1048,38 @@ class QnAEngine:
                             }
     
                         validated_question = self._validate_individual_question(question_dict, question_model=question_model)
+                        
                         if validated_question:
-                            validated_questions.append(validated_question)
-                            remaining_questions -= 1
-    
+                            # Check if this is a duplicate question
+                            if self._is_duplicate_question(validated_question, validated_questions):
+                                batch_duplicates += 1
+                                duplicates_found += 1
+                                continue
+                                
+                            # Not a duplicate, add to valid questions
+                            valid_batch_questions.append(validated_question)
+                            
+                            # Extract and store question text in processed questions set
+                            question_text = None
+                            for field in ['question', 'question_text', 'stem', 'prompt']:
+                                if field in question_dict:
+                                    question_text = question_dict.get(field, '').strip().lower()
+                                    break
+                                    
+                            if question_text:
+                                simplified_text = re.sub(r'[^\w\s]', '', question_text)
+                                simplified_text = re.sub(r'\s+', ' ', simplified_text).strip()
+                                self.processed_questions.add(simplified_text)
+                    
+                    # If all questions in the batch were duplicates and we have more to generate,
+                    # don't count this as an attempt
+                    if batch_duplicates > 0 and batch_duplicates == len(questions_to_validate) and remaining_questions > 0:
+                        print(f"Regenerating batch - all {batch_duplicates} questions were duplicates")
+                        continue
+                    
+                    # Add valid questions to our results
+                    validated_questions.extend(valid_batch_questions)
+                    remaining_questions -= len(valid_batch_questions)
                     total_attempts += 1
     
                 except Exception as e:
@@ -986,10 +1088,8 @@ class QnAEngine:
                     if not validated_questions:
                         continue
     
-            return question_list_model(questions=validated_questions)
+            return question_list_model(questions=validated_questions), duplicates_found
     
-    
-       
     def bulk_generate_questions(
         self,
         topic: Union[str, Path],
@@ -1005,7 +1105,7 @@ class QnAEngine:
         **kwargs
     ):
         """
-        Enhanced bulk question generation with custom response model support.
+        Enhanced bulk question generation with custom response model support and duplicate detection.
 
         Args:
             topic: Path to JSON file containing topic structure
@@ -1020,9 +1120,14 @@ class QnAEngine:
             max_retries: Maximum number of retries per batch
             **kwargs: Additional arguments to pass to question generation
         """
+        # Reset the processed questions set
+        self.processed_questions = set()
+        
         # Initialize variables that might be needed in summary
         base_questions = 0
         remainder = 0
+        total_duplicates_found = 0
+        
         if isinstance(topic, (Path, str)) and Path(topic).exists():
             with open(Path(topic), 'r') as f:
                 topics_data = json.load(f)
@@ -1065,7 +1170,6 @@ class QnAEngine:
                 objective_key = f"{combo['topic']}:{combo['subtopic']}:{combo['learning_objective']}"
                 question_distribution[objective_key] = base_questions + extra
 
-
         all_questions = []
         failed_batches_count = 0
         partial_success_count = 0
@@ -1078,11 +1182,12 @@ class QnAEngine:
 
         def generate_questions_for_objective(combo):
             """Generate questions for a specific learning objective with failure tracking"""
-            nonlocal failed_batches_count, partial_success_count
+            nonlocal failed_batches_count, partial_success_count, total_duplicates_found
             retries = 0
             objective_key = f"{combo['topic']}:{combo['subtopic']}:{combo['learning_objective']}"
             target_questions = question_distribution[objective_key]
             accumulated_questions = []
+            objective_duplicates = 0
 
             failure_record = {
                 "topic": combo["topic"],
@@ -1090,13 +1195,14 @@ class QnAEngine:
                 "learning_objective": combo["learning_objective"],
                 "target_questions": target_questions,
                 "generated_questions": 0,
+                "duplicates_detected": 0,
                 "retry_attempts": [],
             }
 
             while retries < max_retries and len(accumulated_questions) < target_questions:
                 try:
                     remaining_questions = target_questions - len(accumulated_questions)
-                    batch_result = self._generate_questions_with_retry(
+                    batch_result, batch_duplicates = self._generate_questions_with_retry(
                         combo,
                         remaining_questions,
                         prompt_template=prompt_template,
@@ -1112,9 +1218,12 @@ class QnAEngine:
                         "timestamp": datetime.now().strftime('%Y%m%d_%H%M%S'),
                         "questions_requested": remaining_questions,
                         "questions_generated": 0,
+                        "duplicates_detected": batch_duplicates,
                         "status": "success",
                         "error": None
                     }
+                    
+                    objective_duplicates += batch_duplicates
 
                     if batch_result and hasattr(batch_result, 'questions') and batch_result.questions:
                         new_questions = len(batch_result.questions)
@@ -1135,6 +1244,7 @@ class QnAEngine:
                         "timestamp": datetime.now().strftime('%Y%m%d_%H%M%S'),
                         "questions_requested": remaining_questions,
                         "questions_generated": 0,
+                        "duplicates_detected": 0,
                         "status": "error",
                         "error": str(e)
                     }
@@ -1143,6 +1253,9 @@ class QnAEngine:
                 failure_record["retry_attempts"].append(attempt_record)
 
             failure_record["generated_questions"] = len(accumulated_questions)
+            failure_record["duplicates_detected"] = objective_duplicates
+            total_duplicates_found += objective_duplicates
+            
             if len(accumulated_questions) < target_questions:
                 failed_objectives["failed_objectives"].append(failure_record)
                 if not accumulated_questions:
@@ -1400,10 +1513,11 @@ class QnAEngine:
                 with open(output_file, 'w') as f:
                     json.dump([q.dict() for q in all_questions], f, indent=4)
 
-            print(f"Questions saved to: {output_file}")
+            print(f"Questions saved to: {output_file}") 
 
         # Save failed objectives to JSON if there are any failures
         if failed_objectives["failed_objectives"]:
+            failed_objectives["total_duplicates_detected"] = total_duplicates_found
             failed_file = f"failed_questions_{failed_objectives['timestamp']}.json"
             with open(failed_file, 'w') as f:
                 json.dump(failed_objectives, f, indent=4)
@@ -1415,6 +1529,7 @@ class QnAEngine:
         print(f"Target Total Questions: {total_questions}")
         print(f"Base Questions per Objective: {base_questions} (plus {remainder} objectives with +1)")
         print(f"Total Questions Generated: {total_generated}")
+        print(f"Duplicate Questions Detected and Removed: {total_duplicates_found}")
         print(f"Failed Batches: {failed_batches_count}")
         print(f"Partial Success Batches: {partial_success_count}")
         print(f"Average Questions per Successful Batch: {total_generated/(total_objectives-failed_batches_count) if total_generated > 0 else 0:.2f}")
