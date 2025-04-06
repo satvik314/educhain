@@ -988,107 +988,112 @@ class QnAEngine:
                                    is_per_objective=False,
                                    target_questions=None,
                                    **kwargs):
-            """
-            Generate questions with improved retry mechanism, chunking, and duplicate detection
-            """
-            MAX_QUESTIONS_PER_BATCH = 3
-            validated_questions = []
-            remaining_questions = num_questions if not target_questions else target_questions
-            total_attempts = 0
-            max_attempts = max(5, (remaining_questions // MAX_QUESTIONS_PER_BATCH) * 2)
-            duplicates_found = 0
-    
-            while remaining_questions > 0 and len(validated_questions) < (target_questions or num_questions) and total_attempts < max_attempts:
-                try:
-                    # Calculate batch size based on remaining questions
-                    current_batch_size = min(MAX_QUESTIONS_PER_BATCH, remaining_questions)
+        """
+        Generate questions with improved retry mechanism, chunking, and duplicate detection
+        """
+        MAX_QUESTIONS_PER_BATCH = 5
+        validated_questions = []
+        remaining_questions = num_questions if not target_questions else target_questions
+        total_attempts = 0
+        max_attempts = max(5, (remaining_questions // MAX_QUESTIONS_PER_BATCH) * 2)
+        duplicates_found = 0
+
+        while remaining_questions > 0 and len(validated_questions) < (target_questions or num_questions) and total_attempts < max_attempts:
+            try:
+                # Calculate batch size based on remaining questions
+                current_batch_size = min(MAX_QUESTIONS_PER_BATCH, remaining_questions)
+                
+                # Add duplicate-prevention instructions if duplicates were found
+                custom_instructions = kwargs.get('custom_instructions', '')
+                if duplicates_found > 0:
+                    duplicate_warning = f"\nIMPORTANT: {duplicates_found} duplicate questions were found in your previous responses. Ensure questions are unique and not similar to questions already generated."
+                    kwargs['custom_instructions'] = custom_instructions + duplicate_warning
+                
+                # Add reminder about required fields
+                field_reminder = "\nIMPORTANT: Each question MUST include ALL required fields including: question/question_text, options, explanation, and any other fields specified in the format."
+                kwargs['custom_instructions'] = kwargs.get('custom_instructions', '') + field_reminder
+                
+                # Generate the batch
+                batch_questions = self.generate_questions(
+                    topic=combo["topic"],
+                    num=current_batch_size,
+                    question_type="Multiple Choice",
+                    prompt_template=prompt_template,
+                    response_model=question_list_model,
+                    subtopic=combo["subtopic"],
+                    learning_objective=combo["learning_objective"],
+                    **kwargs
+                )
+
+                # Process the batch
+                if isinstance(batch_questions, question_list_model):
+                    questions_to_validate = batch_questions.questions
+                elif isinstance(batch_questions, dict) and 'questions' in batch_questions:
+                    questions_to_validate = batch_questions.get('questions', [])
+                else:
+                    questions_to_validate = []
+                    print(f"Unexpected response format: {type(batch_questions)}")
+
+                # Validate questions and check for duplicates
+                batch_duplicates = 0
+                valid_batch_questions = []
+                
+                for question in questions_to_validate:
+                    if len(validated_questions) >= (target_questions or num_questions):
+                        break
+
+                    question_dict = question.dict() if hasattr(question, 'dict') else question
                     
-                    # Add duplicate-prevention instructions if duplicates were found
-                    custom_instructions = kwargs.get('custom_instructions', '')
-                    if duplicates_found > 0:
-                        duplicate_warning = f"\nIMPORTANT: {duplicates_found} duplicate questions were found in your previous responses. Ensure questions are unique and not similar to questions already generated."
-                        kwargs['custom_instructions'] = custom_instructions + duplicate_warning
+                    if 'metadata' not in question_dict and hasattr(question_model, '__fields__') and 'metadata' in question_model.__fields__:
+                        question_dict['metadata'] = {
+                            "topic": combo["topic"],
+                            "subtopic": combo["subtopic"],
+                            "learning_objective": combo["learning_objective"]
+                        }
+
+                    # Try to fix any missing required fields before validation
+                    validated_question = self._validate_individual_question(question_dict, question_model=question_model)
                     
-                    # Generate the batch
-                    batch_questions = self.generate_questions(
-                        topic=combo["topic"],
-                        num=current_batch_size,
-                        question_type="Multiple Choice",
-                        prompt_template=prompt_template,
-                        response_model=question_list_model,
-                        subtopic=combo["subtopic"],
-                        learning_objective=combo["learning_objective"],
-                        **kwargs
-                    )
-    
-                    # Process the batch
-                    if isinstance(batch_questions, question_list_model):
-                        questions_to_validate = batch_questions.questions
-                    elif isinstance(batch_questions, dict) and 'questions' in batch_questions:
-                        questions_to_validate = batch_questions.get('questions', [])
-                    else:
-                        questions_to_validate = []
-                        print(f"Unexpected response format: {type(batch_questions)}")
-    
-                    # Validate questions and check for duplicates
-                    batch_duplicates = 0
-                    valid_batch_questions = []
-                    
-                    for question in questions_to_validate:
-                        if len(validated_questions) >= (target_questions or num_questions):
-                            break
-    
-                        question_dict = question.dict() if hasattr(question, 'dict') else question
-                        
-                        if 'metadata' not in question_dict and hasattr(question_model, '__fields__') and 'metadata' in question_model.__fields__:
-                            question_dict['metadata'] = {
-                                "topic": combo["topic"],
-                                "subtopic": combo["subtopic"],
-                                "learning_objective": combo["learning_objective"]
-                            }
-    
-                        validated_question = self._validate_individual_question(question_dict, question_model=question_model)
-                        
-                        if validated_question:
-                            # Check if this is a duplicate question
-                            if self._is_duplicate_question(validated_question, validated_questions):
-                                batch_duplicates += 1
-                                duplicates_found += 1
-                                continue
-                                
-                            # Not a duplicate, add to valid questions
-                            valid_batch_questions.append(validated_question)
+                    if validated_question:
+                        # Check if this is a duplicate question
+                        if self._is_duplicate_question(validated_question, validated_questions):
+                            batch_duplicates += 1
+                            duplicates_found += 1
+                            continue
                             
-                            # Extract and store question text in processed questions set
-                            question_text = None
-                            for field in ['question', 'question_text', 'stem', 'prompt']:
-                                if field in question_dict:
-                                    question_text = question_dict.get(field, '').strip().lower()
-                                    break
-                                    
-                            if question_text:
-                                simplified_text = re.sub(r'[^\w\s]', '', question_text)
-                                simplified_text = re.sub(r'\s+', ' ', simplified_text).strip()
-                                self.processed_questions.add(simplified_text)
-                    
-                    # If all questions in the batch were duplicates and we have more to generate,
-                    # don't count this as an attempt
-                    if batch_duplicates > 0 and batch_duplicates == len(questions_to_validate) and remaining_questions > 0:
-                        print(f"Regenerating batch - all {batch_duplicates} questions were duplicates")
-                        continue
-                    
-                    # Add valid questions to our results
-                    validated_questions.extend(valid_batch_questions)
-                    remaining_questions -= len(valid_batch_questions)
-                    total_attempts += 1
-    
-                except Exception as e:
-                    print(f"Error in generation attempt {total_attempts + 1}: {str(e)}")
-                    total_attempts += 1
-                    if not validated_questions:
-                        continue
-    
-            return question_list_model(questions=validated_questions), duplicates_found
+                        # Not a duplicate, add to valid questions
+                        valid_batch_questions.append(validated_question)
+                        
+                        # Extract and store question text in processed questions set
+                        question_text = None
+                        for field in ['question', 'question_text', 'stem', 'prompt']:
+                            if field in question_dict:
+                                question_text = question_dict.get(field, '').strip().lower()
+                                break
+                                
+                        if question_text:
+                            simplified_text = re.sub(r'[^\w\s]', '', question_text)
+                            simplified_text = re.sub(r'\s+', ' ', simplified_text).strip()
+                            self.processed_questions.add(simplified_text)
+                
+                # If all questions in the batch were duplicates and we have more to generate,
+                # don't count this as an attempt
+                if batch_duplicates > 0 and batch_duplicates == len(questions_to_validate) and remaining_questions > 0:
+                    print(f"Regenerating batch - {batch_duplicates} questions were found to be duplicates.")
+                    continue
+                
+                # Add valid questions to our results
+                validated_questions.extend(valid_batch_questions)
+                remaining_questions -= len(valid_batch_questions)
+                total_attempts += 1
+
+            except Exception as e:
+                print(f"Error in generation attempt {total_attempts + 1}: {str(e)}")
+                total_attempts += 1
+                if not validated_questions:
+                    continue
+
+        return question_list_model(questions=validated_questions), duplicates_found
     
     def bulk_generate_questions(
         self,
