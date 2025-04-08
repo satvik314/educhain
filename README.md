@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="https://github.com/Shubhwithai/educhain/blob/main/images/Educhain%20logo%20New.svg" alt="Educhain Logo" width="400" height="300">
+  <img src="https://github.com/Shubhwithai/educhain/blob/main/images/educhain%20final%20logo.svg" alt="Educhain Logo" width="400" height="300">
 </p>
 
 <div align="center">
