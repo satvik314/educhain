@@ -1,6 +1,6 @@
 # educhain/engines/qna_engine.py
 
-from typing import Optional, Type, Any, List, Literal, Union, Tuple, Dict, Set
+from typing import Optional, Type, Any, List, Literal, Union, Tuple, Dict
 from pydantic import BaseModel, Field, ValidationError
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from datetime import datetime
@@ -104,7 +104,8 @@ Each question should:
 1. Be clear and concise
 2. Test understanding of the specific learning objective
 3. Include a detailed explanation of the answer
-4. Be unique
+4. Be appropriate for 5th grade level
+5. Be of medium difficulty
 
 Generate {num} questions in the following JSON format:
 {{
@@ -137,7 +138,6 @@ class QnAEngine:
         self.pdf_loader = PdfFileLoader()
         self.url_loader = UrlLoader()
         self.embeddings = None
-        self.processed_questions = set()  # Track processed questions to avoid duplicates
 
     def _initialize_llm(self, llm_config: LLMConfig):
         if llm_config.custom_model:
@@ -854,6 +854,98 @@ class QnAEngine:
                 additional_notes="An error occurred during processing."
             )
 
+    def _read_questions_from_csv(self, csv_filepath):
+        """Read existing questions from a CSV file and return a set of question texts"""
+        existing_questions = set()
+        
+        try:
+            if not os.path.exists(csv_filepath) or os.path.getsize(csv_filepath) == 0:
+                return existing_questions
+                
+            with open(csv_filepath, 'r', newline='', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    # Try different common field names for question text
+                    question_fields = ['question', 'question_text', 'stem', 'prompt']
+                    for field in question_fields:
+                        if field in row and row[field]:
+                            existing_questions.add(row[field].strip())
+                            break
+                            
+        except Exception as e:
+            print(f"Warning: Error reading existing questions from CSV: {e}")
+            
+        return existing_questions
+
+    def _write_questions_to_csv(self, questions, csv_filepath, question_model, append=False, check_duplicates=False):
+        """
+        Write questions to CSV file, either creating a new file or appending to an existing one.
+        Checks for duplicates if check_duplicates is True.
+        
+        Returns: List of questions that were actually written (non-duplicates)
+        """
+        mode = 'a' if append else 'w'
+        
+        # If checking duplicates, read existing questions
+        existing_questions = set()
+        if check_duplicates and append:
+            existing_questions = self._read_questions_from_csv(csv_filepath)
+            
+        # Dynamically determine fieldnames from the model
+        model_fields = list(question_model.__annotations__.keys())
+        
+        written_questions = []
+        
+        with open(csv_filepath, mode, newline='', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=model_fields)
+            
+            # Write header only if creating a new file
+            if not append:
+                writer.writeheader()
+            
+            # Write each question to the CSV file
+            for question in questions:
+                q_dict = question.dict() if hasattr(question, 'dict') else question
+                
+                # Check for duplicates if needed
+                duplicate = False
+                if check_duplicates:
+                    # Try different common field names for question text
+                    question_fields = ['question', 'question_text', 'stem', 'prompt']
+                    for field in question_fields:
+                        if field in q_dict and q_dict[field] and q_dict[field].strip() in existing_questions:
+                            duplicate = True
+                            break
+                
+                if duplicate:
+                    continue
+                    
+                # Process complex fields to convert to JSON strings
+                row_data = {}
+                for field_name in model_fields:
+                    value = q_dict.get(field_name)
+                    
+                    # Convert complex objects to JSON
+                    if isinstance(value, (dict, list)) or hasattr(value, 'dict'):
+                        if hasattr(value, 'dict'):
+                            value = value.dict()
+                        row_data[field_name] = json.dumps(value)
+                    else:
+                        row_data[field_name] = value
+                
+                # Write to CSV and track which questions were written        
+                writer.writerow(row_data)
+                written_questions.append(question)
+                
+                # Add to existing questions set to prevent duplicates within the current batch
+                if check_duplicates:
+                    for field in question_fields:
+                        if field in q_dict and q_dict[field]:
+                            existing_questions.add(q_dict[field].strip())
+                            break
+        
+        return written_questions
+
 
     def _validate_individual_question(self, question_dict: dict, question_model: Type[BaseModel] = None) -> Optional[BaseModel]:
             """
@@ -914,70 +1006,6 @@ class QnAEngine:
         # Add the missing return statement
         return combinations, total_specified_questions, has_question_counts
     
-    def _is_duplicate_question(self, new_question, existing_questions) -> bool:
-        """
-        Check if a question is a duplicate of any in the existing set.
-        
-        Args:
-            new_question: The question to check (can be dict or Pydantic model)
-            existing_questions: List of existing questions to check against
-            
-        Returns:
-            bool: True if duplicate is found, False otherwise
-        """
-        # Convert question to dict if it's a Pydantic model
-        if hasattr(new_question, 'dict'):
-            new_question_dict = new_question.dict()
-        else:
-            new_question_dict = new_question
-            
-        # Extract the question text
-        question_text = None
-        for field in ['question', 'question_text', 'stem', 'prompt']:
-            if field in new_question_dict:
-                question_text = new_question_dict.get(field, '').strip().lower()
-                break
-                
-        if not question_text:
-            return False  # Can't determine if duplicate without question text
-            
-        # Create a simplified version for comparison (remove punctuation, extra spaces)
-        simplified_text = re.sub(r'[^\w\s]', '', question_text)
-        simplified_text = re.sub(r'\s+', ' ', simplified_text).strip()
-        
-        # Check exact duplicates in processed questions set
-        if simplified_text in self.processed_questions:
-            return True
-            
-        # Check similarity with existing questions in this batch
-        for existing in existing_questions:
-            existing_dict = existing.dict() if hasattr(existing, 'dict') else existing
-            
-            # Extract question text from existing question
-            existing_text = None
-            for field in ['question', 'question_text', 'stem', 'prompt']:
-                if field in existing_dict:
-                    existing_text = existing_dict.get(field, '').strip().lower()
-                    break
-                    
-            if not existing_text:
-                continue
-                
-            # Create simplified version of existing text
-            existing_simplified = re.sub(r'[^\w\s]', '', existing_text)
-            existing_simplified = re.sub(r'\s+', ' ', existing_simplified).strip()
-            
-            # Check if texts are highly similar (exact or very close match)
-            if simplified_text == existing_simplified:
-                return True
-                
-            # Check substring relationship (one is contained in the other)
-            if len(simplified_text) > 20 and len(existing_simplified) > 20:
-                if simplified_text in existing_simplified or existing_simplified in simplified_text:
-                    return True
-                    
-        return False
-
     @retry(stop=stop_after_attempt(3),
        wait=wait_exponential(multiplier=1, min=4, max=10),
        retry=lambda e: isinstance(e, (ValidationError, json.JSONDecodeError)))
@@ -987,31 +1015,28 @@ class QnAEngine:
                                    question_list_model=None,
                                    is_per_objective=False,
                                    target_questions=None,
+                                   csv_output_file=None,
                                    **kwargs):
         """
-        Generate questions with improved retry mechanism, chunking, and duplicate detection
+        Generate questions with improved retry mechanism and chunking.
+        Includes duplicate checking if csv_output_file is provided.
         """
-        MAX_QUESTIONS_PER_BATCH = 5
+        MAX_QUESTIONS_PER_BATCH = 3
+        MAX_DUPLICATE_RETRIES = 3  # Maximum retries for a batch with duplicates
         validated_questions = []
         remaining_questions = num_questions if not target_questions else target_questions
         total_attempts = 0
         max_attempts = max(5, (remaining_questions // MAX_QUESTIONS_PER_BATCH) * 2)
-        duplicates_found = 0
+        
+        # Get existing questions if csv_output_file is provided
+        existing_questions = set()
+        if csv_output_file:
+            existing_questions = self._read_questions_from_csv(csv_output_file)
 
         while remaining_questions > 0 and len(validated_questions) < (target_questions or num_questions) and total_attempts < max_attempts:
             try:
                 # Calculate batch size based on remaining questions
                 current_batch_size = min(MAX_QUESTIONS_PER_BATCH, remaining_questions)
-                
-                # Add duplicate-prevention instructions if duplicates were found
-                custom_instructions = kwargs.get('custom_instructions', '')
-                if duplicates_found > 0:
-                    duplicate_warning = f"\nIMPORTANT: {duplicates_found} duplicate questions were found in your previous responses. Ensure questions are unique and not similar to questions already generated."
-                    kwargs['custom_instructions'] = custom_instructions + duplicate_warning
-                
-                # Add reminder about required fields
-                field_reminder = "\nIMPORTANT: Each question MUST include ALL required fields including: question/question_text, options, explanation, and any other fields specified in the format."
-                kwargs['custom_instructions'] = kwargs.get('custom_instructions', '') + field_reminder
                 
                 # Generate the batch
                 batch_questions = self.generate_questions(
@@ -1035,15 +1060,34 @@ class QnAEngine:
                     print(f"Unexpected response format: {type(batch_questions)}")
 
                 # Validate questions and check for duplicates
-                batch_duplicates = 0
-                valid_batch_questions = []
+                batch_validated_questions = []
+                duplicate_count = 0
+                target_reached = False
                 
                 for question in questions_to_validate:
+                    # Stop if we've already collected enough questions
                     if len(validated_questions) >= (target_questions or num_questions):
+                        target_reached = True
                         break
 
                     question_dict = question.dict() if hasattr(question, 'dict') else question
                     
+                    # Check for duplicates
+                    duplicate = False
+                    if existing_questions:
+                        # Try different common field names for question text
+                        question_fields = ['question', 'question_text', 'stem', 'prompt']
+                        for field in question_fields:
+                            if field in question_dict and question_dict[field] and question_dict[field].strip() in existing_questions:
+                                duplicate = True
+                                duplicate_count += 1
+                                print(f"Duplicate question detected: '{question_dict[field][:50]}...'")
+                                break
+                    
+                    if duplicate:
+                        continue
+                    
+                    # Add metadata if missing
                     if 'metadata' not in question_dict and hasattr(question_model, '__fields__') and 'metadata' in question_model.__fields__:
                         question_dict['metadata'] = {
                             "topic": combo["topic"],
@@ -1051,41 +1095,40 @@ class QnAEngine:
                             "learning_objective": combo["learning_objective"]
                         }
 
-                    # Try to fix any missing required fields before validation
                     validated_question = self._validate_individual_question(question_dict, question_model=question_model)
-                    
                     if validated_question:
-                        # Check if this is a duplicate question
-                        if self._is_duplicate_question(validated_question, validated_questions):
-                            batch_duplicates += 1
-                            duplicates_found += 1
-                            continue
-                            
-                        # Not a duplicate, add to valid questions
-                        valid_batch_questions.append(validated_question)
+                        batch_validated_questions.append(validated_question)
                         
-                        # Extract and store question text in processed questions set
-                        question_text = None
-                        for field in ['question', 'question_text', 'stem', 'prompt']:
-                            if field in question_dict:
-                                question_text = question_dict.get(field, '').strip().lower()
-                                break
-                                
-                        if question_text:
-                            simplified_text = re.sub(r'[^\w\s]', '', question_text)
-                            simplified_text = re.sub(r'\s+', ' ', simplified_text).strip()
-                            self.processed_questions.add(simplified_text)
-                
-                # If all questions in the batch were duplicates and we have more to generate,
-                # don't count this as an attempt
-                if batch_duplicates > 0 and batch_duplicates == len(questions_to_validate) and remaining_questions > 0:
-                    print(f"Regenerating batch - {batch_duplicates} questions were found to be duplicates.")
+                        # Add to existing questions to prevent duplicates in future batches
+                        if csv_output_file:
+                            for field in ['question', 'question_text', 'stem', 'prompt']:
+                                if field in question_dict and question_dict[field]:
+                                    existing_questions.add(question_dict[field].strip())
+                                    break
+
+                # If we found duplicates but no valid questions in this batch, retry with a clear instruction
+                if duplicate_count > 0 and not batch_validated_questions and total_attempts < MAX_DUPLICATE_RETRIES:
+                    print(f"All questions in batch were duplicates. Regenerating with explicit uniqueness instruction...")
+                    custom_instructions = kwargs.get('custom_instructions', '')
+                    if custom_instructions:
+                        custom_instructions = f"{custom_instructions}\n\nIMPORTANT: Generate completely new and unique questions that are different from previous ones."
+                    else:
+                        custom_instructions = "IMPORTANT: Generate completely new and unique questions that are different from previous ones."
+                    kwargs['custom_instructions'] = custom_instructions
+                    total_attempts += 1
                     continue
                 
-                # Add valid questions to our results
-                validated_questions.extend(valid_batch_questions)
-                remaining_questions -= len(valid_batch_questions)
+                # Add valid questions to our collection, but only as many as we need
+                space_remaining = (target_questions or num_questions) - len(validated_questions)
+                questions_to_add = min(len(batch_validated_questions), space_remaining)
+                
+                validated_questions.extend(batch_validated_questions[:questions_to_add])
+                remaining_questions = (target_questions or num_questions) - len(validated_questions)
                 total_attempts += 1
+                
+                # If we've reached our target, break out of the loop
+                if target_reached or remaining_questions == 0:
+                    break
 
             except Exception as e:
                 print(f"Error in generation attempt {total_attempts + 1}: {str(e)}")
@@ -1093,8 +1136,109 @@ class QnAEngine:
                 if not validated_questions:
                     continue
 
-        return question_list_model(questions=validated_questions), duplicates_found
-    
+        return question_list_model(questions=validated_questions)
+
+    def generate_questions_for_objective(self, combo, question_distribution, 
+                                        prompt_template, question_model, question_list_model, 
+                                        questions_per_objective, csv_output_file, max_retries, **kwargs):
+        """Generate questions for a specific learning objective with failure tracking, CSV saving, and duplicate checking"""
+        retries = 0
+        objective_key = f"{combo['topic']}:{combo['subtopic']}:{combo['learning_objective']}"
+        target_questions = question_distribution[objective_key]
+        accumulated_questions = []
+        duplicates_count = 0
+
+        failure_record = {
+            "topic": combo["topic"],
+            "subtopic": combo["subtopic"],
+            "learning_objective": combo["learning_objective"],
+            "target_questions": target_questions,
+            "generated_questions": 0,
+            "duplicate_questions": 0,
+            "retry_attempts": [],
+        }
+
+        while retries < max_retries and len(accumulated_questions) < target_questions:
+            try:
+                remaining_questions = target_questions - len(accumulated_questions)
+                batch_result = self._generate_questions_with_retry(
+                    combo,
+                    remaining_questions,
+                    prompt_template=prompt_template,
+                    question_model=question_model,
+                    question_list_model=question_list_model,
+                    is_per_objective=(questions_per_objective is not None),
+                    target_questions=remaining_questions,  # Only request the remaining number
+                    csv_output_file=csv_output_file,  # Pass CSV file for duplicate checking
+                    **kwargs
+                )
+
+                attempt_record = {
+                    "attempt_number": retries + 1,
+                    "timestamp": datetime.now().strftime('%Y%m%d_%H%M%S'),
+                    "questions_requested": remaining_questions,
+                    "questions_generated": 0,
+                    "questions_duplicated": 0,
+                    "status": "success",
+                    "error": None
+                }
+
+                if batch_result and hasattr(batch_result, 'questions') and batch_result.questions:
+                    # Ensure we only process exactly the number of questions we need
+                    questions_to_process = batch_result.questions[:remaining_questions]
+                    
+                    # Write to CSV and get only the non-duplicate questions that were written
+                    original_count = len(questions_to_process)
+                    written_questions = self._write_questions_to_csv(
+                        questions_to_process, 
+                        csv_output_file, 
+                        question_model, 
+                        append=True,
+                        check_duplicates=True
+                    )
+                    
+                    # Count duplicates
+                    num_duplicates = original_count - len(written_questions)
+                    duplicates_count += num_duplicates
+                    attempt_record["questions_duplicated"] = num_duplicates
+                    
+                    # Add only non-duplicate questions
+                    new_questions = len(written_questions)
+                    
+                    # Check if we'd exceed our target and truncate if necessary
+                    space_left = target_questions - len(accumulated_questions)
+                    if new_questions > space_left:
+                        written_questions = written_questions[:space_left]
+                        new_questions = len(written_questions)
+                    
+                    accumulated_questions.extend(written_questions)
+                    attempt_record["questions_generated"] = new_questions
+
+                    if len(accumulated_questions) < target_questions:
+                        attempt_record["status"] = "partial_success"
+                    retries += 1
+                else:
+                    attempt_record["status"] = "failed"
+                    retries += 1
+
+            except Exception as e:
+                attempt_record = {
+                    "attempt_number": retries + 1,
+                    "timestamp": datetime.now().strftime('%Y%m%d_%H%M%S'),
+                    "questions_requested": remaining_questions,
+                    "questions_generated": 0,
+                    "questions_duplicated": 0,
+                    "status": "error",
+                    "error": str(e)
+                }
+                retries += 1
+
+            failure_record["retry_attempts"].append(attempt_record)
+
+        failure_record["generated_questions"] = len(accumulated_questions)
+        failure_record["duplicate_questions"] = duplicates_count
+        return accumulated_questions, failure_record
+
     def bulk_generate_questions(
         self,
         topic: Union[str, Path],
@@ -1110,7 +1254,8 @@ class QnAEngine:
         **kwargs
     ):
         """
-        Enhanced bulk question generation with custom response model support and duplicate detection.
+        Enhanced bulk question generation with continuous CSV saving and duplicate checking.
+        Ensures exactly the target number of questions are generated per objective.
 
         Args:
             topic: Path to JSON file containing topic structure
@@ -1125,13 +1270,9 @@ class QnAEngine:
             max_retries: Maximum number of retries per batch
             **kwargs: Additional arguments to pass to question generation
         """
-        # Reset the processed questions set
-        self.processed_questions = set()
-        
         # Initialize variables that might be needed in summary
         base_questions = 0
         remainder = 0
-        total_duplicates_found = 0
         
         if isinstance(topic, (Path, str)) and Path(topic).exists():
             with open(Path(topic), 'r') as f:
@@ -1175,122 +1316,80 @@ class QnAEngine:
                 objective_key = f"{combo['topic']}:{combo['subtopic']}:{combo['learning_objective']}"
                 question_distribution[objective_key] = base_questions + extra
 
+        # Initialize CSV file for continuous saving
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        csv_output_file = f"questions_{timestamp}.csv"
+        # Create empty CSV file with headers
+        self._write_questions_to_csv([], csv_output_file, question_model)
+        print(f"Created CSV file for continuous saving: {csv_output_file}")
+
         all_questions = []
         failed_batches_count = 0
         partial_success_count = 0
+        duplicates_count = 0
 
         # Track failed attempts
         failed_objectives = {
-            "timestamp": datetime.now().strftime('%Y%m%d_%H%M%S'),
+            "timestamp": timestamp,
             "failed_objectives": []
         }
-
-        def generate_questions_for_objective(combo):
-            """Generate questions for a specific learning objective with failure tracking"""
-            nonlocal failed_batches_count, partial_success_count, total_duplicates_found
-            retries = 0
-            objective_key = f"{combo['topic']}:{combo['subtopic']}:{combo['learning_objective']}"
-            target_questions = question_distribution[objective_key]
-            accumulated_questions = []
-            objective_duplicates = 0
-
-            failure_record = {
-                "topic": combo["topic"],
-                "subtopic": combo["subtopic"],
-                "learning_objective": combo["learning_objective"],
-                "target_questions": target_questions,
-                "generated_questions": 0,
-                "duplicates_detected": 0,
-                "retry_attempts": [],
-            }
-
-            while retries < max_retries and len(accumulated_questions) < target_questions:
-                try:
-                    remaining_questions = target_questions - len(accumulated_questions)
-                    batch_result, batch_duplicates = self._generate_questions_with_retry(
-                        combo,
-                        remaining_questions,
-                        prompt_template=prompt_template,
-                        question_model=question_model,
-                        question_list_model=question_list_model,
-                        is_per_objective=(questions_per_objective is not None),
-                        target_questions=target_questions,
-                        **kwargs
-                    )
-
-                    attempt_record = {
-                        "attempt_number": retries + 1,
-                        "timestamp": datetime.now().strftime('%Y%m%d_%H%M%S'),
-                        "questions_requested": remaining_questions,
-                        "questions_generated": 0,
-                        "duplicates_detected": batch_duplicates,
-                        "status": "success",
-                        "error": None
-                    }
-                    
-                    objective_duplicates += batch_duplicates
-
-                    if batch_result and hasattr(batch_result, 'questions') and batch_result.questions:
-                        new_questions = len(batch_result.questions)
-                        accumulated_questions.extend(batch_result.questions)
-                        attempt_record["questions_generated"] = new_questions
-
-                        if len(accumulated_questions) < target_questions:
-                            partial_success_count += 1
-                            attempt_record["status"] = "partial_success"
-                        retries += 1
-                    else:
-                        attempt_record["status"] = "failed"
-                        retries += 1
-
-                except Exception as e:
-                    attempt_record = {
-                        "attempt_number": retries + 1,
-                        "timestamp": datetime.now().strftime('%Y%m%d_%H%M%S'),
-                        "questions_requested": remaining_questions,
-                        "questions_generated": 0,
-                        "duplicates_detected": 0,
-                        "status": "error",
-                        "error": str(e)
-                    }
-                    retries += 1
-
-                failure_record["retry_attempts"].append(attempt_record)
-
-            failure_record["generated_questions"] = len(accumulated_questions)
-            failure_record["duplicates_detected"] = objective_duplicates
-            total_duplicates_found += objective_duplicates
-            
-            if len(accumulated_questions) < target_questions:
-                failed_objectives["failed_objectives"].append(failure_record)
-                if not accumulated_questions:
-                    failed_batches_count += 1
-                    return None
-
-            return question_list_model(questions=accumulated_questions)
 
         # Use ThreadPoolExecutor for parallel processing
         with tqdm(total=len(combinations), desc="Generating questions") as progress_bar:
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-                futures = []
+                futures = {}
                 for combo in combinations:
-                    future = executor.submit(generate_questions_for_objective, combo)
-                    futures.append(future)
+                    future = executor.submit(
+                        self.generate_questions_for_objective,
+                        combo=combo,
+                        question_distribution=question_distribution,
+                        prompt_template=prompt_template,
+                        question_model=question_model,
+                        question_list_model=question_list_model,
+                        questions_per_objective=questions_per_objective,
+                        csv_output_file=csv_output_file,
+                        max_retries=max_retries,
+                        **kwargs
+                    )
+                    futures[future] = combo
 
                 for future in concurrent.futures.as_completed(futures):
-                    batch_result = future.result()
-                    if batch_result and hasattr(batch_result, 'questions') and batch_result.questions:
-                        all_questions.extend(batch_result.questions)
+                    combo = futures[future]
+                    try:
+                        accumulated_questions, failure_record = future.result()
+                        
+                        # Update statistics
+                        if failure_record["duplicate_questions"] > 0:
+                            duplicates_count += failure_record["duplicate_questions"]
+                            
+                        # Handle failure records
+                        objective_key = f"{combo['topic']}:{combo['subtopic']}:{combo['learning_objective']}"
+                        target = question_distribution[objective_key]
+                        
+                        if len(accumulated_questions) < target:
+                            if len(accumulated_questions) == 0:
+                                failed_batches_count += 1
+                            else:
+                                partial_success_count += 1
+                            failed_objectives["failed_objectives"].append(failure_record)
+                        
+                        # Add questions to our master list
+                        if accumulated_questions:
+                            all_questions.extend(accumulated_questions)
+                            
+                    except Exception as e:
+                        print(f"Error processing objective {combo['topic']} - {combo['subtopic']} - {combo['learning_objective']}: {str(e)}")
+                        failed_batches_count += 1
+                        
                     progress_bar.update(1)
 
-        # Handle output formatting for successful questions
-        output_file = None
-        if output_format and all_questions:
-            formatter = OutputFormatter()
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-
+        # Handle additional output formatting for successful questions
+        output_file = csv_output_file  # Default output file is the CSV we've been writing to
+        
+        # Generate additional formats if requested
+        if output_format and output_format != "csv" and all_questions:
             if output_format == "pdf":
-                output_file = f"questions_{timestamp}.pdf"
+                pdf_output_file = f"questions_{timestamp}.pdf"
                 
                 try:
                     from reportlab.lib.pagesizes import letter
@@ -1299,7 +1398,7 @@ class QnAEngine:
                     from reportlab.lib import colors
                     
                     # Create PDF document
-                    doc = SimpleDocTemplate(output_file, pagesize=letter)
+                    doc = SimpleDocTemplate(pdf_output_file, pagesize=letter)
                     styles = getSampleStyleSheet()
                     
                     # Create custom styles
@@ -1472,71 +1571,39 @@ class QnAEngine:
                     
                     # Build the PDF
                     doc.build(elements)
-                    print(f"Questions saved to PDF: {output_file}")
+                    print(f"Questions saved to PDF: {pdf_output_file}")
+                    output_file = pdf_output_file
                 
                 except Exception as e:
                     print(f"Error generating PDF: {str(e)}")
-                    # Fallback to JSON if PDF generation fails
-                    output_file = f"questions_{timestamp}.json"
-                    with open(output_file, 'w') as f:
-                        json.dump([q.dict() if hasattr(q, 'dict') else q for q in all_questions], f, indent=4)
-                    print(f"PDF generation failed. Questions saved to JSON: {output_file}")
-
-            elif output_format == "csv":
-                output_file = f"questions_{timestamp}.csv"
-                
-                # Dynamically determine fieldnames from the model
-                model_fields = list(question_model.__annotations__.keys())
-                
-                with open(output_file, 'w', newline='') as csvfile:
-                    writer = csv.DictWriter(csvfile, fieldnames=model_fields)
-                    writer.writeheader()
-                    
-                    # Write each question to the CSV file
-                    for question in all_questions:
-                        q_dict = question.dict() if hasattr(question, 'dict') else question
-                        
-                        # Process complex fields to convert to JSON strings
-                        row_data = {}
-                        for field_name in model_fields:
-                            value = q_dict.get(field_name)
-                            
-                            # Convert complex objects to JSON
-                            if isinstance(value, (dict, list)) or hasattr(value, 'dict'):
-                                if hasattr(value, 'dict'):
-                                    value = value.dict()
-                                row_data[field_name] = json.dumps(value)
-                            else:
-                                row_data[field_name] = value
-                                
-                        writer.writerow(row_data)
-                
-                print(f"Questions saved to CSV: {output_file}")
+                    # PDF generation failed but we already have the CSV
 
             elif output_format == "json":
-                output_file = f"questions_{timestamp}.json"
-                with open(output_file, 'w') as f:
-                    json.dump([q.dict() for q in all_questions], f, indent=4)
-
-            print(f"Questions saved to: {output_file}") 
+                json_output_file = f"questions_{timestamp}.json"
+                with open(json_output_file, 'w') as f:
+                    json.dump([q.dict() if hasattr(q, 'dict') else q for q in all_questions], f, indent=4)
+                print(f"Questions saved to JSON: {json_output_file}")
+                output_file = json_output_file
 
         # Save failed objectives to JSON if there are any failures
         if failed_objectives["failed_objectives"]:
-            failed_objectives["total_duplicates_detected"] = total_duplicates_found
             failed_file = f"failed_questions_{failed_objectives['timestamp']}.json"
             with open(failed_file, 'w') as f:
                 json.dump(failed_objectives, f, indent=4)
             print(f"Failed attempts saved to: {failed_file}")
 
+        # Modified summary section to include duplicate stats
         total_generated = len(all_questions)
         print(f"\n--- Generation Summary ---")
         print(f"Total Learning Objectives: {total_objectives}")
         print(f"Target Total Questions: {total_questions}")
         print(f"Base Questions per Objective: {base_questions} (plus {remainder} objectives with +1)")
         print(f"Total Questions Generated: {total_generated}")
-        print(f"Duplicate Questions Detected and Removed: {total_duplicates_found}")
+        print(f"Duplicate Questions Detected: {duplicates_count}")
         print(f"Failed Batches: {failed_batches_count}")
         print(f"Partial Success Batches: {partial_success_count}")
         print(f"Average Questions per Successful Batch: {total_generated/(total_objectives-failed_batches_count) if total_generated > 0 else 0:.2f}")
+        print(f"Questions continuously saved to: {csv_output_file}")
 
         return question_list_model(questions=all_questions), output_file, total_generated, failed_batches_count
+
