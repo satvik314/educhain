@@ -22,10 +22,13 @@ import re
 from langchain_core.messages import SystemMessage
 from langchain.schema import HumanMessage
 from educhain.core.config import LLMConfig
-from educhain.models.qna_models import (
+from models.qna_models import (
     MCQList, ShortAnswerQuestionList, TrueFalseQuestionList,
-    FillInBlankQuestionList, MCQListMath, Option ,SolvedDoubt, SpeechInstructions,
-    VisualMCQList, VisualMCQ, BulkMCQ, BulkMCQList
+    FillInBlankQuestionList, MCQListMath, Option, SolvedDoubt, SpeechInstructions,
+    VisualMCQList, VisualMCQ, BulkMCQ, BulkMCQList, ShortAnswerQuestion, TrueFalseQuestion, FillInBlankQuestion,
+    BulkShortAnswerQuestion, BulkShortAnswerQuestionList,
+    BulkTrueFalseQuestion, BulkTrueFalseQuestionList,
+    BulkFillInBlankQuestion, BulkFillInBlankQuestionList
 )
 from educhain.utils.loaders import PdfFileLoader, UrlLoader
 from educhain.utils.output_formatter import OutputFormatter
@@ -893,6 +896,7 @@ class QnAEngine:
             
         # Dynamically determine fieldnames from the model
         model_fields = list(question_model.__annotations__.keys())
+
         
         written_questions = []
         
@@ -922,16 +926,30 @@ class QnAEngine:
                     
                 # Process complex fields to convert to JSON strings
                 row_data = {}
+                
+                # First, add all simple fields directly
                 for field_name in model_fields:
                     value = q_dict.get(field_name)
                     
-                    # Convert complex objects to JSON
-                    if isinstance(value, (dict, list)) or hasattr(value, 'dict'):
+                    # Special handling for keywords in short answer questions
+                    if field_name == 'keywords' and isinstance(value, list):
+                        # Format keywords as comma-separated string instead of JSON
+                        row_data[field_name] = ', '.join(value)
+                    # Special handling for boolean (true/false) values
+                    elif field_name == 'answer' and isinstance(value, bool):
+                        # Convert boolean to 'True' or 'False' string
+                        row_data[field_name] = str(value)
+                    # Skip context field for Fill in the Blank questions
+                    elif field_name == 'context':
+                        continue
+                    # Simple values go in directly
+                    elif not isinstance(value, (dict, list)) and not hasattr(value, 'dict'):
+                        row_data[field_name] = value
+                    # Handle complex objects
+                    else:
                         if hasattr(value, 'dict'):
                             value = value.dict()
                         row_data[field_name] = json.dumps(value)
-                    else:
-                        row_data[field_name] = value
                 
                 # Write to CSV and track which questions were written        
                 writer.writerow(row_data)
@@ -945,7 +963,6 @@ class QnAEngine:
                             break
         
         return written_questions
-
 
     def _validate_individual_question(self, question_dict: dict, question_model: Type[BaseModel] = None) -> Optional[BaseModel]:
             """
@@ -1016,10 +1033,12 @@ class QnAEngine:
                                    is_per_objective=False,
                                    target_questions=None,
                                    csv_output_file=None,
+                                   question_type="Multiple Choice",
                                    **kwargs):
         """
         Generate questions with improved retry mechanism and chunking.
         Includes duplicate checking if csv_output_file is provided.
+        Now supports different question types.
         """
         MAX_QUESTIONS_PER_BATCH = 3
         MAX_DUPLICATE_RETRIES = 3  # Maximum retries for a batch with duplicates
@@ -1038,11 +1057,11 @@ class QnAEngine:
                 # Calculate batch size based on remaining questions
                 current_batch_size = min(MAX_QUESTIONS_PER_BATCH, remaining_questions)
                 
-                # Generate the batch
+                # Generate the batch with specified question type
                 batch_questions = self.generate_questions(
                     topic=combo["topic"],
                     num=current_batch_size,
-                    question_type="Multiple Choice",
+                    question_type=question_type,  # Use the specified question type
                     prompt_template=prompt_template,
                     response_model=question_list_model,
                     subtopic=combo["subtopic"],
@@ -1140,7 +1159,8 @@ class QnAEngine:
 
     def generate_questions_for_objective(self, combo, question_distribution, 
                                         prompt_template, question_model, question_list_model, 
-                                        questions_per_objective, csv_output_file, max_retries, **kwargs):
+                                        questions_per_objective, csv_output_file, max_retries, 
+                                        question_type="Multiple Choice", **kwargs):
         """Generate questions for a specific learning objective with failure tracking, CSV saving, and duplicate checking"""
         retries = 0
         objective_key = f"{combo['topic']}:{combo['subtopic']}:{combo['learning_objective']}"
@@ -1152,6 +1172,7 @@ class QnAEngine:
             "topic": combo["topic"],
             "subtopic": combo["subtopic"],
             "learning_objective": combo["learning_objective"],
+            "question_type": question_type,  # Add question type to the failure record
             "target_questions": target_questions,
             "generated_questions": 0,
             "duplicate_questions": 0,
@@ -1168,11 +1189,12 @@ class QnAEngine:
                     question_model=question_model,
                     question_list_model=question_list_model,
                     is_per_objective=(questions_per_objective is not None),
-                    target_questions=remaining_questions,  # Only request the remaining number
-                    csv_output_file=csv_output_file,  # Pass CSV file for duplicate checking
+                    target_questions=remaining_questions,
+                    csv_output_file=csv_output_file,
+                    question_type=question_type,  # Pass the question type
                     **kwargs
                 )
-
+                
                 attempt_record = {
                     "attempt_number": retries + 1,
                     "timestamp": datetime.now().strftime('%Y%m%d_%H%M%S'),
@@ -1247,8 +1269,9 @@ class QnAEngine:
         max_workers: Optional[int] = None,
         output_format: Optional[OutputFormatType] = None,
         prompt_template: Optional[str] = None,
-        question_model: Type[BaseModel] = BulkMCQ,
-        question_list_model: Type[BaseModel] = BulkMCQList,
+        question_type: QuestionType = "Multiple Choice",
+        question_model: Type[BaseModel] = None,
+        question_list_model: Type[BaseModel] = None,
         min_questions_per_batch: int = 3,
         max_retries: int = 3,
         **kwargs
@@ -1256,6 +1279,7 @@ class QnAEngine:
         """
         Enhanced bulk question generation with continuous CSV saving and duplicate checking.
         Ensures exactly the target number of questions are generated per objective.
+        Supports different question types.
 
         Args:
             topic: Path to JSON file containing topic structure
@@ -1264,12 +1288,32 @@ class QnAEngine:
             max_workers: Maximum number of concurrent workers
             output_format: Format for output file (pdf, csv, json)
             prompt_template: Custom prompt template (optional)
-            question_model: Pydantic model for individual question validation
-            question_list_model: Pydantic model for list of questions
+            question_type: Type of question to generate (Multiple Choice, Short Answer, True/False, Fill in the Blank)
+            question_model: Pydantic model for individual question validation (default: based on question_type)
+            question_list_model: Pydantic model for list of questions (default: based on question_type)
             min_questions_per_batch: Minimum questions per batch
             max_retries: Maximum number of retries per batch
             **kwargs: Additional arguments to pass to question generation
         """
+        # Set default models based on question_type if not specified
+        if question_model is None or question_list_model is None:
+            if question_type == "Multiple Choice":
+                question_model = question_model or BulkMCQ
+                question_list_model = question_list_model or BulkMCQList
+            elif question_type == "Short Answer":
+                question_model = question_model or BulkShortAnswerQuestion 
+                question_list_model = question_list_model or BulkShortAnswerQuestionList
+            elif question_type == "True/False":
+                question_model = question_model or BulkTrueFalseQuestion
+                question_list_model = question_list_model or BulkTrueFalseQuestionList
+            elif question_type == "Fill in the Blank":
+                question_model = question_model or BulkFillInBlankQuestion
+                question_list_model = question_list_model or BulkFillInBlankQuestionList
+            else:
+                # Default to Multiple Choice if question_type is unsupported
+                question_model = question_model or BulkMCQ
+                question_list_model = question_list_model or BulkMCQList
+                
         # Initialize variables that might be needed in summary
         base_questions = 0
         remainder = 0
@@ -1335,7 +1379,7 @@ class QnAEngine:
         }
 
         # Use ThreadPoolExecutor for parallel processing
-        with tqdm(total=len(combinations), desc="Generating questions") as progress_bar:
+        with tqdm(total=len(combinations), desc=f"Generating {question_type} questions") as progress_bar:
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                 futures = {}
                 for combo in combinations:
@@ -1349,6 +1393,7 @@ class QnAEngine:
                         questions_per_objective=questions_per_objective,
                         csv_output_file=csv_output_file,
                         max_retries=max_retries,
+                        question_type=question_type,  # Pass question_type to generation function
                         **kwargs
                     )
                     futures[future] = combo
@@ -1457,14 +1502,55 @@ class QnAEngine:
                         elements.append(Paragraph(f"Question {i}: {question_text}", question_style))
                         elements.append(Spacer(1, 6))
                         
-                        # Handle additional fields that aren't standard (like statements in data sufficiency)
+                        # For True/False questions, specifically show the answer
+                        if question_type == "True/False" and 'answer' in q_dict:
+                            answer_value = q_dict['answer']
+                            if isinstance(answer_value, bool) or answer_value in ('True', 'False', 'true', 'false'):
+                                # Format the answer for display
+                                formatted_answer = str(answer_value).capitalize()
+                                elements.append(Paragraph(f"Answer: {formatted_answer}", normal_style))
+                                elements.append(Spacer(1, 6))
+                        # For Fill in the Blank, always show the answer
+                        elif question_type == "Fill in the Blank" and 'answer' in q_dict:
+                            elements.append(Paragraph(f"Answer: {q_dict['answer']}", normal_style))
+                            elements.append(Spacer(1, 6))
+                        # For Short Answer questions, show the answer
+                        elif question_type == "Short Answer" and 'answer' in q_dict:
+                            elements.append(Paragraph(f"Answer: {q_dict['answer']}", normal_style))
+                            elements.append(Spacer(1, 6))
+                            
+                            # Also show keywords if they exist
+                            if 'keywords' in q_dict and q_dict['keywords']:
+                                # Handle keywords that might be stored as JSON string
+                                keywords = q_dict['keywords']
+                                if isinstance(keywords, str):
+                                    # Try to parse if it's a JSON string
+                                    try:
+                                        keywords = json.loads(keywords)
+                                    except (json.JSONDecodeError, TypeError):
+                                        # If not valid JSON, it's likely already a comma-separated string
+                                        # or keep as is if parsing fails
+                                        pass
+                                        
+                                # Format keywords for display
+                                if isinstance(keywords, list):
+                                    keywords_str = ", ".join(keywords)
+                                elif isinstance(keywords, str):
+                                    keywords_str = keywords
+                                else:
+                                    keywords_str = str(keywords)
+                                    
+                                elements.append(Paragraph(f"Keywords: {keywords_str}", normal_style))
+                                elements.append(Spacer(1, 6))
+                        
+                        # Handle additional fields that aren't standard
                         for key, value in q_dict.items():
-                            # Skip already shown question text and common fields we'll handle separately
+                            # Skip already shown question text, context, and common fields
                             if (key in question_fields or 
-                                key in ['options', 'explanation', 'difficulty', 'difficulty_level', 'metadata']):
+                                key in ['options', 'explanation', 'difficulty', 'difficulty_level', 'metadata', 'context', 'answer']):
                                 continue
                             
-                            # Only show string values with reasonable length (to avoid IDs, etc.)
+                            # Only show string values with reasonable length
                             if isinstance(value, str) and 5 < len(value) < 1000:
                                 label = key.replace('_', ' ').title()
                                 elements.append(Paragraph(f"{label}: {value}", normal_style))
@@ -1548,7 +1634,7 @@ class QnAEngine:
                                 elements.append(Spacer(1, 4))
                                 break
                         
-                        # Add other numeric or rating fields
+                        # Handle additional fields that aren't standard
                         for key, value in q_dict.items():
                             if (key.endswith('_rating') or key.startswith('difficulty_') or 
                                 key.endswith('_time') or key.endswith('_score')) and key not in difficulty_fields:
