@@ -193,9 +193,9 @@ class QnAEngine:
             elif question_type == "Short Answer":
                 base_template += "\n4. A list of relevant keywords and the answer should be in text form not options"
             elif question_type == "True/False":
-                base_template += "\n4. The correct answer as a boolean (true/false)"
+                base_template += "\n4. The correct answer as a boolean (true/false) and the genrated question follow True/False pattern"
             elif question_type == "Fill in the Blank":
-                base_template += "\n4. The word or phrase to be filled in the blank"
+                base_template += "\n4. The word or phrase to be filled in the blank and the question should follow Fill in the Blank Style only"
 
             return base_template
 
