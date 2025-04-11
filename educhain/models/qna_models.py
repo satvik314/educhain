@@ -154,7 +154,7 @@ class BulkMCQList(BaseModel):
 # Add these new bulk models for short answer questions
 class BulkShortAnswerQuestion(BaseModel):
     question: str = Field(description="The short answer question")
-    answer: str = Field(description="The correct answer to the question")
+    answer: str = Field(description="The correct answer to the question in words")
     keywords: List[str] = Field(
         default_factory=list, 
         description="List of relevant keywords that should appear in a good answer"

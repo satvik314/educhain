@@ -191,7 +191,7 @@ class QnAEngine:
             if question_type == "Multiple Choice":
                 base_template += "\n4. A list of options (including the correct answer)"
             elif question_type == "Short Answer":
-                base_template += "\n4. A list of relevant keywords"
+                base_template += "\n4. A list of relevant keywords and the answer should be in text form not options"
             elif question_type == "True/False":
                 base_template += "\n4. The correct answer as a boolean (true/false)"
             elif question_type == "Fill in the Blank":
