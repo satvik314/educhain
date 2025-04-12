@@ -150,3 +150,91 @@ class BulkMCQ(BaseModel):
 
 class BulkMCQList(BaseModel):
     questions: List[BulkMCQ]
+
+# Add these new bulk models for short answer questions
+class BulkShortAnswerQuestion(BaseModel):
+    question: str = Field(description="The short answer question")
+    answer: str = Field(description="The correct answer to the question in words")
+    keywords: List[str] = Field(
+        default_factory=list, 
+        description="List of relevant keywords that should appear in a good answer"
+    )
+    explanation: Optional[str] = Field(
+        default=None, 
+        description="Explanation of the answer (optional)"
+    )
+    difficulty: Optional[str] = Field(
+        default="medium",
+        description="The difficulty level of the question (easy, medium, hard)"
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Metadata including topic, subtopic, and learning objective"
+    )
+
+class BulkShortAnswerQuestionList(BaseModel):
+    questions: List[BulkShortAnswerQuestion]
+
+# Add bulk models for True/False questions
+class BulkTrueFalseQuestion(BaseModel):
+    question: str = Field(description="The true/false question")
+    answer: bool = Field(description="The correct answer: true or false")
+    explanation: Optional[str] = Field(
+        default=None, 
+        description="Explanation of why the answer is true or false"
+    )
+    difficulty: Optional[str] = Field(
+        default="medium",
+        description="The difficulty level of the question (easy, medium, hard)"
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Metadata including topic, subtopic, and learning objective"
+    )
+    
+    def show(self):
+        """Display the question in a formatted way"""
+        print(f"Question: {self.question}")
+        print(f"Answer: {str(self.answer).capitalize()}")
+        if self.explanation:
+            print(f"Explanation: {self.explanation}")
+        print(f"Difficulty: {self.difficulty}")
+        print()
+
+class BulkTrueFalseQuestionList(BaseModel):
+    questions: List[BulkTrueFalseQuestion]
+
+# Add bulk models for Fill in the Blank questions
+class BulkFillInBlankQuestion(BaseModel):
+    question: str = Field(description="The fill-in-the-blank question with '_____' or similar placeholder")
+    answer: str = Field(description="The word or phrase to fill in the blank")
+    explanation: Optional[str] = Field(
+        default=None, 
+        description="Explanation of why this is the correct answer"
+    )
+    difficulty: Optional[str] = Field(
+        default="medium",
+        description="The difficulty level of the question (easy, medium, hard)"
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Metadata including topic, subtopic, and learning objective"
+    )
+    # Make context truly optional by setting a default value and excluding it
+    context: Optional[str] = Field(
+        default="",  # Empty string default instead of None
+        description="Optional context or complete sentence with the blank filled",
+        exclude=True  # This marks the field to be excluded from serialization
+    )
+    
+    def show(self):
+        """Display the question in a formatted way"""
+        print(f"Question: {self.question}")
+        print(f"Answer: {self.answer}")
+        if self.explanation:
+            print(f"Explanation: {self.explanation}")
+        print(f"Difficulty: {self.difficulty}")
+        print()
+
+class BulkFillInBlankQuestionList(BaseModel):
+    questions: List[BulkFillInBlankQuestion]
