@@ -459,8 +459,8 @@ class QnAEngine:
         prompt_template: Optional[str] = None,
         custom_instructions: Optional[str] = None,
         response_model: Optional[Type[Any]] = None,
-        learning_objective: str = "",
-        difficulty_level: str = "",
+        learning_objective: Optional[str] = None,
+        difficulty_level: Optional[str] = None,
         output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
@@ -502,8 +502,8 @@ class QnAEngine:
         query = question_prompt.format(
             num=num,
             topic=content[:1000],
-            learning_objective=learning_objective,
-            difficulty_level=difficulty_level,
+            learning_objective=learning_objective or "",
+            difficulty_level=difficulty_level or "",
             custom_instructions=custom_instructions or "",
             **kwargs
         )
@@ -787,7 +787,7 @@ class QnAEngine:
             custom_instructions: Additional instructions for analysis
             detail_level: Level of detail in explanation
             focus_areas: Specific aspects to focus on
-            **kwargs: Additional parameters for the model
+            **kwargs: Additional parameters to pass to the model
         
         Returns:
             SolvedDoubt: Object containing explanation, steps, and additional notes
