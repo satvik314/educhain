@@ -477,34 +477,34 @@ class QnAEngine:
 
         template = self._get_prompt_template(question_type, prompt_template)
 
-        # Create a base template with format instructions
-        final_template = template + "\n\nThe response should be in JSON format.\n{format_instructions}\n"
-
-        # Only add learning objective and difficulty level if they are provided
-        if learning_objective:
-            final_template += f"\nLearning Objective: {{learning_objective}}\n"
-        
-        if difficulty_level:
-            final_template += f"Difficulty Level: {{difficulty_level}}\n"
-        
+        # Add learning objective and difficulty level if provided
         if learning_objective or difficulty_level:
-            final_template += "\nEnsure that the questions are relevant to the learning objective and match the specified difficulty level.\n"
+            template += """
+            Learning Objective: {learning_objective}
+            Difficulty Level: {difficulty_level}
+
+            Ensure that the questions are relevant to the learning objective and match the specified difficulty level.
+            """
+
+        template += """
+        The response should be in JSON format.
+        {format_instructions}
+        """
 
         if custom_instructions:
-            final_template += f"\nAdditional Instructions:\n{{custom_instructions}}\n"
+            template += f"\n\nAdditional Instructions:\n{custom_instructions}"
 
         question_prompt = PromptTemplate(
-            input_variables=["num", "topic", "learning_objective", "difficulty_level", "custom_instructions"],
-            template=final_template,
+            input_variables=["num", "topic", "learning_objective", "difficulty_level"],
+            template=template,
             partial_variables={"format_instructions": format_instructions}
         )
 
         query = question_prompt.format(
             num=num,
             topic=content[:1000],
-            learning_objective=learning_objective or "",
-            difficulty_level=difficulty_level or "",
-            custom_instructions=custom_instructions or "",
+            learning_objective=learning_objective,
+            difficulty_level=difficulty_level,
             **kwargs
         )
 
@@ -515,7 +515,6 @@ class QnAEngine:
 
             if output_format:
                 self._handle_output_format(structured_output, output_format)
-
 
             return structured_output
         except Exception as e:
