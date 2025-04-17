@@ -204,7 +204,7 @@ class QnAEngine:
         if self.embeddings is None:
             self.embeddings = OpenAIEmbeddings()
 
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         texts = text_splitter.split_text(content)
 
         vectorstore = Chroma.from_texts(texts, self.embeddings)
