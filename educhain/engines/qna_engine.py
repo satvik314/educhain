@@ -477,23 +477,25 @@ class QnAEngine:
 
         template = self._get_prompt_template(question_type, prompt_template)
 
+        # Create a base template with format instructions
+        final_template = template + "\n\nThe response should be in JSON format.\n{format_instructions}\n"
 
-        prompt_template += """
-        Learning Objective: {learning_objective}
-        Difficulty Level: {difficulty_level}
-
-        Ensure that the questions are relevant to the learning objective and match the specified difficulty level.
-
-        The response should be in JSON format.
-        {format_instructions}
-        """
+        # Only add learning objective and difficulty level if they are provided
+        if learning_objective:
+            final_template += f"\nLearning Objective: {{learning_objective}}\n"
+        
+        if difficulty_level:
+            final_template += f"Difficulty Level: {{difficulty_level}}\n"
+        
+        if learning_objective or difficulty_level:
+            final_template += "\nEnsure that the questions are relevant to the learning objective and match the specified difficulty level.\n"
 
         if custom_instructions:
-            prompt_template += f"\n\nAdditional Instructions:\n{custom_instructions}"
+            final_template += f"\nAdditional Instructions:\n{{custom_instructions}}\n"
 
         question_prompt = PromptTemplate(
-            input_variables=["num", "topic", "learning_objective", "difficulty_level"],
-            template=prompt_template,
+            input_variables=["num", "topic", "learning_objective", "difficulty_level", "custom_instructions"],
+            template=final_template,
             partial_variables={"format_instructions": format_instructions}
         )
 
@@ -502,6 +504,7 @@ class QnAEngine:
             topic=content[:1000],
             learning_objective=learning_objective,
             difficulty_level=difficulty_level,
+            custom_instructions=custom_instructions or "",
             **kwargs
         )
 
@@ -893,7 +896,7 @@ class QnAEngine:
         existing_questions = set()
         if check_duplicates and append:
             existing_questions = self._read_questions_from_csv(csv_filepath)
-            
+
         # Dynamically determine fieldnames from the model
         model_fields = list(question_model.__annotations__.keys())
 
@@ -911,19 +914,38 @@ class QnAEngine:
             for question in questions:
                 q_dict = question.dict() if hasattr(question, 'dict') else question
                 
-                # Check for duplicates if needed
+                # Check for duplicates
                 duplicate = False
-                if check_duplicates:
+                if existing_questions:
                     # Try different common field names for question text
                     question_fields = ['question', 'question_text', 'stem', 'prompt']
                     for field in question_fields:
                         if field in q_dict and q_dict[field] and q_dict[field].strip() in existing_questions:
                             duplicate = True
                             break
-                
+                    
                 if duplicate:
                     continue
                     
+                # Add metadata if missing
+                if 'metadata' not in q_dict and hasattr(question_model, '__fields__') and 'metadata' in question_model.__fields__:
+                    q_dict['metadata'] = {
+                        "topic": combo["topic"],
+                        "subtopic": combo["subtopic"],
+                        "learning_objective": combo["learning_objective"]
+                    }
+
+                validated_question = self._validate_individual_question(q_dict, question_model=question_model)
+                if validated_question:
+                    batch_validated_questions.append(validated_question)
+                        
+                    # Add to existing questions to prevent duplicates in future batches
+                    if csv_output_file:
+                        for field in ['question', 'question_text', 'stem', 'prompt']:
+                            if field in q_dict and q_dict[field]:
+                                existing_questions.add(q_dict[field].strip())
+                                break
+
                 # Process complex fields to convert to JSON strings
                 row_data = {}
                 
@@ -1692,4 +1714,3 @@ class QnAEngine:
         print(f"Questions continuously saved to: {csv_output_file}")
 
         return question_list_model(questions=all_questions), output_file, total_generated, failed_batches_count
-
