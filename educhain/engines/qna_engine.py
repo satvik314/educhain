@@ -204,7 +204,7 @@ class QnAEngine:
         if self.embeddings is None:
             self.embeddings = OpenAIEmbeddings()
 
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         texts = text_splitter.split_text(content)
 
         vectorstore = Chroma.from_texts(texts, self.embeddings)
@@ -459,8 +459,8 @@ class QnAEngine:
         prompt_template: Optional[str] = None,
         custom_instructions: Optional[str] = None,
         response_model: Optional[Type[Any]] = None,
-        learning_objective: str = "",
-        difficulty_level: str = "",
+        learning_objective: Optional[str] = None,
+        difficulty_level: Optional[str] = None,
         output_format: Optional[OutputFormatType] = None,
         **kwargs
     ) -> Any:
@@ -477,23 +477,26 @@ class QnAEngine:
 
         template = self._get_prompt_template(question_type, prompt_template)
 
+        # Add learning objective and difficulty level if provided
+        if learning_objective or difficulty_level:
+            template += """
+            Learning Objective: {learning_objective}
+            Difficulty Level: {difficulty_level}
 
-        prompt_template += """
-        Learning Objective: {learning_objective}
-        Difficulty Level: {difficulty_level}
+            Ensure that the questions are relevant to the learning objective and match the specified difficulty level.
+            """
 
-        Ensure that the questions are relevant to the learning objective and match the specified difficulty level.
-
+        template += """
         The response should be in JSON format.
         {format_instructions}
         """
 
         if custom_instructions:
-            prompt_template += f"\n\nAdditional Instructions:\n{custom_instructions}"
+            template += f"\n\nAdditional Instructions:\n{custom_instructions}"
 
         question_prompt = PromptTemplate(
             input_variables=["num", "topic", "learning_objective", "difficulty_level"],
-            template=prompt_template,
+            template=template,
             partial_variables={"format_instructions": format_instructions}
         )
 
@@ -512,7 +515,6 @@ class QnAEngine:
 
             if output_format:
                 self._handle_output_format(structured_output, output_format)
-
 
             return structured_output
         except Exception as e:
@@ -784,7 +786,7 @@ class QnAEngine:
             custom_instructions: Additional instructions for analysis
             detail_level: Level of detail in explanation
             focus_areas: Specific aspects to focus on
-            **kwargs: Additional parameters for the model
+            **kwargs: Additional parameters to pass to the model
         
         Returns:
             SolvedDoubt: Object containing explanation, steps, and additional notes
@@ -893,7 +895,7 @@ class QnAEngine:
         existing_questions = set()
         if check_duplicates and append:
             existing_questions = self._read_questions_from_csv(csv_filepath)
-            
+
         # Dynamically determine fieldnames from the model
         model_fields = list(question_model.__annotations__.keys())
 
@@ -911,19 +913,38 @@ class QnAEngine:
             for question in questions:
                 q_dict = question.dict() if hasattr(question, 'dict') else question
                 
-                # Check for duplicates if needed
+                # Check for duplicates
                 duplicate = False
-                if check_duplicates:
+                if existing_questions:
                     # Try different common field names for question text
                     question_fields = ['question', 'question_text', 'stem', 'prompt']
                     for field in question_fields:
                         if field in q_dict and q_dict[field] and q_dict[field].strip() in existing_questions:
                             duplicate = True
                             break
-                
+                    
                 if duplicate:
                     continue
                     
+                # Add metadata if missing
+                if 'metadata' not in q_dict and hasattr(question_model, '__fields__') and 'metadata' in question_model.__fields__:
+                    q_dict['metadata'] = {
+                        "topic": combo["topic"],
+                        "subtopic": combo["subtopic"],
+                        "learning_objective": combo["learning_objective"]
+                    }
+
+                validated_question = self._validate_individual_question(q_dict, question_model=question_model)
+                if validated_question:
+                    batch_validated_questions.append(validated_question)
+                        
+                    # Add to existing questions to prevent duplicates in future batches
+                    if csv_output_file:
+                        for field in ['question', 'question_text', 'stem', 'prompt']:
+                            if field in q_dict and q_dict[field]:
+                                existing_questions.add(q_dict[field].strip())
+                                break
+
                 # Process complex fields to convert to JSON strings
                 row_data = {}
                 
@@ -1692,4 +1713,3 @@ class QnAEngine:
         print(f"Questions continuously saved to: {csv_output_file}")
 
         return question_list_model(questions=all_questions), output_file, total_generated, failed_batches_count
-
