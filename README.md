@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="https://github.com/VedantDeshmukh2/educhain/blob/main/images/educhain.svg" alt="Educhain Logo" width="800" height="400">
+  <img src="https://github.com/Shubhwithai/educhain/blob/main/images/educhain%20final%20logo.svg" alt="Educhain Logo" width="800" height="400">
 </p>
 
 <div align="center">
@@ -263,7 +263,7 @@ pip install educhain
 
 ## Starter Guide
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1JNjQz20SRnyRyAN9YtgCzYq4gj8iBTRH?usp=chrome_ntp#scrollTo=UtLn9rOF-gPm)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1JNjQz20SRnyRyAN9YtgCzYq4gj8iBTRH?usp=chrome_ntp#scrollTo=VY_TU5FdgQ1e)
 
 ### Quick Start
 
@@ -397,13 +397,13 @@ plan.json()  # plan.dict()
 - True/False Questions
 - Fill in the Blank Questions
 
-## 🔧 Advanced Configuration
+<!-- ## 🔧 Advanced Configuration
 
 Educhain offers advanced configuration options to fine-tune its behavior. Check our [advanced guide]() for more details. (coming soon!)
 
 ## 🌟 Success Stories
 
-Educators worldwide are using Educhain to transform their teaching. Read our [case studies](https://educhain.ai/case-studies) to learn more.
+Educators worldwide are using Educhain to transform their teaching. Read our [case studies](https://educhain.ai/case-studies) to learn more. -->
 
 <!-- ## 📈 Usage Statistics
 
