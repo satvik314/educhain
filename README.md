@@ -17,42 +17,7 @@
 
 Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content. From generating multiple-choice questions to crafting comprehensive lesson plans, Educhain makes it easy to apply AI in various educational scenarios.
 
-## 📸 Demo
-
-<p align="center">
-  <img src="https://github.com/Shubhwithai/educhain/blob/main/images/demo-mcq-generation.gif" alt="MCQ Generation Demo" width="700">
-  <br>
-  <em>Generating Multiple Choice Questions with Educhain</em>
-</p>
-
-<p align="center">
-  <img src="https://github.com/Shubhwithai/educhain/blob/main/images/demo-lesson-plan.gif" alt="Lesson Plan Generation Demo" width="700">
-  <br>
-  <em>Creating a comprehensive lesson plan in seconds</em>
-</p>
-
 <img src="images/logo.svg" alt="Educhain Logo" align="center" height="120" width="120" />
-
-## 📑 Table of Contents
-
-- [Demo](#-demo)
-- [Features](#-features)
-- [Workflow](#-workflow)
-- [Installation](#-installation)
-- [Usage](#-usage)
-  - [Quick Start](#quick-start)
-  - [Different Question Types](#supports-different-question-types)
-  - [Using Different LLM Models](#use-different-llm-models)
-  - [Customizable Prompt Templates](#customizable-prompt-templates)
-  - [Generate Questions from Data Sources](#generate-questions-from-data-sources)
-  - [Generate Lesson Plans](#generate-lesson-plans)
-- [Supported Question Types](#-supported-question-types)
-- [Troubleshooting](#-troubleshooting)
-- [Roadmap](#-roadmap)
-- [Open Source Contributions](#-open-source-contributions-welcome)
-- [Version History](#-version-history)
-- [License](#-license)
-- [Contact](#-contact)
 
 ## 🚀 Features  
 
