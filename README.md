@@ -45,7 +45,7 @@ advanced_mcq = client.qna_engine.generate_questions(
     custom_instructions="Include recent discoveries"
 )
 
-print(mcq.json())  # View in JSON format
+print(mcq.model_dump_json())  # View in JSON format
 ````
 </details>
 
@@ -70,7 +70,7 @@ detailed_lesson = client.content_engine.generate_lesson_plan(
     learning_objectives=["Understanding the process", "Identifying key components"]
 )
 
-print(lesson.json())
+print(lesson.model_dump_json())
 ````
 </details>
 
@@ -84,7 +84,7 @@ from langchain_openai import ChatOpenAI
 
 # Using Gemini
 gemini_model = ChatGoogleGenerativeAI(
-    model="gemini-1.5-pro",
+    model="gemini-2.0-flash",
     google_api_key="YOUR_GOOGLE_API_KEY"
 )
 gemini_config = LLMConfig(custom_model=gemini_model)
@@ -92,7 +92,7 @@ gemini_client = Educhain(gemini_config)
 
 # Using GPT-4
 gpt4_model = ChatOpenAI(
-    model_name="gpt-4",
+    model_name="gpt-4.1",
     openai_api_key="YOUR_OPENAI_API_KEY"
 )
 gpt4_config = LLMConfig(custom_model=gpt4_model)
@@ -194,7 +194,7 @@ questions = client.qna_engine.generate_questions_from_youtube(
     url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     num=3
 )
-print(questions.json())
+print(questions.model_dump_json())
 
 # Generate questions preserving original language
 preserved_questions = client.qna_engine.generate_questions_from_youtube(
@@ -240,7 +240,7 @@ client = Educhain(flash_config)
 ques = client.qna_engine.generate_visual_questions(
         topic="GMAT Statistics", num=10 )
 
-print(ques.json)
+print(ques.model_dump_json())
 ````
 </details>
 
@@ -276,8 +276,8 @@ client = Educhain()
 
 ques = client.qna_engine.generate_questions(topic="Newton's Law of Motion",
                                             num=5)
-print(ques)
-ques.json() # ques.dict()
+print(ques.model_dump_json())
+ques.model_dump_json() # ques.model_dump()
 ```
 
 ### Supports Different Question Types
@@ -297,8 +297,8 @@ ques = client.qna_engine.generate_questions(topic = "Psychology",
                                             question_type="Fill in the Blank"
                                             custom_instructions = "Only basic questions")
 
-print(ques)
-ques.json() #ques.dict()
+print(ques.model_dump_json())
+ques.model_dump_json() #ques.model_dump()
 ```
 
 ### Use Different LLM Models
@@ -312,7 +312,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from educhain import Educhain, LLMConfig
 
 gemini_flash = ChatGoogleGenerativeAI(
-    model="gemini-1.5-flash-exp-0827",
+    model="gemini-2.0-flash",
     google_api_key="GOOGLE_API_KEY")
 
 flash_config = LLMConfig(custom_model=gemini_flash)
@@ -322,8 +322,8 @@ client = Educhain(flash_config) #using gemini model with educhain
 ques = client.qna_engine.generate_questions(topic="Psychology",
                                             num=10)
 
-print(ques)
-ques.json() #ques.dict()
+print(ques.model_dump_json())
+ques.model_dump_json() #ques.model_dump()
 ```
 
 ### Customizable Prompt Templates 
@@ -351,7 +351,7 @@ ques = client.qna_engine.generate_questions(
     prompt_template=custom_template,
 )
 
-print(ques)
+print(ques.model_dump_json())
 ```
 
 
@@ -368,8 +368,8 @@ ques = client.qna_engine.generate_questions_from_data(
     source_type="url",
     num=5)
 
-print(ques)
-ques.json() # ques.dict()
+print(ques.model_dump_json())
+ques.model_dump_json() # ques.model_dump()
 ```
 
 
@@ -385,8 +385,8 @@ client = Educhain()
 plan = client.content_engine.generate_lesson_plan(
                               topic = "Newton's Law of Motion")
 
-print(plan)
-plan.json()  # plan.dict()
+print(plan.model_dump_json())
+plan.model_dump_json()  # plan.model_dump()
 ```
 
 
@@ -530,21 +530,28 @@ Thank you for your continued support, community!
 
 ## 📝 License
 
+<div align="center">
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License">
+</div>
+
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📬 Contact
+## 📬 Connect With Us
 
-- For general inquiries: [educhain.in](https://educhain.in)
-- For technical support: [satvik@buildfastwithai.com](mailto:satvik@buildfastwithai.com)
-- Follow us on [Twitter](https://x.com/EduchainWithAI)
+<div align="center">
+  <a href="https://educhain.in" target="_blank"><img src="https://img.shields.io/badge/Website-educhain.in-blue?style=for-the-badge&logo=globe" alt="Website"></a>
+  <a href="https://x.com/EduchainWithAI" target="_blank"><img src="https://img.shields.io/badge/Twitter-@EduchainWithAI-1DA1F2?style=for-the-badge&logo=twitter" alt="Twitter"></a>
+  <a href="mailto:satvik@buildfastwithai.com"><img src="https://img.shields.io/badge/Email-Contact%20Us-red?style=for-the-badge&logo=gmail" alt="Email"></a>
+</div>
+
+<div align="center">
+  <p>For technical support: <a href="mailto:satvik@buildfastwithai.com">satvik@buildfastwithai.com</a></p>
+</div>
 
 ---
 
-<img src="images/logo.svg" alt="Educhain Logo" align="right" height="80" width="80" />
-
-Made with ❤️ by Buildfastwithai
-
-[www.educhain.in](https://educhain.in)
-```
-
-You can now copy and paste this directly into your project!
+<div align="center">
+  <img src="images/logo.svg" alt="Educhain Logo" height="100" width="100" />
+  <p>Made with ❤️ by <strong>Buildfastwithai</strong></p>
+  <p><a href="https://educhain.in">www.educhain.in</a></p>
+</div>
