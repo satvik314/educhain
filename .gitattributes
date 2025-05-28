@@ -1,1 +1,24 @@
+# tells git to handle line endings automatically for all files
+* text=auto
+
+# prevents jupyter notebooks from being counted in GitHub language stats
 *.ipynb linguist-detectable=false
+
+# ensures Python files are detected correctly and have proper diff handling
+*.py text diff=python
+
+# handles common data files with Unix-style line endings
+*.json text eol=lf
+*.yml text eol=lf
+
+# marks documentation files for proper diff viewing
+*.md text diff=markdown
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Exclude vendored code from language statistics
+vendor/* linguist-vendored
+third_party/* linguist-vendored
+
+# Auto-detect text files
+* text=auto eol=lf
