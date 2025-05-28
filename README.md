@@ -259,14 +259,13 @@ pip install educhain
 
 ## 🎮 Usage
 
-## 📚 Starter Guide
+### 📚 Starter Guide
 
 <div align="center">
   <p><strong>Try Educhain instantly in your browser:</strong></p>
   <a href="https://colab.research.google.com/drive/1JNjQz20SRnyRyAN9YtgCzYq4gj8iBTRH?usp=chrome_ntp#scrollTo=VY_TU5FdgQ1e" target="_blank">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
   </a>
-  <p><em>No installation required - start generating educational content in seconds!</em></p>
 </div>
 
 ### Quick Start
@@ -534,9 +533,7 @@ Thank you for your continued support, community!
 
 ## 📝 License
 
-<div align="center">
-  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License">
-</div>
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
