@@ -17,7 +17,42 @@
 
 Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content. From generating multiple-choice questions to crafting comprehensive lesson plans, Educhain makes it easy to apply AI in various educational scenarios.
 
+## 📸 Demo
+
+<p align="center">
+  <img src="https://github.com/Shubhwithai/educhain/blob/main/images/demo-mcq-generation.gif" alt="MCQ Generation Demo" width="700">
+  <br>
+  <em>Generating Multiple Choice Questions with Educhain</em>
+</p>
+
+<p align="center">
+  <img src="https://github.com/Shubhwithai/educhain/blob/main/images/demo-lesson-plan.gif" alt="Lesson Plan Generation Demo" width="700">
+  <br>
+  <em>Creating a comprehensive lesson plan in seconds</em>
+</p>
+
 <img src="images/logo.svg" alt="Educhain Logo" align="center" height="120" width="120" />
+
+## 📑 Table of Contents
+
+- [Demo](#-demo)
+- [Features](#-features)
+- [Workflow](#-workflow)
+- [Installation](#-installation)
+- [Usage](#-usage)
+  - [Quick Start](#quick-start)
+  - [Different Question Types](#supports-different-question-types)
+  - [Using Different LLM Models](#use-different-llm-models)
+  - [Customizable Prompt Templates](#customizable-prompt-templates)
+  - [Generate Questions from Data Sources](#generate-questions-from-data-sources)
+  - [Generate Lesson Plans](#generate-lesson-plans)
+- [Supported Question Types](#-supported-question-types)
+- [Troubleshooting](#-troubleshooting)
+- [Roadmap](#-roadmap)
+- [Open Source Contributions](#-open-source-contributions-welcome)
+- [Version History](#-version-history)
+- [License](#-license)
+- [Contact](#-contact)
 
 ## 🚀 Features  
 
@@ -397,6 +432,81 @@ plan.json()  # plan.dict()
 - True/False Questions
 - Fill in the Blank Questions
 
+## 🔧 Troubleshooting
+
+### Common Issues and Solutions
+
+<details>
+<summary>API Key Authentication Errors</summary>
+
+```
+Error: Authentication failed. Please check your API key.
+```
+
+**Solution:** Verify that your API key is correct and properly set. For OpenAI or Google API keys, ensure they are active and have sufficient quota remaining.
+
+```python
+# Correct way to set API keys
+import os
+os.environ["OPENAI_API_KEY"] = "your-api-key-here"
+# or
+os.environ["GOOGLE_API_KEY"] = "your-api-key-here"
+```
+</details>
+
+<details>
+<summary>Model Not Generating Expected Output</summary>
+
+**Issue:** The model generates content that doesn't match your expectations or requirements.
+
+**Solution:** Try adjusting the parameters or providing more specific instructions:
+
+```python
+# Be more specific with your requirements
+questions = client.qna_engine.generate_questions(
+    topic="Python Programming",
+    num=3,
+    difficulty_level="Intermediate",
+    custom_instructions="Focus on object-oriented programming concepts. Include code examples in each question."
+)
+```
+</details>
+
+<details>
+<summary>Package Import Errors</summary>
+
+```
+ModuleNotFoundError: No module named 'educhain'
+```
+
+**Solution:** Ensure you've installed the package correctly:
+
+```bash
+pip install educhain --upgrade
+```
+
+If you're using a virtual environment, make sure it's activated before installing.
+</details>
+
+<details>
+<summary>Memory Issues with Large Outputs</summary>
+
+**Issue:** Generating a large number of questions causes memory errors.
+
+**Solution:** Generate questions in smaller batches:
+
+```python
+# Instead of generating 50 questions at once
+all_questions = []
+for i in range(5):
+    batch = client.qna_engine.generate_questions(
+        topic="History",
+        num=10
+    )
+    all_questions.extend(batch.questions)
+```
+</details>
+
 <!-- ## 🔧 Advanced Configuration
 
 Educhain offers advanced configuration options to fine-tune its behavior. Check our [advanced guide]() for more details. (coming soon!)
@@ -431,8 +541,29 @@ Thank you for your continued support, community!
 
 [![Star History Chart](https://api.star-history.com/svg?repos=satvik314/educhain&type=Date)](https://star-history.com/#satvik314/educhain&Date)
 
+## 📈 Version History
 
-## 📄 License
+### v1.2.0 (May 2025)
+- ✨ Added support for generating visual questions with multimodal LLMs
+- ✨ Added support for generating questions from YouTube videos
+- ✨ Added support for generating questions from images
+- 🐛 Fixed issue with PDF parsing for certain file formats
+- ⚡️ Improved performance for large document processing
+
+### v1.1.0 (February 2025)
+- ✨ Added support for custom prompt templates
+- ✨ Added export functionality to PDF, CSV, and JSON
+- 🔄 Enhanced compatibility with Gemini models
+- 📚 Expanded documentation with more examples
+
+### v1.0.0 (December 2024)
+- 🚀 Initial release
+- ✅ Core question generation functionality
+- ✅ Support for multiple question types
+- ✅ Basic lesson plan generation
+- ✅ Integration with OpenAI models
+
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
