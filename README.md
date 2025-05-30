@@ -1,4 +1,3 @@
-
 <p align="center">
   <img src="https://github.com/Shubhwithai/educhain/blob/main/images/educhain%20final%20logo.svg" alt="Educhain Logo" width="800" height="400">
 </p>
@@ -261,8 +260,7 @@ pip install educhain
 
 ### 📚 Starter Guide
 
-<div align="center">
-  <p><strong>Try Educhain instantly in your browser:</strong></p>
+<div align="left">
   <a href="https://colab.research.google.com/drive/1JNjQz20SRnyRyAN9YtgCzYq4gj8iBTRH?usp=chrome_ntp#scrollTo=VY_TU5FdgQ1e" target="_blank">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
   </a>
@@ -475,19 +473,6 @@ for i in range(5):
 ```
 </details>
 
-<!-- ## 🔧 Advanced Configuration
-
-Educhain offers advanced configuration options to fine-tune its behavior. Check our [advanced guide]() for more details. (coming soon!)
-
-## 🌟 Success Stories
-
-Educators worldwide are using Educhain to transform their teaching. Read our [case studies](https://educhain.ai/case-studies) to learn more. -->
-
-<!-- ## 📈 Usage Statistics
-
-Educhain's adoption has been growing rapidly:
-
-<img src="/api/placeholder/600/400" alt="Usage Growth Graph" /> -->
 
 ## 🗺 Roadmap
 
@@ -546,13 +531,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 </div>
 
 <div align="center">
-  <p>For technical support: <a href="mailto:satvik@buildfastwithai.com">satvik@buildfastwithai.com</a></p>
-</div>
-
----
-
-<div align="center">
   <img src="images/logo.svg" alt="Educhain Logo" height="100" width="100" />
   <p>Made with ❤️ by <strong>Buildfastwithai</strong></p>
-  <p><a href="https://educhain.in">www.educhain.in</a></p>
 </div>
