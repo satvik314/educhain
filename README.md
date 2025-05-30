@@ -530,6 +530,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <a href="mailto:satvik@buildfastwithai.com"><img src="https://img.shields.io/badge/Email-Contact%20Us-red?style=for-the-badge&logo=gmail" alt="Email"></a>
 </div>
 
+---
+
 <div align="center">
   <img src="images/logo.svg" alt="Educhain Logo" height="100" width="100" />
   <p>Made with ❤️ by <strong>Buildfastwithai</strong></p>
