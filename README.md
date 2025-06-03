@@ -42,7 +42,7 @@ advanced_mcq = client.qna_engine.generate_questions(
     custom_instructions="Include recent discoveries"
 )
 
-print(mcq.model_dump_json())  # View in JSON format
+print(mcq.model_dump_json())  # View in JSON format , For Dictionary format use mcq.model_dump()
 ````
 </details>
 
@@ -67,7 +67,7 @@ detailed_lesson = client.content_engine.generate_lesson_plan(
     learning_objectives=["Understanding the process", "Identifying key components"]
 )
 
-print(lesson.model_dump_json())
+print(lesson.model_dump_json())  # View in JSON format , For Dictionary format use lesson.model_dump()
 ````
 </details>
 
