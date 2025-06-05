@@ -14,19 +14,27 @@ Welcome to the Educhain documentation! 🚀 Educhain is a powerful Python packag
 
 ## 📊 Why Educhain?
 
+Educhain consistently outperforms traditional methods in content generation speed and quality. Our AI-powered platform enables educators to create high-quality learning materials in minutes instead of hours. [Learn more about our performance](resources/case-studies.md)
 
+## 🌟 Key Features <div align="left"><a href="https://colab.research.google.com/drive/1JNjQz20SRnyRyAN9YtgCzYq4gj8iBTRH?usp=chrome_ntp#scrollTo=VY_TU5FdgQ1e" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></a></div>
 
-Educhain consistently outperforms traditional methods in content generation speed and quality. [Learn more about our performance](resources/case-studies.md)
+### Content Generation
+- 📝 Generate Multiple Choice Questions (MCQs) with explanations
+- 📚 Create flashcards for effective studying
+- 📊 Build comprehensive lesson plans with objectives and activities
+- 📗 Generate study guides and educational summaries
 
-## 🌟 Key Features [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]([https://colab.research.google.com/drive/1_RFeReRKFcac2SLCEjnWqLgHV2pQFgPr?usp=sharing])
+### Technical Capabilities
+- 🤖 Support for various LLM models (Gemini, GPT-4, Claude, etc.)
+- 🌐 Multilingual content generation and preservation
+- 📷 Visual question generation from images
+- 📹 Content extraction from YouTube videos
 
-
-- 📝 Generate Multiple Choice Questions (MCQs)  
-- 📊 Create comprehensive Lesson Plans
-- 🔄 Support for various LLM models
-- 📁 Export questions to JSON, PDF, and CSV formats
+### Integration & Export
+- 📁 Export to multiple formats (JSON, PDF, CSV, DOCX)
+- 🔗 Generate questions from URLs, PDFs, and text
 - 🎨 Customizable prompt templates
-- 📚 Generate questions from text/PDF files
+- 🔥 Streamlit integration for building educational apps
 
 ## 🚀 Get Started in Minutes
 
@@ -49,14 +57,27 @@ questions.show()
 
 Educators worldwide are using Educhain to transform their teaching. Check out our [success stories](resources/case-studies.md) to see how Educhain is making a difference in classrooms around the globe.
 
-## 🗺️ Roadmap  
+## 📚 Starter Apps
 
-We're always working to make Educhain better! Be sure to check out our upcoming features:  
+Explore our ready-to-use educational applications built with Educhain:
+
+- **📚 Flashcard Generator**: Create customized flashcards on any topic with color-coded card types
+- **🌍 Multilingual Chatbot**: Educational assistant that supports multiple languages
+- **📝 Quiz Creator**: Generate interactive quizzes with explanations
+- **📖 Lesson Planner**: Build comprehensive lesson plans with objectives and activities
+
+Check out our [cookbook directory](/cookbook/starter-apps/) for code examples and deployment instructions.
+
+## 💸 Roadmap  
+
+We're constantly improving Educhain! Here's what's coming soon:  
  
-- [ ] **Flashcard Generation** to simplify learning  
-- [ ] **Study Guide Creation** for comprehensive topic understanding  
-- [ ] **High-Accuracy Math Questions** for students and educators  
-- [ ] **Try it out on our [website](https://educhain.in)** for on-the-go content creation 🚀   
+- [x] **Flashcard Generation** to simplify learning  
+- [x] **Multilingual Support** for global education
+- [ ] **Interactive Assessment Tools** for real-time feedback
+- [ ] **High-Accuracy Math Questions** with step-by-step solutions
+- [ ] **Personalized Learning Paths** based on student performance
+- [ ] **Try it out on our [website](https://educhain.in)** for on-the-go content creation 🚀
 
 
 ## 🤝 Contributing
