@@ -272,3 +272,30 @@ text_questions = client.qna_engine.generate_questions_from_data(
 )
 
 text_questions.show()
+
+## Educhain Solve Doubt
+
+from educhain import Educhain
+
+client = Educhain() #Default is 4o-mini (make sure to use a multimodal LLM!)
+
+question = client.qna_engine.solve_doubt(
+    image_source="https://i.ytimg.com/vi/OQjkFQAIOck/maxresdefault.jpg",
+    prompt="Explain the diagram in detail",
+    detail_level = "High"
+    )
+
+print(question)
+
+## Educhain Generate Questions from YouTube
+
+from educhain import Educhain
+
+client = Educhain()
+
+# Basic usage - Generate 10 MCQs from a YouTube video
+questions = client.qna_engine.generate_questions_from_youtube(
+    url="https://www.youtube.com/watch?v=sLLPAy8sT_8",
+    num=10
+)
+questions.model_dump_json()
