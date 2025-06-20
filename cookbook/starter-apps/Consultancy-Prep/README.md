@@ -29,8 +29,8 @@ An AI-powered Streamlit application designed to simplify and personalize consult
 ### 1. Clone this Repository
 
 ```bash
-git clone https://github.com/yourusername/consulting-prep-app.git
-cd consulting-prep-app
+git clone <repository-url>
+cd cookbook/starter-apps/Consultancy-Prep
 ```
 
 ### 2. Create Virtual Environment (Optional but Recommended)
