@@ -6,6 +6,8 @@
 
 A Python + Streamlit powered web application that showcases various core features of **Educhain** — built as a playground for testing, exploration, and building new use-cases for developers.
 
+Live Demo Linke to Playground : [PlaygroundLink](https://educhain-playground-sgrbz8rwmyhefwqcvnpekj.streamlit.app/)
+
 ---
 
 ## 📦 Installation
