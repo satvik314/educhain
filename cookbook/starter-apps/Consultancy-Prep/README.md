@@ -60,7 +60,7 @@ Or use Streamlit Cloud's Secrets Manager.
 ### 5. Run the App
 
 ```bash
-streamlit run app.py
+streamlit run c-app.py
 ```
 
 App will be available at `http://localhost:8501`.
