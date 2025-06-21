@@ -19,6 +19,7 @@ Install all required dependencies using [requirements.txt](.\requirements.txt):
 - python-dotenv
 - streamlit
 - PyPDF2
+- fpdf
 
 ## 🚀 Running Educhain Playground Locally
 1. Setup your Gemini or your prefered LLM API KEY
