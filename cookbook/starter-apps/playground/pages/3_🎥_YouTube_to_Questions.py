@@ -41,7 +41,7 @@ if st.button("🚀 Generate from YouTube") and video_url:
             url=video_url,
             num=num_questions,
             question_type=question_type,
-            difficuly_level = difficulty,
+            difficulty_level=difficulty,
             custom_instructions=custom_instr
         )
         show_result(result)
