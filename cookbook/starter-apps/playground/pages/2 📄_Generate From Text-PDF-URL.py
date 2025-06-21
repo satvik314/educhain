@@ -15,7 +15,7 @@ source_type = st.selectbox("Choose Source Type", ["Text", "URL", "PDF"], index=0
 num = st.slider("Number of Questions", 1, 20, 5)
 question_type = st.selectbox("Question Type", ["Multiple Choice", "True/False", "Fill in the Blank", "Short Answer"])
 difficulty = st.selectbox("Difficulty Level", ["Beginner", "Intermediate", "Advanced"])
-custom_instr = st.text_area("Custom Instructions (Optional)", "", height=50)
+custom_instr = st.text_area("Custom Instructions (Optional)", "", height=68)
 
 def show_result(result):
     st.success("✅ Questions Generated!")
@@ -42,6 +42,7 @@ if source_type == "Text":
                 source_type="text",
                 num=num,
                 question_type=question_type,
+                difficuly_level = difficulty,
                 custom_instructions=custom_instr
             )
             show_result(result)
@@ -73,6 +74,7 @@ elif source_type == "PDF":
                 source_type="text",
                 num=num,
                 question_type=question_type,
+                difficuly_level = difficulty,
                 custom_instructions=custom_instr
             )
             show_result(result)

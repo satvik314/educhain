@@ -15,7 +15,7 @@ video_url = st.text_input("Enter YouTube Video URL")
 num_questions = st.slider("Number of Questions", 1, 20, 5)
 question_type = st.selectbox("Question Type", ["Multiple Choice", "True/False", "Fill in the Blank", "Short Answer"])
 difficulty = st.selectbox("Difficulty Level", ["Beginner", "Intermediate", "Advanced"])
-custom_instr = st.text_area("Custom Instructions (Optional)", "", height=50)
+custom_instr = st.text_area("Custom Instructions (Optional)", "", height=68)
 
 # Function to display results
 def show_result(result):
@@ -41,6 +41,7 @@ if st.button("🚀 Generate from YouTube") and video_url:
             url=video_url,
             num=num_questions,
             question_type=question_type,
+            difficuly_level = difficulty,
             custom_instructions=custom_instr
         )
         show_result(result)
