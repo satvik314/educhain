@@ -1,5 +1,6 @@
 import streamlit as st
 from utils.models import client_model
+from PyPDF2 import PdfReader
 client = client_model()
 
 st.markdown("<h1 style='text-align: center; color: #6A5ACD;'>📄 Text / PDF / URL to Question Bank </h1>", unsafe_allow_html=True)
@@ -10,14 +11,12 @@ Select your data source below and customize the question type and difficulty.
 """)
 st.divider()
 
-# Source selection
 source_type = st.selectbox("Choose Source Type", ["Text", "URL", "PDF"], index=0)
 num = st.slider("Number of Questions", 1, 20, 5)
 question_type = st.selectbox("Question Type", ["Multiple Choice", "True/False", "Fill in the Blank", "Short Answer"])
 difficulty = st.selectbox("Difficulty Level", ["Beginner", "Intermediate", "Advanced"])
 custom_instr = st.text_area("Custom Instructions (Optional)", "", height=50)
 
-# TEXT SOURCE
 def show_result(result):
     st.success("✅ Questions Generated!")
     for i, q in enumerate(result.questions, 1):
@@ -43,7 +42,6 @@ if source_type == "Text":
                 source_type="text",
                 num=num,
                 question_type=question_type,
-                difficulty_level=difficulty,
                 custom_instructions=custom_instr
             )
             show_result(result)
@@ -65,15 +63,16 @@ elif source_type == "URL":
 elif source_type == "PDF":
     uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
     if uploaded_file and st.button("📄 Generate from PDF"):
-        with st.spinner("Reading and analyzing PDF..."):
-            with open("temp_uploaded.pdf", "wb") as f:
-                f.write(uploaded_file.read())
+        with st.spinner("Extracting text and generating questions..."):
+            reader = PdfReader(uploaded_file)
+            pdf_text = " ".join([page.extract_text() or "" for page in reader.pages])
+            pdf_text = " ".join(pdf_text.split()) 
+
             result = client.qna_engine.generate_questions_from_data(
-                source="temp_uploaded.pdf",
-                source_type="pdf",
+                source=pdf_text,
+                source_type="text",
                 num=num,
                 question_type=question_type,
-                difficulty_level=difficulty,
                 custom_instructions=custom_instr
             )
             show_result(result)

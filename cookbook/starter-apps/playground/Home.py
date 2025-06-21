@@ -2,15 +2,20 @@ import streamlit as st
 from pathlib import Path
 
 st.set_page_config(page_title="EduChain Dashboard", layout="wide")
-st.image("https://raw.githubusercontent.com/Shubhwithai/GRE_Geometry_quiz/refs/heads/main/Group%2042.png")
-st.markdown("<h4 style='text-align: center;'> AI-Powered Educational Platform. </h4>", unsafe_allow_html=True)
-
-st.page_link("https://github.com/satvik314/educhain", label="GitHub", icon = "🔗")
-st.page_link("https://educhain.in/", label = "Educhain", icon = "🌍")
+st.markdown("""
+<div style='text-align: center;'>
+    <img src='https://raw.githubusercontent.com/Shubhwithai/GRE_Geometry_quiz/refs/heads/main/Group%2042.png' width='600'/>
+    <h4 style='text-align: center;'> AI-Powered Educational Platform. </h4>
+    <br />
+    <div style='margin-top: 10px;'>
+        <a href='https://github.com/satvik314/educhain' target='_blank' style='text-decoration: none; margin: 0 10px;'>🔗 GitHub</a>
+        <a href='https://educhain.in/' target='_blank' style='text-decoration: none; margin: 0 10px;'>🌍 Educhain</a>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("<h1 style='text-align: center; color: White;'> Welcome to the Educhain PlayGround </h1>", unsafe_allow_html=True)
 
-# Optional quick stats or intro dashboard
 tabs = st.tabs(["✨ Feature Highlights", "🧑‍💻Developer Hub"])
 col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8, gap = "large")
 
