@@ -42,7 +42,7 @@ if source_type == "Text":
                 source_type="text",
                 num=num,
                 question_type=question_type,
-                difficuly_level = difficulty,
+                difficulty_level=difficulty,
                 custom_instructions=custom_instr
             )
             show_result(result)
