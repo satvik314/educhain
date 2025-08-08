@@ -1,0 +1,5 @@
+streamlit
+openai
+educhain
+Pillow
+langchain_openai
