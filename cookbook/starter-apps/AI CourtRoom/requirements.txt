@@ -1,0 +1,6 @@
+streamlit
+educhain
+cerebras-cloud-sdk
+langchain-cerebras
+python-dotenv
+requests
