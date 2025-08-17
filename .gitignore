@@ -6,6 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
+plan.md
+test_pedagogy.py
+PEDAGOGY_USAGE_GUIDE.md
+CLAUDE.md
+
 .pypirc
 
 # Distribution / packaging
