@@ -6,7 +6,7 @@ class CognitiveLevel(BaseModel):
     """Represents a cognitive level in Bloom's Taxonomy."""
     level_name: str = Field(..., description="Name of the cognitive level")
     description: str = Field(..., description="Description of the cognitive level")
-    content: str = Field(..., description="Detailed educational content for this cognitive level")
+    content: str = Field(default="", description="Detailed educational content for this cognitive level")
     learning_objectives: List[str] = Field(..., description="Learning objectives for this level")
     activities: List[str] = Field(..., description="Activities that engage this cognitive level")
     assessment_questions: List[str] = Field(..., description="Questions that assess this level")
@@ -46,7 +46,7 @@ class QuestionSequence(BaseModel):
     """Represents a sequence of Socratic questions."""
     category: str = Field(..., description="Category of questions")
     description: str = Field(..., description="Purpose of this question category")
-    content_overview: str = Field(..., description="Content overview for this question category")
+    content_overview: str = Field(default="", description="Content overview for this question category")
     questions: List[str] = Field(..., description="List of questions in this category")
     follow_up_probes: List[str] = Field(..., description="Follow-up questions for deeper inquiry")
     example_responses: List[str] = Field(default_factory=list, description="Example student responses and guidance")
@@ -77,7 +77,7 @@ class ProjectPhase(BaseModel):
     """Represents a phase in a project."""
     phase_name: str = Field(..., description="Name of the project phase")
     duration: str = Field(..., description="Expected duration of this phase")
-    content_description: str = Field(..., description="Detailed content and materials for this phase")
+    content_description: str = Field(default="", description="Detailed content and materials for this phase")
     objectives: List[str] = Field(..., description="Objectives for this phase")
     activities: List[str] = Field(..., description="Activities in this phase")
     deliverables: List[str] = Field(..., description="Expected deliverables")
@@ -114,7 +114,7 @@ class PreClassContent(BaseModel):
     content_type: str = Field(..., description="Type of content (video, reading, etc.)")
     title: str = Field(..., description="Title of the content")
     description: str = Field(..., description="Description of the content")
-    full_content: str = Field(..., description="Complete content for students to study")
+    full_content: str = Field(default="", description="Complete content for students to study")
     estimated_time: str = Field(..., description="Estimated time to complete")
     learning_objectives: List[str] = Field(..., description="What students should learn")
     key_points: List[str] = Field(default_factory=list, description="Key points to remember")
@@ -125,7 +125,7 @@ class InClassActivity(BaseModel):
     activity_name: str = Field(..., description="Name of the activity")
     duration: str = Field(..., description="Duration of the activity")
     description: str = Field(..., description="Description of the activity")
-    detailed_instructions: str = Field(..., description="Step-by-step instructions for the activity")
+    detailed_instructions: str = Field(default="", description="Step-by-step instructions for the activity")
     materials_needed: List[str] = Field(..., description="Materials required")
     assessment_method: str = Field("", description="How to assess this activity")
 
@@ -154,7 +154,7 @@ class FlippedClassroomContent(BaseModel):
 class InvestigationPhase(BaseModel):
     """Phase of inquiry-based investigation."""
     phase_name: str = Field(..., description="Name of the investigation phase")
-    content_guide: str = Field(..., description="Detailed content guide for this investigation phase")
+    content_guide: str = Field(default="", description="Detailed content guide for this investigation phase")
     objectives: List[str] = Field(..., description="Objectives for this phase")
     activities: List[str] = Field(..., description="Activities in this phase")
     research_methods: List[str] = Field(..., description="Research methods to use")
@@ -187,7 +187,7 @@ class ConstructivistActivity(BaseModel):
     activity_name: str = Field(..., description="Name of the activity")
     type: str = Field(..., description="Type of activity (experiential, social, reflective)")
     description: str = Field(..., description="Description of the activity")
-    detailed_content: str = Field(..., description="Detailed content and materials for the activity")
+    detailed_content: str = Field(default="", description="Detailed content and materials for the activity")
     step_by_step_guide: List[str] = Field(..., description="Step-by-step guide to conduct the activity")
     learning_outcome: str = Field(..., description="Expected learning outcome")
     facilitation_notes: str = Field("", description="Notes for facilitators")
@@ -217,9 +217,9 @@ class GameMechanic(BaseModel):
     """Game mechanic for gamification."""
     mechanic_name: str = Field(..., description="Name of the game mechanic")
     description: str = Field(..., description="How the mechanic works")
-    detailed_implementation: str = Field(..., description="Detailed implementation guide")
+    detailed_implementation: str = Field(default="", description="Detailed implementation guide")
     learning_connection: str = Field(..., description="How it connects to learning")
-    content_integration: str = Field(..., description="How content is integrated into this mechanic")
+    content_integration: str = Field(default="", description="How content is integrated into this mechanic")
     implementation_notes: str = Field("", description="Notes on implementation")
 
 
@@ -247,7 +247,7 @@ class CollaborationStructure(BaseModel):
     structure_name: str = Field(..., description="Name of the collaboration structure")
     group_size: str = Field(..., description="Recommended group size")
     process_description: str = Field(..., description="How the collaboration works")
-    detailed_content: str = Field(..., description="Detailed content and materials for this collaboration")
+    detailed_content: str = Field(default="", description="Detailed content and materials for this collaboration")
     step_by_step_process: List[str] = Field(..., description="Step-by-step process for the collaboration")
     roles_and_responsibilities: List[str] = Field(..., description="Student roles in the collaboration")
     assessment_method: str = Field("", description="How to assess this collaboration")
