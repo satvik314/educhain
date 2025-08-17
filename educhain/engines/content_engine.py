@@ -518,27 +518,53 @@ class ContentEngine:
             "blooms_taxonomy": {
                 "model": BloomsTaxonomyContent,
                 "prompt_template": """
-                Create educational content for the topic "{topic}" using Bloom's Taxonomy framework.
+                Create comprehensive educational content for the topic "{topic}" using Bloom's Taxonomy framework.
                 Target cognitive level: {target_level}
                 Grade level: {grade_level}
                 
-                Structure the content across all six cognitive levels of Bloom's Taxonomy:
+                Generate detailed, consumable content for each cognitive level. Students should be able to read and learn directly from this content.
                 
-                1. REMEMBER (Knowledge): Basic recall of information
-                2. UNDERSTAND (Comprehension): Explaining ideas or concepts
-                3. APPLY (Application): Using information in new situations
-                4. ANALYZE (Analysis): Breaking down information to understand relationships
-                5. EVALUATE (Evaluation): Justifying decisions or making judgments
-                6. CREATE (Synthesis): Producing new or original work
+                For each of the six cognitive levels of Bloom's Taxonomy, provide:
                 
-                For each level, provide:
-                - Learning objectives appropriate to that cognitive level
-                - Activities that engage students at that level
-                - Assessment questions that test that cognitive level
-                - Real-world examples or applications
+                1. REMEMBER (Knowledge): 
+                   - Detailed content explaining facts, definitions, and basic information about {topic}
+                   - Key concepts students need to memorize
+                   - Foundational knowledge that supports higher-order thinking
                 
-                Ensure progression from lower-order thinking (Remember, Understand, Apply) to 
-                higher-order thinking (Analyze, Evaluate, Create).
+                2. UNDERSTAND (Comprehension): 
+                   - Comprehensive explanations of concepts and principles
+                   - Content that helps students interpret and explain {topic}
+                   - Examples and analogies that clarify understanding
+                
+                3. APPLY (Application): 
+                   - Content showing how to use knowledge in practical situations
+                   - Step-by-step procedures and methods
+                   - Real-world scenarios where students can apply {topic}
+                
+                4. ANALYZE (Analysis): 
+                   - Content that breaks down {topic} into components
+                   - Comparative analysis and relationship explanations
+                   - Critical examination of elements and their interactions
+                
+                5. EVALUATE (Evaluation): 
+                   - Content that presents criteria for making judgments
+                   - Multiple perspectives and evaluation frameworks
+                   - Critical thinking approaches to assess {topic}
+                
+                6. CREATE (Synthesis): 
+                   - Content that guides original work and innovation
+                   - Creative application methods and techniques
+                   - Frameworks for producing new ideas related to {topic}
+                
+                For each level, include:
+                - Rich, detailed content that students can study and learn from
+                - Key concepts and terminology
+                - Learning objectives
+                - Practical activities and exercises
+                - Assessment questions
+                - Real-world applications and examples
+                
+                Make the content comprehensive enough that students can gain deep understanding of {topic} at each cognitive level.
                 
                 {custom_instructions}
                 
@@ -551,29 +577,52 @@ class ContentEngine:
             "socratic_questioning": {
                 "model": SocraticQuestioningContent,
                 "prompt_template": """
-                Create a Socratic questioning sequence for the topic "{topic}".
+                Create comprehensive Socratic questioning content for the topic "{topic}".
                 Depth level: {depth_level}
                 Student level: {student_level}
                 
-                Design a sequence of questions that guide students to discover knowledge about {topic} through:
+                Generate detailed content that guides students through self-discovery learning about {topic}.
                 
-                1. FOUNDATIONAL QUESTIONS: Questions that establish basic understanding
-                2. ANALYTICAL QUESTIONS: Questions that probe assumptions and evidence
-                3. PERSPECTIVE QUESTIONS: Questions that explore different viewpoints
-                4. IMPLICATION QUESTIONS: Questions about consequences and implications
-                5. META-COGNITIVE QUESTIONS: Questions about thinking and learning process
+                For each question category, provide rich content that students can engage with:
                 
-                For each question category, provide:
-                - Multiple example questions
+                1. FOUNDATIONAL QUESTIONS: 
+                   - Content overview explaining the basic concepts students need to understand about {topic}
+                   - Background information and context
+                   - Questions that establish baseline understanding
+                   - Example responses with explanations of why they demonstrate understanding
+                
+                2. ANALYTICAL QUESTIONS:
+                   - Content that presents different perspectives and approaches to {topic}
+                   - Analytical frameworks and tools for examination
+                   - Questions that probe assumptions and evidence
+                   - Detailed explanations of how to think critically about {topic}
+                
+                3. PERSPECTIVE QUESTIONS:
+                   - Content exploring multiple viewpoints on {topic}
+                   - Historical, cultural, and contextual perspectives
+                   - Questions that challenge students to consider different angles
+                   - Rich examples of how {topic} is viewed across different contexts
+                
+                4. IMPLICATION QUESTIONS:
+                   - Content about consequences and future implications of {topic}
+                   - Cause-and-effect relationships and scenarios
+                   - Questions about potential outcomes and impacts
+                   - Detailed exploration of "what if" scenarios related to {topic}
+                
+                5. META-COGNITIVE QUESTIONS:
+                   - Content about learning processes and thinking strategies
+                   - Reflection frameworks and self-assessment tools
+                   - Questions about thinking and learning approaches
+                   - Guidance on how to monitor and improve understanding of {topic}
+                
+                For each category, include:
+                - Comprehensive content overview that students can study
+                - Thought-provoking questions for self-reflection
                 - Follow-up probes for deeper inquiry
-                - Potential student responses and how to guide them further
-                - Connection to the main topic
+                - Example student responses with detailed explanations
+                - Facilitation notes for deeper understanding
                 
-                Include guidance for educators on:
-                - How to facilitate discussions
-                - When to ask follow-up questions
-                - How to handle different types of student responses
-                - Assessment strategies for Socratic dialogue
+                Create content rich enough that students can engage in meaningful self-directed inquiry about {topic}.
                 
                 {custom_instructions}
                 
@@ -591,24 +640,40 @@ class ContentEngine:
                 Team size: {team_size}
                 Industry focus: {industry_focus}
                 
-                Create a complete PBL framework including:
+                Create detailed, actionable content that students can use to complete a real-world project about {topic}.
+                
+                Include:
                 
                 1. DRIVING QUESTION: An engaging, open-ended question that guides the entire project
                 2. PROJECT OVERVIEW: Clear description of what students will accomplish
                 3. LEARNING OBJECTIVES: Specific knowledge and skills students will develop
-                4. PROJECT PHASES: Detailed breakdown of project stages with timelines
-                5. DELIVERABLES: Tangible outcomes students will produce
-                6. ASSESSMENT RUBRICS: Criteria for evaluating student work
-                7. RESOURCES: Materials, tools, and support needed
-                8. REAL-WORLD CONNECTIONS: How the project relates to professional practice
                 
-                Ensure the project:
-                - Addresses authentic, real-world problems
-                - Requires sustained inquiry and research
-                - Involves student choice and voice
-                - Includes reflection and revision
-                - Has a public audience for student work
-                - Develops 21st-century skills (collaboration, communication, critical thinking, creativity)
+                4. PROJECT PHASES with rich content for each phase:
+                   - Detailed content description with comprehensive materials students need
+                   - Step-by-step procedures and methodologies
+                   - Technical specifications and requirements
+                   - Research resources and reference materials
+                   - Tools, software, and equipment needed
+                   - Assessment criteria and checkpoints
+                   
+                5. DELIVERABLES: Tangible outcomes with detailed specifications
+                6. REAL-WORLD CONNECTIONS: How the project relates to professional practice
+                
+                For each project phase, provide:
+                - Comprehensive content description that explains what students need to know
+                - Detailed materials including technical information, procedures, and methodologies
+                - Resources needed (tools, software, equipment, references)
+                - Step-by-step activities and processes
+                - Assessment criteria for that phase
+                
+                Ensure the project includes enough detailed content that students can:
+                - Learn the necessary concepts and skills for {topic}
+                - Follow clear procedures and methodologies
+                - Access comprehensive reference materials
+                - Understand technical specifications and requirements
+                - Complete authentic, professional-quality work
+                
+                Make this a complete, self-contained learning experience where students gain deep expertise in {topic} through hands-on project work.
                 
                 {custom_instructions}
                 
@@ -621,41 +686,51 @@ class ContentEngine:
             "flipped_classroom": {
                 "model": FlippedClassroomContent,
                 "prompt_template": """
-                Design a flipped classroom approach for "{topic}".
+                Design a comprehensive flipped classroom experience for "{topic}".
                 Class duration: {class_duration}
                 Prep time available: {prep_time}
                 Technology level: {technology_level}
                 
-                Create a complete flipped classroom design with:
+                Create complete, consumable content for all phases of flipped learning:
                 
-                1. PRE-CLASS PREPARATION:
-                - Content delivery materials (videos, readings, interactive modules)
-                - Pre-class assessment to check understanding
-                - Preparation guidelines for students
+                1. PRE-CLASS PREPARATION with complete content:
+                   - Full content that students can study independently about {topic}
+                   - Comprehensive explanations, examples, and illustrations
+                   - Interactive elements and self-check opportunities
+                   - Key points and takeaways for each content piece
+                   - Pre-class assessment questions with detailed explanations
                 
-                2. IN-CLASS ACTIVITIES:
-                - Warm-up activities to address pre-class questions
-                - Active learning exercises (discussions, problem-solving, labs)
-                - Collaborative work and peer learning
-                - Instructor-guided practice and application
+                2. IN-CLASS ACTIVITIES with detailed instructions:
+                   - Step-by-step activity instructions that build on pre-class content
+                   - Detailed materials and resources for each activity
+                   - Problem-solving scenarios and case studies related to {topic}
+                   - Collaborative exercises with specific roles and processes
+                   - Application tasks that reinforce and extend learning
                 
-                3. POST-CLASS REINFORCEMENT:
-                - Extended practice activities
-                - Reflection assignments
-                - Application projects
+                3. POST-CLASS REINFORCEMENT with complete materials:
+                   - Extended practice activities with full instructions
+                   - Reflection prompts and self-assessment tools
+                   - Application projects with detailed requirements
+                   - Additional resources for deeper exploration of {topic}
                 
-                4. ASSESSMENT STRATEGY:
-                - Formative assessments throughout the cycle
-                - Summative assessments of learning outcomes
-                - Peer assessment opportunities
+                For PRE-CLASS CONTENT, provide:
+                - Complete educational content that thoroughly covers {topic}
+                - Full explanations, definitions, and concepts
+                - Examples, analogies, and visual aids
+                - Key points students must remember
+                - Self-check questions and activities
                 
-                5. TECHNOLOGY INTEGRATION:
-                - Tools for content delivery
-                - Platforms for collaboration
-                - Assessment technologies
+                For IN-CLASS ACTIVITIES, provide:
+                - Detailed step-by-step instructions for each activity
+                - Complete materials and resources needed
+                - Specific procedures and methodologies
+                - Assessment methods for each activity
                 
-                Ensure the design maximizes active learning during face-to-face time while 
-                providing effective independent learning experiences.
+                Ensure that all content is comprehensive enough that students can:
+                - Learn {topic} thoroughly from pre-class materials
+                - Engage meaningfully in active learning during class
+                - Apply and extend their knowledge through post-class activities
+                - Achieve mastery of {topic} through the complete flipped experience
                 
                 {custom_instructions}
                 
