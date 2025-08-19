@@ -659,7 +659,7 @@ class QnAEngine:
         return structured_output
 
     def _extract_video_id(self, url: str) -> str:
-        pattern = r'(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(?:embed\/)?(?:v\/)?(?:shorts\/)?(?:live\/)?(?:feature=player_embedded&v=)?(?:e\/)?(?:\/)?([^\s&amp;?#]+)'
+        pattern = r'(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|shorts\/|live\/|feature=player_embedded&v=|e\/)?([A-Za-z0-9_-]{11})'
         match = re.search(pattern, url)
         if match:
             return match.group(1)
@@ -667,7 +667,7 @@ class QnAEngine:
 
     def _get_youtube_transcript(self, video_id: str, target_language: str = 'en') -> tuple[str, str]:
         try:
-            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+            transcript_list = YouTubeTranscriptApi().list(video_id)
 
             available_languages = [transcript.language_code for transcript in transcript_list]
 
