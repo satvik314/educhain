@@ -1,0 +1,18 @@
+# Ignore PyCharm project files
+.idea/
+
+# Ignore Python cache files
+__pycache__/
+
+# Ignore environment files
+.env
+*.env
+
+# Ignore virtual environment if any
+.venv/
+
+# Ignore OS files
+.DS_Store
+
+# Ignore lock files (optional)
+*.lock

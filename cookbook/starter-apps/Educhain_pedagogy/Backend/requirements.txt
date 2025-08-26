@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+pydantic
+dotenv 
+git+https://github.com/satvik314/educhain.git@ai-dev
