@@ -9,7 +9,17 @@ from educhain.core.config import LLMConfig
 from educhain.models.content_models import StudyGuide, CareerConnections
 import json
 from educhain.models.content_models import LessonPlan
-from educhain.models.content_models import FlashcardSet 
+from educhain.models.content_models import FlashcardSet
+from educhain.models.pedagogy_models import (
+    BloomsTaxonomyContent, 
+    SocraticQuestioningContent, 
+    ProjectBasedLearningContent,
+    FlippedClassroomContent,
+    InquiryBasedLearningContent,
+    ConstructivistContent,
+    GamificationContent,
+    PeerLearningContent
+) 
 
 
 class ContentEngine:
@@ -472,3 +482,590 @@ class ContentEngine:
             print("Raw output:")
             print(results.content)
             return FlashcardSet(title=topic, flashcards=[])
+    
+    # Pedagogy-Based Content Generation Method
+    
+    def generate_pedagogy_content(
+        self,
+        topic: str,
+        pedagogy: str,
+        custom_instructions: Optional[str] = None,
+        **kwargs
+    ) -> Any:
+        """
+        Generate educational content using a specific pedagogical approach.
+        
+        Args:
+            topic (str): The subject or topic for the content
+            pedagogy (str): The pedagogical approach to use. Available options:
+                - 'blooms_taxonomy': Bloom's Taxonomy cognitive levels
+                - 'socratic_questioning': Socratic questioning method
+                - 'project_based_learning': Project-based learning
+                - 'flipped_classroom': Flipped classroom approach
+                - 'inquiry_based_learning': Inquiry-based learning
+                - 'constructivist': Constructivist learning
+                - 'gamification': Gamified learning
+                - 'peer_learning': Peer learning activities
+            custom_instructions (str, optional): Additional instructions for content generation
+            **kwargs: Pedagogy-specific parameters (see documentation for each pedagogy)
+        
+        Returns:
+            Content object based on the selected pedagogy
+        """
+        
+        # Pedagogy configurations
+        pedagogy_configs = {
+            "blooms_taxonomy": {
+                "model": BloomsTaxonomyContent,
+                "prompt_template": """
+                Create comprehensive educational content for the topic "{topic}" using Bloom's Taxonomy framework.
+                Target cognitive level: {target_level}
+                Grade level: {grade_level}
+                
+                Generate detailed, consumable content for each cognitive level. Students should be able to read and learn directly from this content.
+                
+                For each of the six cognitive levels of Bloom's Taxonomy, provide:
+                
+                1. REMEMBER (Knowledge): 
+                   - Detailed content explaining facts, definitions, and basic information about {topic}
+                   - Key concepts students need to memorize
+                   - Foundational knowledge that supports higher-order thinking
+                
+                2. UNDERSTAND (Comprehension): 
+                   - Comprehensive explanations of concepts and principles
+                   - Content that helps students interpret and explain {topic}
+                   - Examples and analogies that clarify understanding
+                
+                3. APPLY (Application): 
+                   - Content showing how to use knowledge in practical situations
+                   - Step-by-step procedures and methods
+                   - Real-world scenarios where students can apply {topic}
+                
+                4. ANALYZE (Analysis): 
+                   - Content that breaks down {topic} into components
+                   - Comparative analysis and relationship explanations
+                   - Critical examination of elements and their interactions
+                
+                5. EVALUATE (Evaluation): 
+                   - Content that presents criteria for making judgments
+                   - Multiple perspectives and evaluation frameworks
+                   - Critical thinking approaches to assess {topic}
+                
+                6. CREATE (Synthesis): 
+                   - Content that guides original work and innovation
+                   - Creative application methods and techniques
+                   - Frameworks for producing new ideas related to {topic}
+                
+                For each level, include:
+                - Rich, detailed content that students can study and learn from
+                - Key concepts and terminology
+                - Learning objectives
+                - Practical activities and exercises
+                - Assessment questions
+                - Real-world applications and examples
+                
+                Make the content comprehensive enough that students can gain deep understanding of {topic} at each cognitive level.
+                
+                {custom_instructions}
+                
+                {format_instructions}
+                """,
+                "input_variables": ["topic", "target_level", "grade_level", "custom_instructions"],
+                "defaults": {"target_level": "All levels", "grade_level": "General"}
+            },
+            
+            "socratic_questioning": {
+                "model": SocraticQuestioningContent,
+                "prompt_template": """
+                Create comprehensive Socratic questioning content for the topic "{topic}".
+                Depth level: {depth_level}
+                Student level: {student_level}
+                
+                Generate detailed content that guides students through self-discovery learning about {topic}.
+                
+                For each question category, provide rich content that students can engage with:
+                
+                1. FOUNDATIONAL QUESTIONS: 
+                   - Content overview explaining the basic concepts students need to understand about {topic}
+                   - Background information and context
+                   - Questions that establish baseline understanding
+                   - Example responses with explanations of why they demonstrate understanding
+                
+                2. ANALYTICAL QUESTIONS:
+                   - Content that presents different perspectives and approaches to {topic}
+                   - Analytical frameworks and tools for examination
+                   - Questions that probe assumptions and evidence
+                   - Detailed explanations of how to think critically about {topic}
+                
+                3. PERSPECTIVE QUESTIONS:
+                   - Content exploring multiple viewpoints on {topic}
+                   - Historical, cultural, and contextual perspectives
+                   - Questions that challenge students to consider different angles
+                   - Rich examples of how {topic} is viewed across different contexts
+                
+                4. IMPLICATION QUESTIONS:
+                   - Content about consequences and future implications of {topic}
+                   - Cause-and-effect relationships and scenarios
+                   - Questions about potential outcomes and impacts
+                   - Detailed exploration of "what if" scenarios related to {topic}
+                
+                5. META-COGNITIVE QUESTIONS:
+                   - Content about learning processes and thinking strategies
+                   - Reflection frameworks and self-assessment tools
+                   - Questions about thinking and learning approaches
+                   - Guidance on how to monitor and improve understanding of {topic}
+                
+                For each category, include:
+                - Comprehensive content overview that students can study
+                - Thought-provoking questions for self-reflection
+                - Follow-up probes for deeper inquiry
+                - Example student responses with detailed explanations
+                - Facilitation notes for deeper understanding
+                
+                Create content rich enough that students can engage in meaningful self-directed inquiry about {topic}.
+                
+                {custom_instructions}
+                
+                {format_instructions}
+                """,
+                "input_variables": ["topic", "depth_level", "student_level", "custom_instructions"],
+                "defaults": {"depth_level": "Intermediate", "student_level": "High School"}
+            },
+            
+            "project_based_learning": {
+                "model": ProjectBasedLearningContent,
+                "prompt_template": """
+                Design a comprehensive project-based learning experience for "{topic}".
+                Project duration: {project_duration}
+                Team size: {team_size}
+                Industry focus: {industry_focus}
+                
+                Create detailed, actionable content that students can use to complete a real-world project about {topic}.
+                
+                Include:
+                
+                1. DRIVING QUESTION: An engaging, open-ended question that guides the entire project
+                2. PROJECT OVERVIEW: Clear description of what students will accomplish
+                3. LEARNING OBJECTIVES: Specific knowledge and skills students will develop
+                
+                4. PROJECT PHASES with rich content for each phase:
+                   - Detailed content description with comprehensive materials students need
+                   - Step-by-step procedures and methodologies
+                   - Technical specifications and requirements
+                   - Research resources and reference materials
+                   - Tools, software, and equipment needed
+                   - Assessment criteria and checkpoints
+                   
+                5. DELIVERABLES: Tangible outcomes with detailed specifications
+                6. REAL-WORLD CONNECTIONS: How the project relates to professional practice
+                
+                For each project phase, provide:
+                - Comprehensive content description that explains what students need to know
+                - Detailed materials including technical information, procedures, and methodologies
+                - Resources needed (tools, software, equipment, references)
+                - Step-by-step activities and processes
+                - Assessment criteria for that phase
+                
+                Ensure the project includes enough detailed content that students can:
+                - Learn the necessary concepts and skills for {topic}
+                - Follow clear procedures and methodologies
+                - Access comprehensive reference materials
+                - Understand technical specifications and requirements
+                - Complete authentic, professional-quality work
+                
+                Make this a complete, self-contained learning experience where students gain deep expertise in {topic} through hands-on project work.
+                
+                {custom_instructions}
+                
+                {format_instructions}
+                """,
+                "input_variables": ["topic", "project_duration", "team_size", "industry_focus", "custom_instructions"],
+                "defaults": {"project_duration": "4-6 weeks", "team_size": "3-4 students", "industry_focus": "General"}
+            },
+            
+            "flipped_classroom": {
+                "model": FlippedClassroomContent,
+                "prompt_template": """
+                Design a comprehensive flipped classroom experience for "{topic}".
+                Class duration: {class_duration}
+                Prep time available: {prep_time}
+                Technology level: {technology_level}
+                
+                Create complete, consumable content for all phases of flipped learning:
+                
+                1. PRE-CLASS PREPARATION with complete content:
+                   - Full content that students can study independently about {topic}
+                   - Comprehensive explanations, examples, and illustrations
+                   - Interactive elements and self-check opportunities
+                   - Key points and takeaways for each content piece
+                   - Pre-class assessment questions with detailed explanations
+                
+                2. IN-CLASS ACTIVITIES with detailed instructions:
+                   - Step-by-step activity instructions that build on pre-class content
+                   - Detailed materials and resources for each activity
+                   - Problem-solving scenarios and case studies related to {topic}
+                   - Collaborative exercises with specific roles and processes
+                   - Application tasks that reinforce and extend learning
+                
+                3. POST-CLASS REINFORCEMENT with complete materials:
+                   - Extended practice activities with full instructions
+                   - Reflection prompts and self-assessment tools
+                   - Application projects with detailed requirements
+                   - Additional resources for deeper exploration of {topic}
+                
+                For PRE-CLASS CONTENT, provide:
+                - Complete educational content that thoroughly covers {topic}
+                - Full explanations, definitions, and concepts
+                - Examples, analogies, and visual aids
+                - Key points students must remember
+                - Self-check questions and activities
+                
+                For IN-CLASS ACTIVITIES, provide:
+                - Detailed step-by-step instructions for each activity
+                - Complete materials and resources needed
+                - Specific procedures and methodologies
+                - Assessment methods for each activity
+                
+                Ensure that all content is comprehensive enough that students can:
+                - Learn {topic} thoroughly from pre-class materials
+                - Engage meaningfully in active learning during class
+                - Apply and extend their knowledge through post-class activities
+                - Achieve mastery of {topic} through the complete flipped experience
+                
+                {custom_instructions}
+                
+                {format_instructions}
+                """,
+                "input_variables": ["topic", "class_duration", "prep_time", "technology_level", "custom_instructions"],
+                "defaults": {"class_duration": "50 minutes", "prep_time": "30-45 minutes", "technology_level": "Moderate"}
+            },
+            
+            "inquiry_based_learning": {
+                "model": InquiryBasedLearningContent,
+                "prompt_template": """
+                Design an inquiry-based learning experience for "{topic}".
+                Inquiry type: {inquiry_type}
+                Investigation scope: {investigation_scope}
+                Student autonomy level: {student_autonomy}
+                
+                Create a comprehensive IBL framework including:
+                
+                1. ESSENTIAL QUESTIONS: Open-ended questions that drive inquiry
+                2. INVESTIGATION PHASES:
+                   - Question formulation
+                   - Research and data collection
+                   - Analysis and interpretation
+                   - Conclusion and communication
+                
+                3. INQUIRY ACTIVITIES:
+                - Guided investigations for skill building
+                - Open investigations for independent exploration
+                - Collaborative inquiry projects
+                - Real-world problem investigations
+                
+                4. RESEARCH METHODS:
+                - Primary research techniques
+                - Secondary research strategies
+                - Data collection methods
+                - Analysis approaches
+                
+                5. SCAFFOLD SUPPORT:
+                - Question stems and frameworks
+                - Research organizers
+                - Thinking protocols
+                - Reflection prompts
+                
+                6. PRESENTATION FORMATS:
+                - Research presentations
+                - Scientific posters
+                - Digital storytelling
+                - Peer teaching sessions
+                
+                Balance student autonomy with appropriate guidance to ensure productive inquiry.
+                
+                {custom_instructions}
+                
+                {format_instructions}
+                """,
+                "input_variables": ["topic", "inquiry_type", "investigation_scope", "student_autonomy", "custom_instructions"],
+                "defaults": {"inquiry_type": "Guided", "investigation_scope": "Moderate", "student_autonomy": "Balanced"}
+            },
+            
+            "constructivist": {
+                "model": ConstructivistContent,
+                "prompt_template": """
+                Design a constructivist learning experience for "{topic}".
+                Prior knowledge level: {prior_knowledge_level}
+                Social interaction focus: {social_interaction_focus}
+                Reflection emphasis: {reflection_emphasis}
+                
+                Create a constructivist framework that includes:
+                
+                1. PRIOR KNOWLEDGE ACTIVATION:
+                - Activities to surface existing understanding
+                - Misconception identification
+                - Knowledge mapping exercises
+                
+                2. EXPERIENTIAL LEARNING:
+                - Hands-on activities and experiments
+                - Real-world problem scenarios
+                - Exploration and discovery tasks
+                
+                3. SOCIAL CONSTRUCTION:
+                - Collaborative learning activities
+                - Peer discussion and debate
+                - Knowledge sharing protocols
+                - Community of practice development
+                
+                4. REFLECTIVE PRACTICES:
+                - Metacognitive questioning
+                - Learning journals and portfolios
+                - Self-assessment strategies
+                - Peer feedback systems
+                
+                5. KNOWLEDGE BUILDING TOOLS:
+                - Concept mapping
+                - Knowledge construction frameworks
+                - Collaborative annotation
+                - Iterative design processes
+                
+                6. AUTHENTIC ASSESSMENT:
+                - Performance-based evaluation
+                - Portfolio assessment
+                - Self and peer evaluation
+                - Real-world application demonstrations
+                
+                Emphasize active knowledge construction, multiple perspectives, and continuous reflection.
+                
+                {custom_instructions}
+                
+                {format_instructions}
+                """,
+                "input_variables": ["topic", "prior_knowledge_level", "social_interaction_focus", "reflection_emphasis", "custom_instructions"],
+                "defaults": {"prior_knowledge_level": "Mixed", "social_interaction_focus": "High", "reflection_emphasis": "Strong"}
+            },
+            
+            "gamification": {
+                "model": GamificationContent,
+                "prompt_template": """
+                Design a gamified learning experience for "{topic}".
+                Preferred game mechanics: {game_mechanics}
+                Competition level: {competition_level}
+                Technology platform: {technology_platform}
+                
+                Create a comprehensive gamification design including:
+                
+                1. GAME MECHANICS:
+                - Points and scoring systems
+                - Levels and progression paths
+                - Badges and achievements
+                - Leaderboards and rankings
+                - Challenges and quests
+                
+                2. GAME DYNAMICS:
+                - Competition and collaboration balance
+                - Narrative and storytelling elements
+                - Player agency and choice
+                - Feedback loops
+                - Social interaction features
+                
+                3. LEARNING INTEGRATION:
+                - Curriculum-aligned objectives
+                - Assessment through gameplay
+                - Knowledge application scenarios
+                - Skill development pathways
+                
+                4. PLAYER MOTIVATION:
+                - Intrinsic motivation strategies
+                - Extrinsic reward systems
+                - Personalization options
+                - Social recognition features
+                
+                5. GAME PROGRESSION:
+                - Onboarding and tutorial design
+                - Difficulty scaling
+                - Mastery indicators
+                - Unlock systems
+                
+                6. PLATFORM CONSIDERATIONS:
+                - Technology requirements
+                - Accessibility features
+                - Multi-device compatibility
+                - Data analytics integration
+                
+                Balance fun and learning while maintaining educational rigor.
+                
+                {custom_instructions}
+                
+                {format_instructions}
+                """,
+                "input_variables": ["topic", "game_mechanics", "competition_level", "technology_platform", "custom_instructions"],
+                "defaults": {"game_mechanics": "Points, badges, levels", "competition_level": "Moderate", "technology_platform": "Web-based"}
+            },
+            
+            "peer_learning": {
+                "model": PeerLearningContent,
+                "prompt_template": """
+                Design a peer learning experience for "{topic}".
+                Group size: {group_size}
+                Collaboration type: {collaboration_type}
+                Skill diversity level: {skill_diversity}
+                
+                Create a comprehensive peer learning framework including:
+                
+                1. PEER LEARNING STRUCTURES:
+                - Think-Pair-Share activities
+                - Jigsaw method implementation
+                - Peer tutoring arrangements
+                - Reciprocal teaching protocols
+                - Collaborative problem-solving
+                
+                2. GROUP FORMATION STRATEGIES:
+                - Skill-based grouping
+                - Interest-based partnerships
+                - Random group formation
+                - Self-selected teams
+                - Rotating group structures
+                
+                3. COLLABORATION ACTIVITIES:
+                - Knowledge sharing sessions
+                - Peer review processes
+                - Joint problem-solving tasks
+                - Teaching role rotations
+                - Debate and discussion formats
+                
+                4. COMMUNICATION PROTOCOLS:
+                - Active listening guidelines
+                - Constructive feedback frameworks
+                - Conflict resolution strategies
+                - Digital collaboration tools
+                - Discussion facilitation techniques
+                
+                5. ACCOUNTABILITY MEASURES:
+                - Individual responsibility within groups
+                - Peer assessment rubrics
+                - Group reflection processes
+                - Progress monitoring systems
+                - Quality assurance checkpoints
+                
+                6. INSTRUCTOR FACILITATION:
+                - Monitoring and intervention strategies
+                - Guidance provision techniques
+                - Process observation methods
+                - Support for struggling groups
+                - Enhancement of successful collaboration
+                
+                Ensure equitable participation and mutual learning benefits for all students.
+                
+                {custom_instructions}
+                
+                {format_instructions}
+                """,
+                "input_variables": ["topic", "group_size", "collaboration_type", "skill_diversity", "custom_instructions"],
+                "defaults": {"group_size": "3-4 students", "collaboration_type": "Mixed", "skill_diversity": "Moderate"}
+            }
+        }
+        
+        # Validate pedagogy
+        if pedagogy not in pedagogy_configs:
+            available = list(pedagogy_configs.keys())
+            raise ValueError(f"Unknown pedagogy '{pedagogy}'. Available options: {available}")
+        
+        config = pedagogy_configs[pedagogy]
+        
+        # Set up parser and format instructions
+        parser = PydanticOutputParser(pydantic_object=config["model"])
+        format_instructions = parser.get_format_instructions()
+        
+        # Prepare prompt variables with defaults
+        prompt_vars = {"topic": topic, "custom_instructions": custom_instructions or ""}
+        
+        # Apply defaults and user-provided values
+        for var in config["input_variables"]:
+            if var not in ["topic", "custom_instructions"]:
+                default_value = config["defaults"].get(var, "")
+                prompt_vars[var] = kwargs.get(var, default_value)
+        
+        # Create prompt template
+        prompt = PromptTemplate(
+            input_variables=config["input_variables"],
+            template=config["prompt_template"],
+            partial_variables={"format_instructions": format_instructions}
+        )
+        
+        # Generate content
+        chain = prompt | self.llm
+        result = chain.invoke(prompt_vars)
+        
+        try:
+            return parser.parse(result.content)
+        except Exception as e:
+            print(f"Error parsing {pedagogy} content: {e}")
+            return config["model"](topic=topic)
+    
+    def get_available_pedagogies(self) -> dict:
+        """Get information about all available pedagogy methods and their parameters."""
+        return {
+            "blooms_taxonomy": {
+                "description": "Structures learning through six cognitive levels - Remember, Understand, Apply, Analyze, Evaluate, and Create.",
+                "parameters": {
+                    "target_level": "Cognitive level to focus on (default: 'All levels')",
+                    "grade_level": "Target grade level (default: 'General')"
+                }
+            },
+            "socratic_questioning": {
+                "description": "Guides learning through strategic questioning that promotes critical thinking and self-discovery.",
+                "parameters": {
+                    "depth_level": "Depth of inquiry (default: 'Intermediate')",
+                    "student_level": "Student level (default: 'High School')"
+                }
+            },
+            "project_based_learning": {
+                "description": "Engages students in complex, real-world projects that develop deep understanding and practical skills.",
+                "parameters": {
+                    "project_duration": "Project duration (default: '4-6 weeks')",
+                    "team_size": "Team size (default: '3-4 students')",
+                    "industry_focus": "Industry focus (default: 'General')"
+                }
+            },
+            "flipped_classroom": {
+                "description": "Students learn foundational content at home and engage in active learning during class time.",
+                "parameters": {
+                    "class_duration": "Class duration (default: '50 minutes')",
+                    "prep_time": "Preparation time (default: '30-45 minutes')",
+                    "technology_level": "Technology level (default: 'Moderate')"
+                }
+            },
+            "inquiry_based_learning": {
+                "description": "Students develop understanding through questioning, investigation, and discovery.",
+                "parameters": {
+                    "inquiry_type": "Type of inquiry (default: 'Guided')",
+                    "investigation_scope": "Investigation scope (default: 'Moderate')",
+                    "student_autonomy": "Student autonomy level (default: 'Balanced')"
+                }
+            },
+            "constructivist": {
+                "description": "Students actively build understanding through experience, reflection, and social interaction.",
+                "parameters": {
+                    "prior_knowledge_level": "Prior knowledge level (default: 'Mixed')",
+                    "social_interaction_focus": "Social interaction focus (default: 'High')",
+                    "reflection_emphasis": "Reflection emphasis (default: 'Strong')"
+                }
+            },
+            "gamification": {
+                "description": "Applies game design elements to increase engagement, motivation, and learning outcomes.",
+                "parameters": {
+                    "game_mechanics": "Game mechanics (default: 'Points, badges, levels')",
+                    "competition_level": "Competition level (default: 'Moderate')",
+                    "technology_platform": "Technology platform (default: 'Web-based')"
+                }
+            },
+            "peer_learning": {
+                "description": "Students learn from and with each other through structured collaborative activities.",
+                "parameters": {
+                    "group_size": "Group size (default: '3-4 students')",
+                    "collaboration_type": "Collaboration type (default: 'Mixed')",
+                    "skill_diversity": "Skill diversity level (default: 'Moderate')"
+                }
+            }
+        }
