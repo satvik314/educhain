@@ -2,12 +2,13 @@ from setuptools import setup, find_packages
 
 setup(
     name="educhain",
-    version="0.3.12",
+    version="0.3.13",
     packages=find_packages(),
     install_requires=[
         "langchain",
         "langchain-core",
         "langchain-text-splitters",
+        "langchain-experimental",
         "langchain-community",
         "langchain-openai",
         "openai",
