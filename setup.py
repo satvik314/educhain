@@ -6,6 +6,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         "langchain",
+        "langchain-core",
+        "langchain-text-splitters",
         "langchain-community",
         "langchain-openai",
         "openai",
