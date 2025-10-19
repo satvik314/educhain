@@ -8,7 +8,6 @@ setup(
         "langchain",
         "langchain-core",
         "langchain-text-splitters",
-        "langchain-experimental",
         "langchain-community",
         "langchain-openai",
         "openai",

@@ -13,7 +13,7 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_experimental.chains import LLMMathChain
+# LLMMathChain removed due to compatibility issues - using direct LLM calls instead
 from langchain.chains.retrieval_qa.base import RetrievalQA
 from langchain_community.vectorstores import Chroma
 from langchain_community.callbacks.manager import get_openai_callback
@@ -531,22 +531,41 @@ class QnAEngine:
         return response_content.split(';')
 
     def _process_math_result(self, math_result: Any) -> str:
-        if isinstance(math_result, dict):
+        # Handle direct LLM response (has .content attribute)
+        if hasattr(math_result, 'content'):
+            content = math_result.content
+        elif isinstance(math_result, dict):
             if 'answer' in math_result:
-                return math_result['answer'].split('Answer: ')[-1].strip()
+                content = math_result['answer']
             elif 'result' in math_result:
-                return math_result['result'].strip()
+                content = math_result['result']
+            else:
+                content = str(math_result)
+        else:
+            content = str(math_result)
 
-        result_str = str(math_result)
-        if 'Answer:' in result_str:
-            return result_str.split('Answer:')[-1].strip()
+        # Look for "Final Answer:" pattern first
+        if 'Final Answer:' in content:
+            return content.split('Final Answer:')[-1].strip()
+        
+        # Look for "Answer:" pattern
+        if 'Answer:' in content:
+            return content.split('Answer:')[-1].strip()
 
-        lines = result_str.split('\n')
+        # Look for numerical values in the text
+        lines = content.split('\n')
         for line in reversed(lines):
-            if line.strip().replace('.', '').isdigit():
-                return line.strip()
+            stripped = line.strip()
+            # Check if line contains a number (including decimals)
+            if stripped and (stripped.replace('.', '').replace('-', '').isdigit() or 
+                           any(char.isdigit() for char in stripped)):
+                # Extract the first number found in the line
+                import re
+                numbers = re.findall(r'-?\d+\.?\d*', stripped)
+                if numbers:
+                    return numbers[0]
 
-        raise ValueError("Could not extract numerical result from LLMMathChain response")
+        raise ValueError("Could not extract numerical result from math calculation")
 
     def generate_mcq_math(
         self,
@@ -612,12 +631,18 @@ class QnAEngine:
             print("Raw output:")
             return MCQListMath()
 
-        llm_math = LLMMathChain.from_llm(llm=self.llm, verbose=True)
-
         for question in structured_output.questions:
             if question.requires_math:
                 try:
-                    math_result = llm_math.invoke({"question": question.question})
+                    # Use direct LLM call instead of LLMMathChain for better compatibility
+                    math_prompt = f"""
+                    Solve this math problem step by step and provide ONLY the final numerical answer:
+                    
+                    {question.question}
+                    
+                    Final Answer: [numerical value only]
+                    """
+                    math_result = self.llm.invoke(math_prompt)
 
                     try:
                         solution = self._process_math_result(math_result)
@@ -649,7 +674,7 @@ class QnAEngine:
                         raise
 
                 except Exception as e:
-                    print(f"LLMMathChain failed to answer: {str(e)}")
+                    print(f"Math calculation failed: {str(e)}")
                     question.explanation += "\n\nMath solution: Unable to compute."
                     question.options = [
                         Option(text="Unable to compute", correct='true'),
