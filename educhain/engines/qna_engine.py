@@ -10,17 +10,18 @@ from pathlib import Path
 from tqdm import tqdm
 from tenacity import retry, stop_after_attempt, wait_exponential
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain, RetrievalQA, LLMMathChain
-from langchain.output_parsers import PydanticOutputParser
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.chains import LLMMathChain
+from langchain.chains.retrieval_qa.base import RetrievalQA
 from langchain_community.vectorstores import Chroma
 from langchain_community.callbacks.manager import get_openai_callback
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import TextFormatter
 import re
 from langchain_core.messages import SystemMessage
-from langchain.schema import HumanMessage
+from langchain_core.messages import HumanMessage
 from educhain.core.config import LLMConfig
 from educhain.models.qna_models import (
     MCQList, ShortAnswerQuestionList, TrueFalseQuestionList,
@@ -525,8 +526,9 @@ class QnAEngine:
     def generate_similar_options(self, question, correct_answer, num_options=3):
         llm = self.llm
         prompt = f"Generate {num_options} incorrect but plausible options similar to this correct answer: {correct_answer} for this question: {question}. Provide only the options, separated by semicolons. The options should not precede or end with any symbols, it should be similar to the correct answer."
-        response = llm.predict(prompt)
-        return response.split(';')
+        response = llm.invoke(prompt)
+        response_content = response.content if hasattr(response, 'content') else str(response)
+        return response_content.split(';')
 
     def _process_math_result(self, math_result: Any) -> str:
         if isinstance(math_result, dict):

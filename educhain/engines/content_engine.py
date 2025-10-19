@@ -1,9 +1,8 @@
 from typing import Optional, Type, Any
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
-from langchain.output_parsers import PydanticOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
 from educhain.core.config import LLMConfig
 
 from educhain.models.content_models import StudyGuide, CareerConnections
