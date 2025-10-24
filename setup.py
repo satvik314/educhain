@@ -5,12 +5,12 @@ setup(
     version="0.3.13",
     packages=find_packages(),
     install_requires=[
-        "langchain",
-        "langchain-core",
-        "langchain-text-splitters",
-        "langchain-community",
-        "langchain-openai",
-        "openai",
+        "langchain==1.0.2",
+         "langchain-core==1.0.0"
+         "langchain-community==0.4",
+         "langchain-openai==1.0.1",
+         "langchain-text-splitters==1.0.0",
+         "openai==2.6.0"
         "python-dotenv",
         "reportlab",
         "PyPDF2",
