@@ -576,25 +576,60 @@ Thank you for your continued support, community!
 
 ## 📈 Version History
 
-### v1.2.0 (May 2025)
+### v0.3.13 (October 2024) - Current Version
+- 🎓 **Major Pedagogy Update**: Added comprehensive pedagogical framework support
+  - ✨ **8 Pedagogical Approaches**: Bloom's Taxonomy, Socratic Questioning, Project-Based Learning, Flipped Classroom, Inquiry-Based Learning, Constructivist, Gamification, Peer Learning
+  - 📚 **Educational Theory Integration**: Learning objectives alignment and assessment strategies
+  - 🧠 **Cognitive Framework**: Built-in support for educational best practices
+- 🔧 **LangChain v1 Compatibility**: 
+  - ⚡️ Updated all dependencies for LangChain v1 compatibility
+  - 🐛 Fixed sync/async API key handling issues
+  - 📦 Added langchain-classic for deprecated functionality support
+  - 🐍 Updated Python requirements (now requires Python 3.10+)
+- ✨ **Enhanced Content Generation**: 
+  - 🎯 `generate_pedagogy_content()` method with 8 pedagogical approaches
+  - 📊 Structured educational content with proper learning frameworks
+  - 🎨 Customizable pedagogical parameters for each approach
+
+### v0.3.12 (September 2024)
 - ✨ Added support for generating visual questions with multimodal LLMs
 - ✨ Added support for generating questions from YouTube videos
 - ✨ Added support for generating questions from images
 - 🐛 Fixed issue with PDF parsing for certain file formats
 - ⚡️ Improved performance for large document processing
 
-### v1.1.0 (February 2025)
+### v0.3.11 (August 2024)
 - ✨ Added support for custom prompt templates
 - ✨ Added export functionality to PDF, CSV, and JSON
 - 🔄 Enhanced compatibility with Gemini models
 - 📚 Expanded documentation with more examples
 
-### v1.0.0 (December 2024)
+### v0.3.10 (July 2024)
+- ✨ Added support for generating questions from data sources (URL, PDF, TXT)
+- 🔧 Improved question type handling
+- 📊 Enhanced output formatting options
+- 🐛 Various bug fixes and stability improvements
+
+### v0.3.0 (June 2024)
+- 🚀 Major release with enhanced architecture
+- ✅ Modular engine design (QnA Engine, Content Engine)
+- ✅ Support for multiple question types (MCQ, Short Answer, True/False, Fill in the Blank)
+- ✅ Comprehensive lesson plan generation
+- ✅ Multi-LLM support (OpenAI, Google Gemini)
+- 📱 Export capabilities (JSON, PDF, CSV)
+
+### v0.2.0 (May 2024)
+- ✨ Added content engine for lesson plan generation
+- 🔄 Improved question generation algorithms
+- 📚 Enhanced documentation and examples
+- 🐛 Bug fixes and performance improvements
+
+### v0.1.0 (April 2024)
 - 🚀 Initial release
 - ✅ Core question generation functionality
-- ✅ Support for multiple question types
-- ✅ Basic lesson plan generation
-- ✅ Integration with OpenAI models
+- ✅ Basic MCQ generation
+- ✅ OpenAI integration
+- ✅ Simple export options
 
 ## 📝 License
 
