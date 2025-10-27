@@ -14,7 +14,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 # LLMMathChain removed due to compatibility issues - using direct LLM calls instead
-from langchain.chains.retrieval_qa.base import RetrievalQA
+from langchain_classic.chains.retrieval_qa.base import RetrievalQA
 from langchain_community.vectorstores import Chroma
 from langchain_community.callbacks.manager import get_openai_callback
 from youtube_transcript_api import YouTubeTranscriptApi

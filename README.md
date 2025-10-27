@@ -14,7 +14,7 @@
 # Educhain 🎓🔗
 [Website](https://educhain.in) | [Documentation](docs/index.md)
 
-Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content. From generating multiple-choice questions to crafting comprehensive lesson plans, Educhain makes it easy to apply AI in various educational scenarios.
+Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content. From generating multiple-choice questions to crafting comprehensive lesson plans with **8 pedagogical approaches**, Educhain makes it easy to apply AI in various educational scenarios with sound educational theory.
 
 ## 🚀 Features  
 
@@ -240,6 +240,74 @@ ques = client.qna_engine.generate_visual_questions(
 print(ques.model_dump_json())
 ````
 </details>
+
+<details>
+<summary>🎓 Generate Pedagogy-Based Content    <img src="images/new.png" width="30" height="30" alt="New" background-color: transparent>  </summary>
+
+````python
+from educhain import Educhain, LLMConfig
+
+client = Educhain()
+
+# Bloom's Taxonomy approach
+blooms_content = client.content_engine.generate_pedagogy_content(
+    topic="Data Science Fundamentals",
+    pedagogy="blooms_taxonomy",
+    target_level="All levels",
+    grade_level="University",
+    custom_instructions="Include Python programming and statistical concepts"
+)
+
+print(blooms_content.model_dump_json())
+
+# Socratic Questioning approach
+socratic_content = client.content_engine.generate_pedagogy_content(
+    topic="Climate Change Solutions",
+    pedagogy="socratic_questioning",
+    depth_level="Intermediate",
+    student_level="High School",
+    custom_instructions="Encourage analysis of multiple perspectives"
+)
+
+print(socratic_content.model_dump_json())
+
+# Project-Based Learning
+project_content = client.content_engine.generate_pedagogy_content(
+    topic="Documentary Filmmaking",
+    pedagogy="project_based_learning",
+    team_size="2-3 students",
+    project_duration="2 weeks",
+    industry_focus="Media Production"
+)
+
+print(project_content.model_dump_json())
+````
+</details>
+
+## 🎓 Pedagogy & Educational Theory
+
+**Built on Sound Educational Principles** 📚
+
+Educhain integrates proven pedagogical frameworks to ensure effective learning outcomes:
+
+### 🧠 Supported Pedagogical Approaches
+
+| Pedagogy | Description | Key Parameters |
+|----------|-------------|----------------|
+| **Bloom's Taxonomy** | Structures learning by cognitive levels (Remember → Create) | `target_level`, `grade_level` |
+| **Socratic Questioning** | Promotes critical thinking through strategic questioning | `depth_level`, `student_level` |
+| **Project-Based Learning** | Real-world projects for deep understanding | `project_duration`, `team_size`, `industry_focus` |
+| **Flipped Classroom** | Home study + active classroom collaboration | `class_duration`, `prep_time`, `technology_level` |
+| **Inquiry-Based Learning** | Student-driven investigation and exploration | `inquiry_type`, `investigation_scope`, `student_autonomy` |
+| **Constructivist** | Active knowledge building through experience | `prior_knowledge_level`, `social_interaction_focus` |
+| **Gamification** | Game elements for motivation and engagement | `game_mechanics`, `competition_level`, `technology_platform` |
+| **Peer Learning** | Collaborative learning with structured peer interaction | `group_size`, `collaboration_type`, `skill_diversity` |
+
+### 🎯 Educational Framework Integration
+- **Learning Objectives Alignment**: Clear, measurable outcomes
+- **Assessment Strategies**: Formative, summative, and authentic assessments
+- **Differentiated Instruction**: Multiple learning pathways
+- **Universal Design for Learning**: Accessible content for all learners
 
 ## 📈 Workflow
 
@@ -476,6 +544,7 @@ for i in range(5):
 
 ## 🗺 Roadmap
 
+### ✅ Completed Features
 - [x] Bulk Generation
 - [x] Outputs in JSON format
 - [x] Custom Prompt Templates
@@ -483,8 +552,19 @@ for i in range(5):
 - [x] Exports questions to JSON/PDF/CSV
 - [x] Support for other LLM models
 - [x] Generate questions from text/PDF file
+- [x] **8 Pedagogical Approaches**: Bloom's Taxonomy, Socratic Questioning, Project-Based Learning, Flipped Classroom, Inquiry-Based Learning, Constructivist, Gamification, Peer Learning
+- [x] **Educational Theory Integration**: Learning objectives alignment and assessment strategies
+
+### 🚧 In Development
+- [ ] **Pedagogical Analytics**: Learning outcome tracking and analysis
+- [ ] **Adaptive Learning Paths**: AI-driven personalized learning sequences
+- [ ] **Assessment Rubrics**: Automated rubric generation for different pedagogies
+
+### 🔮 Future Enhancements
 - [ ] Integration with popular Learning Management Systems
 - [ ] Mobile app for on-the-go content generation
+- [ ] **Cognitive Load Optimization**: Smart content complexity management
+- [ ] **Multi-language Pedagogy**: Culturally responsive educational content
 
 ## 🤝 Open Source Contributions Welcome!
 
