@@ -8,7 +8,7 @@ setup(
         "langchain",
         "langchain-core",
         "langchain-text-splitters",
-        "langchain-community,
+        "langchain-community",
         "langchain-openai",
         "langchain-classic",  # For deprecated RetrievalQA and other legacy chains
         "langchain-google-genai",
