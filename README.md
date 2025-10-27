@@ -249,38 +249,89 @@ from educhain import Educhain, LLMConfig
 
 client = Educhain()
 
-# Bloom's Taxonomy approach
+# Bloom's Taxonomy - All cognitive levels
 blooms_content = client.content_engine.generate_pedagogy_content(
     topic="Data Science Fundamentals",
     pedagogy="blooms_taxonomy",
-    target_level="All levels",
+    target_level="All levels",  # or specific: "Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"
     grade_level="University",
     custom_instructions="Include Python programming and statistical concepts"
 )
 
-print(blooms_content.model_dump_json())
-
-# Socratic Questioning approach
+# Socratic Questioning - Strategic questioning for critical thinking
 socratic_content = client.content_engine.generate_pedagogy_content(
     topic="Climate Change Solutions",
     pedagogy="socratic_questioning",
-    depth_level="Intermediate",
-    student_level="High School",
-    custom_instructions="Encourage analysis of multiple perspectives"
+    depth_level="Intermediate",  # "Basic", "Intermediate", "Advanced"
+    student_level="High School",  # "Elementary", "Middle School", "High School", "University"
+    custom_instructions="Encourage analysis of multiple perspectives and evidence"
 )
 
-print(socratic_content.model_dump_json())
-
-# Project-Based Learning
+# Project-Based Learning - Comprehensive project design
 project_content = client.content_engine.generate_pedagogy_content(
     topic="Documentary Filmmaking",
     pedagogy="project_based_learning",
-    team_size="2-3 students",
-    project_duration="2 weeks",
-    industry_focus="Media Production"
+    team_size="2-3 students",  # "Individual", "2-3 students", "4-5 students", "Large group"
+    project_duration="2 weeks",  # "1 week", "2 weeks", "4-6 weeks", "Full semester"
+    industry_focus="Media Production",  # "General", "Technology", "Healthcare", "Arts", etc.
+    custom_instructions="Focus on social justice themes and community impact"
 )
 
-print(project_content.model_dump_json())
+# Flipped Classroom - Pre-class study with in-class activities
+flipped_content = client.content_engine.generate_pedagogy_content(
+    topic="Machine Learning Algorithms",
+    pedagogy="flipped_classroom",
+    class_duration="40 minutes",  # "30 minutes", "50 minutes", "90 minutes"
+    prep_time="30 minutes",  # "15-30 minutes", "30-45 minutes", "45-60 minutes"
+    technology_level="Low",  # "Low", "Moderate", "High"
+    custom_instructions="Include coding exercises and peer programming"
+)
+
+# Inquiry-Based Learning - Student-driven exploration
+inquiry_content = client.content_engine.generate_pedagogy_content(
+    topic="Impact of Social Media on Democracy",
+    pedagogy="inquiry_based_learning",
+    inquiry_type="Guided",  # "Guided", "Open", "Structured"
+    investigation_scope="Moderate",  # "Narrow", "Moderate", "Broad"
+    student_autonomy="Balanced",  # "Low", "Balanced", "High"
+    custom_instructions="Use primary sources and contemporary case studies"
+)
+
+# Constructivist - Experience-based learning
+constructivist_content = client.content_engine.generate_pedagogy_content(
+    topic="Statistical Analysis",
+    pedagogy="constructivist",
+    prior_knowledge_level="Mixed",  # "Beginner", "Mixed", "Advanced"
+    social_interaction_focus="Moderate",  # "Low", "Moderate", "High"
+    reflection_emphasis="Strong",  # "Weak", "Moderate", "Strong"
+    custom_instructions="Use real datasets and collaborative problem-solving"
+)
+
+# Gamification - Game mechanics for motivation
+gamified_content = client.content_engine.generate_pedagogy_content(
+    topic="Japanese Language Fundamentals",
+    pedagogy="gamification",
+    game_mechanics="Points, streaks, badges, social challenges",  # Customize game elements
+    competition_level="Low",  # "Low", "Moderate", "High"
+    technology_platform="Mobile App",  # "Web-based", "Mobile App", "Classroom", "Mixed"
+    custom_instructions="Include cultural context and conversation practice"
+)
+
+# Peer Learning - Structured collaboration
+peer_content = client.content_engine.generate_pedagogy_content(
+    topic="Contemporary World Literature",
+    pedagogy="peer_learning",
+    group_size="2-3 students",  # "Pairs", "2-3 students", "3-4 students", "Large groups"
+    collaboration_type="Book clubs and discussion circles",  # "Mixed", "Peer tutoring", "Group projects", etc.
+    skill_diversity="High",  # "Low", "Moderate", "High"
+    custom_instructions="Include cross-cultural perspectives and author research"
+)
+
+# Available pedagogies: 'blooms_taxonomy', 'socratic_questioning', 
+# 'project_based_learning', 'flipped_classroom', 'inquiry_based_learning',
+# 'constructivist', 'gamification', 'peer_learning'
+
+print(blooms_content.model_dump_json())
 ````
 </details>
 
