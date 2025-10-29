@@ -14,7 +14,7 @@
 # Educhain 🎓🔗
 [Website](https://educhain.in) | [Documentation](docs/index.md)
 
-Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content. From generating multiple-choice questions to crafting comprehensive lesson plans, Educhain makes it easy to apply AI in various educational scenarios.
+Educhain is a powerful Python package that leverages Generative AI to create engaging and personalized educational content. From generating multiple-choice questions to crafting comprehensive lesson plans with **8 pedagogical approaches**, Educhain makes it easy to apply AI in various educational scenarios with sound educational theory.
 
 ## 🚀 Features  
 
@@ -240,6 +240,125 @@ ques = client.qna_engine.generate_visual_questions(
 print(ques.model_dump_json())
 ````
 </details>
+
+<details>
+<summary>🎓 Generate Pedagogy-Based Content    <img src="images/new.png" width="30" height="30" alt="New" background-color: transparent>  </summary>
+
+````python
+from educhain import Educhain, LLMConfig
+
+client = Educhain()
+
+# Bloom's Taxonomy - All cognitive levels
+blooms_content = client.content_engine.generate_pedagogy_content(
+    topic="Data Science Fundamentals",
+    pedagogy="blooms_taxonomy",
+    target_level="All levels",  # or specific: "Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"
+    grade_level="University",
+    custom_instructions="Include Python programming and statistical concepts"
+)
+
+# Socratic Questioning - Strategic questioning for critical thinking
+socratic_content = client.content_engine.generate_pedagogy_content(
+    topic="Climate Change Solutions",
+    pedagogy="socratic_questioning",
+    depth_level="Intermediate",  # "Basic", "Intermediate", "Advanced"
+    student_level="High School",  # "Elementary", "Middle School", "High School", "University"
+    custom_instructions="Encourage analysis of multiple perspectives and evidence"
+)
+
+# Project-Based Learning - Comprehensive project design
+project_content = client.content_engine.generate_pedagogy_content(
+    topic="Documentary Filmmaking",
+    pedagogy="project_based_learning",
+    team_size="2-3 students",  # "Individual", "2-3 students", "4-5 students", "Large group"
+    project_duration="2 weeks",  # "1 week", "2 weeks", "4-6 weeks", "Full semester"
+    industry_focus="Media Production",  # "General", "Technology", "Healthcare", "Arts", etc.
+    custom_instructions="Focus on social justice themes and community impact"
+)
+
+# Flipped Classroom - Pre-class study with in-class activities
+flipped_content = client.content_engine.generate_pedagogy_content(
+    topic="Machine Learning Algorithms",
+    pedagogy="flipped_classroom",
+    class_duration="40 minutes",  # "30 minutes", "50 minutes", "90 minutes"
+    prep_time="30 minutes",  # "15-30 minutes", "30-45 minutes", "45-60 minutes"
+    technology_level="Low",  # "Low", "Moderate", "High"
+    custom_instructions="Include coding exercises and peer programming"
+)
+
+# Inquiry-Based Learning - Student-driven exploration
+inquiry_content = client.content_engine.generate_pedagogy_content(
+    topic="Impact of Social Media on Democracy",
+    pedagogy="inquiry_based_learning",
+    inquiry_type="Guided",  # "Guided", "Open", "Structured"
+    investigation_scope="Moderate",  # "Narrow", "Moderate", "Broad"
+    student_autonomy="Balanced",  # "Low", "Balanced", "High"
+    custom_instructions="Use primary sources and contemporary case studies"
+)
+
+# Constructivist - Experience-based learning
+constructivist_content = client.content_engine.generate_pedagogy_content(
+    topic="Statistical Analysis",
+    pedagogy="constructivist",
+    prior_knowledge_level="Mixed",  # "Beginner", "Mixed", "Advanced"
+    social_interaction_focus="Moderate",  # "Low", "Moderate", "High"
+    reflection_emphasis="Strong",  # "Weak", "Moderate", "Strong"
+    custom_instructions="Use real datasets and collaborative problem-solving"
+)
+
+# Gamification - Game mechanics for motivation
+gamified_content = client.content_engine.generate_pedagogy_content(
+    topic="Japanese Language Fundamentals",
+    pedagogy="gamification",
+    game_mechanics="Points, streaks, badges, social challenges",  # Customize game elements
+    competition_level="Low",  # "Low", "Moderate", "High"
+    technology_platform="Mobile App",  # "Web-based", "Mobile App", "Classroom", "Mixed"
+    custom_instructions="Include cultural context and conversation practice"
+)
+
+# Peer Learning - Structured collaboration
+peer_content = client.content_engine.generate_pedagogy_content(
+    topic="Contemporary World Literature",
+    pedagogy="peer_learning",
+    group_size="2-3 students",  # "Pairs", "2-3 students", "3-4 students", "Large groups"
+    collaboration_type="Book clubs and discussion circles",  # "Mixed", "Peer tutoring", "Group projects", etc.
+    skill_diversity="High",  # "Low", "Moderate", "High"
+    custom_instructions="Include cross-cultural perspectives and author research"
+)
+
+# Available pedagogies: 'blooms_taxonomy', 'socratic_questioning', 
+# 'project_based_learning', 'flipped_classroom', 'inquiry_based_learning',
+# 'constructivist', 'gamification', 'peer_learning'
+
+print(blooms_content.model_dump_json())
+````
+</details>
+
+## 🎓 Pedagogy & Educational Theory
+
+**Built on Sound Educational Principles** 📚
+
+Educhain integrates proven pedagogical frameworks to ensure effective learning outcomes:
+
+### 🧠 Supported Pedagogical Approaches
+
+| Pedagogy | Description | Key Parameters |
+|----------|-------------|----------------|
+| **Bloom's Taxonomy** | Structures learning by cognitive levels (Remember → Create) | `target_level`, `grade_level` |
+| **Socratic Questioning** | Promotes critical thinking through strategic questioning | `depth_level`, `student_level` |
+| **Project-Based Learning** | Real-world projects for deep understanding | `project_duration`, `team_size`, `industry_focus` |
+| **Flipped Classroom** | Home study + active classroom collaboration | `class_duration`, `prep_time`, `technology_level` |
+| **Inquiry-Based Learning** | Student-driven investigation and exploration | `inquiry_type`, `investigation_scope`, `student_autonomy` |
+| **Constructivist** | Active knowledge building through experience | `prior_knowledge_level`, `social_interaction_focus` |
+| **Gamification** | Game elements for motivation and engagement | `game_mechanics`, `competition_level`, `technology_platform` |
+| **Peer Learning** | Collaborative learning with structured peer interaction | `group_size`, `collaboration_type`, `skill_diversity` |
+
+### 🎯 Educational Framework Integration
+- **Learning Objectives Alignment**: Clear, measurable outcomes
+- **Assessment Strategies**: Formative, summative, and authentic assessments
+- **Differentiated Instruction**: Multiple learning pathways
+- **Universal Design for Learning**: Accessible content for all learners
 
 ## 📈 Workflow
 
@@ -476,6 +595,7 @@ for i in range(5):
 
 ## 🗺 Roadmap
 
+### ✅ Completed Features
 - [x] Bulk Generation
 - [x] Outputs in JSON format
 - [x] Custom Prompt Templates
@@ -483,8 +603,19 @@ for i in range(5):
 - [x] Exports questions to JSON/PDF/CSV
 - [x] Support for other LLM models
 - [x] Generate questions from text/PDF file
+- [x] **8 Pedagogical Approaches**: Bloom's Taxonomy, Socratic Questioning, Project-Based Learning, Flipped Classroom, Inquiry-Based Learning, Constructivist, Gamification, Peer Learning
+- [x] **Educational Theory Integration**: Learning objectives alignment and assessment strategies
+
+### 🚧 In Development
+- [ ] **Pedagogical Analytics**: Learning outcome tracking and analysis
+- [ ] **Adaptive Learning Paths**: AI-driven personalized learning sequences
+- [ ] **Assessment Rubrics**: Automated rubric generation for different pedagogies
+
+### 🔮 Future Enhancements
 - [ ] Integration with popular Learning Management Systems
 - [ ] Mobile app for on-the-go content generation
+- [ ] **Cognitive Load Optimization**: Smart content complexity management
+- [ ] **Multi-language Pedagogy**: Culturally responsive educational content
 
 ## 🤝 Open Source Contributions Welcome!
 
@@ -496,25 +627,60 @@ Thank you for your continued support, community!
 
 ## 📈 Version History
 
-### v1.2.0 (May 2025)
+### v0.3.13 (October 2024) - Current Version
+- 🎓 **Major Pedagogy Update**: Added comprehensive pedagogical framework support
+  - ✨ **8 Pedagogical Approaches**: Bloom's Taxonomy, Socratic Questioning, Project-Based Learning, Flipped Classroom, Inquiry-Based Learning, Constructivist, Gamification, Peer Learning
+  - 📚 **Educational Theory Integration**: Learning objectives alignment and assessment strategies
+  - 🧠 **Cognitive Framework**: Built-in support for educational best practices
+- 🔧 **LangChain v1 Compatibility**: 
+  - ⚡️ Updated all dependencies for LangChain v1 compatibility
+  - 🐛 Fixed sync/async API key handling issues
+  - 📦 Added langchain-classic for deprecated functionality support
+  - 🐍 Updated Python requirements (now requires Python 3.10+)
+- ✨ **Enhanced Content Generation**: 
+  - 🎯 `generate_pedagogy_content()` method with 8 pedagogical approaches
+  - 📊 Structured educational content with proper learning frameworks
+  - 🎨 Customizable pedagogical parameters for each approach
+
+### v0.3.12 (September 2024)
 - ✨ Added support for generating visual questions with multimodal LLMs
 - ✨ Added support for generating questions from YouTube videos
 - ✨ Added support for generating questions from images
 - 🐛 Fixed issue with PDF parsing for certain file formats
 - ⚡️ Improved performance for large document processing
 
-### v1.1.0 (February 2025)
+### v0.3.11 (August 2024)
 - ✨ Added support for custom prompt templates
 - ✨ Added export functionality to PDF, CSV, and JSON
 - 🔄 Enhanced compatibility with Gemini models
 - 📚 Expanded documentation with more examples
 
-### v1.0.0 (December 2024)
+### v0.3.10 (July 2024)
+- ✨ Added support for generating questions from data sources (URL, PDF, TXT)
+- 🔧 Improved question type handling
+- 📊 Enhanced output formatting options
+- 🐛 Various bug fixes and stability improvements
+
+### v0.3.0 (June 2024)
+- 🚀 Major release with enhanced architecture
+- ✅ Modular engine design (QnA Engine, Content Engine)
+- ✅ Support for multiple question types (MCQ, Short Answer, True/False, Fill in the Blank)
+- ✅ Comprehensive lesson plan generation
+- ✅ Multi-LLM support (OpenAI, Google Gemini)
+- 📱 Export capabilities (JSON, PDF, CSV)
+
+### v0.2.0 (May 2024)
+- ✨ Added content engine for lesson plan generation
+- 🔄 Improved question generation algorithms
+- 📚 Enhanced documentation and examples
+- 🐛 Bug fixes and performance improvements
+
+### v0.1.0 (April 2024)
 - 🚀 Initial release
 - ✅ Core question generation functionality
-- ✅ Support for multiple question types
-- ✅ Basic lesson plan generation
-- ✅ Integration with OpenAI models
+- ✅ Basic MCQ generation
+- ✅ OpenAI integration
+- ✅ Simple export options
 
 ## 📝 License
 
