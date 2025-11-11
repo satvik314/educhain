@@ -5,7 +5,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from educhain.core.config import LLMConfig
 
-from educhain.models.content_models import StudyGuide, CareerConnections
+from educhain.models.content_models import StudyGuide, CareerConnections, PodcastScript, PodcastContent
 import json
 from educhain.models.content_models import LessonPlan
 from educhain.models.content_models import FlashcardSet
@@ -1068,3 +1068,292 @@ class ContentEngine:
                 }
             }
         }
+    
+    # Podcast Generation Methods
+    
+    def generate_podcast_script(
+        self,
+        topic: str,
+        target_audience: Optional[str] = None,
+        duration: Optional[str] = None,
+        tone: Optional[str] = None,
+        num_segments: int = 3,
+        prompt_template: Optional[str] = None,
+        custom_instructions: Optional[str] = None,
+        response_model: Optional[Type[Any]] = None,
+        llm: Optional[Any] = None,
+        **kwargs
+    ) -> PodcastScript:
+        """
+        Generate a podcast script for a given topic.
+        
+        Args:
+            topic (str): The main topic for the podcast
+            target_audience (str, optional): Target audience (e.g., "Students", "Professionals")
+            duration (str, optional): Estimated duration (e.g., "10-15 minutes")
+            tone (str, optional): Tone of the podcast (e.g., "conversational", "formal")
+            num_segments (int): Number of main segments (default: 3)
+            prompt_template (str, optional): Custom prompt template
+            custom_instructions (str, optional): Additional instructions
+            response_model (Type, optional): Custom response model
+            llm (Any, optional): Custom LLM to use
+        
+        Returns:
+            PodcastScript: Generated podcast script
+        """
+        if response_model is None:
+            response_model = PodcastScript
+        
+        parser = PydanticOutputParser(pydantic_object=response_model)
+        format_instructions = parser.get_format_instructions()
+        
+        if prompt_template is None:
+            prompt_template = """
+            Create an engaging and educational podcast script for the following topic:
+            Topic: {topic}
+            Target Audience: {target_audience}
+            Estimated Duration: {duration}
+            Tone: {tone}
+            Number of Segments: {num_segments}
+            
+            The podcast should be informative, engaging, and well-structured for audio consumption.
+            
+            Structure the podcast with:
+            
+            1. **Introduction** (1-2 minutes):
+               - Warm welcome and topic introduction
+               - Hook to grab listener attention
+               - Brief overview of what will be covered
+               - Why this topic matters to the audience
+            
+            2. **Main Segments** ({num_segments} segments):
+               Each segment should:
+               - Have a clear title and focus
+               - Include engaging content with examples
+               - Use conversational language suitable for audio
+               - Include transitions between points
+               - Estimate duration for each segment
+               - Specify appropriate tone and speaker
+            
+            3. **Conclusion** (1-2 minutes):
+               - Summarize key points covered
+               - Reinforce main takeaways
+               - Call to action or next steps
+               - Thank listeners and closing
+            
+            Guidelines for podcast content:
+            - Use conversational, engaging language
+            - Include real-world examples and analogies
+            - Ask rhetorical questions to engage listeners
+            - Use smooth transitions between segments
+            - Make content accessible to the target audience
+            - Include interesting facts or stories when relevant
+            - Ensure content flows well when spoken aloud
+            
+            Additional requirements:
+            - Provide estimated duration for each segment
+            - Include 3-5 key takeaways
+            - Add a compelling call to action
+            - Make sure the tone is consistent throughout
+            - Ensure content is educational and valuable
+            
+            {custom_instructions}
+            
+            {format_instructions}
+            """
+        
+        if custom_instructions:
+            prompt_template = prompt_template.replace("{custom_instructions}", f"\nAdditional Instructions:\n{custom_instructions}")
+        else:
+            prompt_template = prompt_template.replace("{custom_instructions}", "")
+        
+        podcast_prompt = PromptTemplate(
+            input_variables=["topic", "target_audience", "duration", "tone", "num_segments"],
+            template=prompt_template,
+            partial_variables={"format_instructions": format_instructions}
+        )
+        
+        llm_to_use = llm if llm is not None else self.llm
+        
+        # Generate podcast script
+        podcast_chain = podcast_prompt | llm_to_use
+        results = podcast_chain.invoke({
+            "topic": topic,
+            "target_audience": target_audience or "General audience",
+            "duration": duration or "10-15 minutes",
+            "tone": tone or "conversational",
+            "num_segments": num_segments,
+            **kwargs
+        })
+        
+        try:
+            structured_output = parser.parse(results.content)
+            return structured_output
+        except Exception as e:
+            print(f"Error parsing podcast script: {e}")
+            print("Raw output:")
+            print(results.content)
+            # Return a basic script structure
+            return PodcastScript(
+                title=f"Podcast: {topic}",
+                topic=topic,
+                target_audience=target_audience or "General audience",
+                estimated_duration=duration or "10-15 minutes",
+                introduction=f"Welcome to today's podcast about {topic}. In this episode, we'll explore the key concepts and practical applications of this important topic.",
+                segments=[],
+                conclusion=f"Thank you for listening to our discussion about {topic}. We hope you found this information valuable and applicable to your learning journey.",
+                key_takeaways=[f"Understanding {topic} is important for educational growth"],
+                call_to_action="Continue exploring this topic through additional resources and practice."
+            )
+    
+    def generate_podcast_from_script(
+        self,
+        script: str,
+        output_path: str,
+        language: str = 'en',
+        enhance_audio: bool = True,
+        voice_settings: Optional[Dict[str, Any]] = None
+    ) -> PodcastContent:
+        """
+        Generate podcast audio from a script string.
+        
+        Args:
+            script (str): The podcast script text
+            output_path (str): Path where audio file will be saved
+            language (str): Language code for TTS (default: 'en')
+            enhance_audio (bool): Whether to enhance audio quality
+            voice_settings (dict, optional): Voice and audio settings
+        
+        Returns:
+            PodcastContent: Complete podcast content with audio file
+        """
+        from educhain.utils.audio_utils import AudioProcessor
+        import os
+        from datetime import datetime
+        
+        # Initialize audio processor
+        audio_processor = AudioProcessor()
+        
+        # Set default voice settings
+        default_settings = {
+            'slow': False,
+            'tld': 'com',
+            'volume_adjustment': 0.0,
+            'fade_in': 1000,  # 1 second fade in
+            'fade_out': 1000,  # 1 second fade out
+            'normalize': True
+        }
+        
+        if voice_settings:
+            default_settings.update(voice_settings)
+        
+        # Generate TTS audio
+        tts_result = audio_processor.text_to_speech(
+            text=script,
+            output_path=output_path,
+            language=language,
+            slow=default_settings['slow'],
+            tld=default_settings['tld']
+        )
+        
+        if not tts_result['success']:
+            raise Exception(f"TTS generation failed: {tts_result.get('error', 'Unknown error')}")
+        
+        # Enhance audio if requested
+        if enhance_audio:
+            enhanced_path = output_path.replace('.mp3', '_enhanced.mp3')
+            enhance_result = audio_processor.enhance_audio(
+                input_path=output_path,
+                output_path=enhanced_path,
+                volume_adjustment=default_settings['volume_adjustment'],
+                fade_in=default_settings['fade_in'],
+                fade_out=default_settings['fade_out'],
+                normalize=default_settings['normalize']
+            )
+            
+            if enhance_result['success']:
+                # Replace original with enhanced version
+                os.remove(output_path)
+                os.rename(enhanced_path, output_path)
+                tts_result.update(enhance_result)
+        
+        # Create a basic podcast script object from the text
+        podcast_script = PodcastScript(
+            title="Generated Podcast",
+            topic="Custom Script",
+            introduction=script[:200] + "..." if len(script) > 200 else script,
+            segments=[],
+            conclusion="Thank you for listening."
+        )
+        
+        # Create podcast content
+        podcast_content = PodcastContent(
+            script=podcast_script,
+            audio_file_path=output_path,
+            audio_format="mp3",
+            voice_settings=default_settings,
+            generation_timestamp=datetime.now().isoformat(),
+            file_size=tts_result.get('file_size', 'Unknown')
+        )
+        
+        return podcast_content
+    
+    def generate_complete_podcast(
+        self,
+        topic: str,
+        output_path: str,
+        target_audience: Optional[str] = None,
+        duration: Optional[str] = None,
+        tone: Optional[str] = None,
+        language: str = 'en',
+        enhance_audio: bool = True,
+        voice_settings: Optional[Dict[str, Any]] = None,
+        custom_instructions: Optional[str] = None,
+        **kwargs
+    ) -> PodcastContent:
+        """
+        Generate a complete podcast (script + audio) for a given topic.
+        
+        Args:
+            topic (str): The main topic for the podcast
+            output_path (str): Path where audio file will be saved
+            target_audience (str, optional): Target audience
+            duration (str, optional): Estimated duration
+            tone (str, optional): Tone of the podcast
+            language (str): Language code for TTS
+            enhance_audio (bool): Whether to enhance audio quality
+            voice_settings (dict, optional): Voice and audio settings
+            custom_instructions (str, optional): Additional instructions
+        
+        Returns:
+            PodcastContent: Complete podcast with script and audio
+        """
+        # Step 1: Generate podcast script
+        print("Generating podcast script...")
+        podcast_script = self.generate_podcast_script(
+            topic=topic,
+            target_audience=target_audience,
+            duration=duration,
+            tone=tone,
+            custom_instructions=custom_instructions,
+            **kwargs
+        )
+        
+        # Step 2: Get full script text
+        full_script = podcast_script.get_full_script()
+        
+        # Step 3: Generate audio from script
+        print("Generating podcast audio...")
+        podcast_content = self.generate_podcast_from_script(
+            script=full_script,
+            output_path=output_path,
+            language=language,
+            enhance_audio=enhance_audio,
+            voice_settings=voice_settings
+        )
+        
+        # Step 4: Update podcast content with the generated script
+        podcast_content.script = podcast_script
+        
+        print(f"Podcast generation complete! Audio saved to: {output_path}")
+        return podcast_content

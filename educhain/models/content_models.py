@@ -417,3 +417,96 @@ class CareerConnections(BaseModel):
             print(f"\n{category}:")
             for skill in skills:
                 print(f"- {skill.name}: {skill.description}")
+
+
+# Podcast Models
+class PodcastSegment(BaseModel):
+    title: str = Field(..., description="Title of the podcast segment")
+    content: str = Field(..., description="Content/script for this segment")
+    duration_estimate: Optional[str] = Field(None, description="Estimated duration for this segment")
+    speaker: Optional[str] = Field("Host", description="Speaker for this segment")
+    tone: Optional[str] = Field("conversational", description="Tone for this segment (conversational, formal, enthusiastic, etc.)")
+
+class PodcastScript(BaseModel):
+    title: str = Field(..., description="Title of the podcast episode")
+    topic: str = Field(..., description="Main topic of the podcast")
+    target_audience: Optional[str] = Field("General", description="Target audience for the podcast")
+    estimated_duration: Optional[str] = Field("10-15 minutes", description="Estimated total duration")
+    introduction: str = Field(..., description="Podcast introduction script")
+    segments: List[PodcastSegment] = Field(..., description="List of podcast segments")
+    conclusion: str = Field(..., description="Podcast conclusion script")
+    key_takeaways: List[str] = Field(default_factory=list, description="Key takeaways from the podcast")
+    call_to_action: Optional[str] = Field(None, description="Call to action for listeners")
+    
+    def show(self):
+        print("=" * 80)
+        print(f"Podcast Script: {self.title}")
+        print(f"Topic: {self.topic}")
+        print(f"Target Audience: {self.target_audience}")
+        print(f"Estimated Duration: {self.estimated_duration}")
+        print("=" * 80)
+        
+        print("\nINTRODUCTION:")
+        print(self.introduction)
+        
+        print("\nSEGMENTS:")
+        for i, segment in enumerate(self.segments, 1):
+            print(f"\n{i}. {segment.title} ({segment.duration_estimate or 'N/A'})")
+            print(f"   Speaker: {segment.speaker}")
+            print(f"   Tone: {segment.tone}")
+            print(f"   Content: {segment.content}")
+        
+        print("\nCONCLUSION:")
+        print(self.conclusion)
+        
+        if self.key_takeaways:
+            print("\nKEY TAKEAWAYS:")
+            for takeaway in self.key_takeaways:
+                print(f"- {takeaway}")
+        
+        if self.call_to_action:
+            print(f"\nCALL TO ACTION:")
+            print(self.call_to_action)
+        
+        print("=" * 80)
+    
+    def get_full_script(self) -> str:
+        """Get the complete podcast script as a single string"""
+        script_parts = [self.introduction]
+        
+        for segment in self.segments:
+            script_parts.append(segment.content)
+        
+        script_parts.append(self.conclusion)
+        
+        return "\n\n".join(script_parts)
+
+class PodcastContent(BaseModel):
+    script: PodcastScript = Field(..., description="The podcast script")
+    audio_file_path: Optional[str] = Field(None, description="Path to the generated audio file")
+    audio_format: str = Field("mp3", description="Audio format (mp3, wav, etc.)")
+    voice_settings: Dict[str, Any] = Field(default_factory=dict, description="Voice and TTS settings used")
+    generation_timestamp: Optional[str] = Field(None, description="When the audio was generated")
+    file_size: Optional[str] = Field(None, description="Size of the generated audio file")
+    
+    def show(self):
+        print("=" * 80)
+        print("PODCAST CONTENT")
+        print("=" * 80)
+        
+        # Show script
+        self.script.show()
+        
+        # Show audio info
+        print("\nAUDIO INFORMATION:")
+        print(f"Audio File: {self.audio_file_path or 'Not generated'}")
+        print(f"Format: {self.audio_format}")
+        print(f"File Size: {self.file_size or 'N/A'}")
+        print(f"Generated: {self.generation_timestamp or 'N/A'}")
+        
+        if self.voice_settings:
+            print("\nVOICE SETTINGS:")
+            for key, value in self.voice_settings.items():
+                print(f"- {key}: {value}")
+        
+        print("=" * 80)
