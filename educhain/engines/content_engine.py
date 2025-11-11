@@ -1,4 +1,4 @@
-from typing import Optional, Type, Any
+from typing import Optional, Type, Any, Dict
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
