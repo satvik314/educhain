@@ -35,6 +35,27 @@ class AudioProcessor:
         # Provider-specific voice mappings
         self.openai_voices = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer']
         self.openai_models = ['tts-1', 'tts-1-hd']
+        
+        # Gemini TTS models and voices
+        self.gemini_models = ['gemini-2.5-flash-preview-tts', 'gemini-2.5-pro-preview-tts']
+        self.gemini_voices = [
+            'Puck', 'Charon', 'Kore', 'Fenrir', 'Aoede',
+            'Orbit', 'Puck-en-IN', 'Charon-en-IN', 'Kore-en-IN', 'Fenrir-en-IN', 'Aoede-en-IN',
+            'Puck-en-GB', 'Charon-en-GB', 'Kore-en-GB', 'Fenrir-en-GB', 'Aoede-en-GB',
+            'Puck-en-AU', 'Charon-en-AU', 'Kore-en-AU', 'Fenrir-en-AU', 'Aoede-en-AU',
+            'Puck-en-SG', 'Charon-en-SG', 'Kore-en-SG', 'Fenrir-en-SG', 'Aoede-en-SG',
+            'Orbit-en-IN', 'Orbit-en-GB', 'Orbit-en-AU', 'Orbit-en-SG', 'Orbit-en-US'
+        ]
+        
+        # DeepInfra TTS models
+        self.deepinfra_models = [
+            'hexgrad/Kokoro-82M',
+            'canopylabs/orpheus-3b-0.1-ft',
+            'sesame/csm-1b',
+            'ResembleAI/chatterbox',
+            'Zyphra/Zonos-v0.1-hybrid',
+            'Zyphra/Zonos-v0.1-transformer'
+        ]
     
     def text_to_speech(
         self,
@@ -72,12 +93,16 @@ class AudioProcessor:
         try:
             if provider == 'google':
                 return self._google_tts(text, output_path, language, slow, tld)
+            elif provider == 'gemini':
+                return self._gemini_tts(text, output_path, voice, model, api_key, **kwargs)
             elif provider == 'openai':
                 return self._openai_tts(text, output_path, voice, model, api_key, **kwargs)
             elif provider == 'elevenlabs':
                 return self._elevenlabs_tts(text, output_path, voice, api_key, **kwargs)
             elif provider == 'azure':
                 return self._azure_tts(text, output_path, language, voice, api_key, **kwargs)
+            elif provider == 'deepinfra':
+                return self._deepinfra_tts(text, output_path, model, api_key, **kwargs)
             else:
                 return {
                     'success': False,
@@ -128,6 +153,105 @@ class AudioProcessor:
             
         except Exception as e:
             raise Exception(f"Google TTS error: {str(e)}")
+    
+    def _gemini_tts(
+        self,
+        text: str,
+        output_path: str,
+        voice: Optional[str] = None,
+        model: Optional[str] = None,
+        api_key: Optional[str] = None,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Google Gemini TTS implementation using Gemini 2.5 models."""
+        try:
+            from google import genai
+            from google.genai import types
+            import wave
+            
+            # Get API key from environment if not provided
+            api_key = api_key or os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
+            if not api_key:
+                raise ValueError("Gemini API key is required. Set GOOGLE_API_KEY or GEMINI_API_KEY environment variable or pass api_key parameter.")
+            
+            # Set defaults
+            voice = voice or 'Kore'
+            model = model or 'gemini-2.5-flash-preview-tts'
+            
+            # Validate voice
+            if voice not in self.gemini_voices:
+                raise ValueError(f"Invalid Gemini voice. Choose from: {', '.join(self.gemini_voices)}")
+            
+            # Validate model
+            if model not in self.gemini_models:
+                raise ValueError(f"Invalid Gemini model. Choose from: {', '.join(self.gemini_models)}")
+            
+            # Initialize Gemini client
+            client = genai.Client(api_key=api_key)
+            
+            # Generate speech
+            response = client.models.generate_content(
+                model=model,
+                contents=text,
+                config=types.GenerateContentConfig(
+                    response_modalities=["AUDIO"],
+                    speech_config=types.SpeechConfig(
+                        voice_config=types.VoiceConfig(
+                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                voice_name=voice,
+                            )
+                        )
+                    ),
+                )
+            )
+            
+            # Extract audio data
+            audio_data = response.candidates[0].content.parts[0].inline_data.data
+            
+            # Determine output format
+            if output_path.endswith('.wav'):
+                # Save as WAV directly
+                with wave.open(output_path, "wb") as wf:
+                    wf.setnchannels(1)  # Mono
+                    wf.setsampwidth(2)  # 16-bit
+                    wf.setframerate(24000)  # 24kHz
+                    wf.writeframes(audio_data)
+            else:
+                # Save as WAV first, then convert to MP3
+                temp_wav = output_path.replace('.mp3', '_temp.wav')
+                with wave.open(temp_wav, "wb") as wf:
+                    wf.setnchannels(1)
+                    wf.setsampwidth(2)
+                    wf.setframerate(24000)
+                    wf.writeframes(audio_data)
+                
+                # Convert to MP3 using pydub
+                audio = AudioSegment.from_wav(temp_wav)
+                audio.export(output_path, format='mp3')
+                
+                # Clean up temp file
+                if os.path.exists(temp_wav):
+                    os.remove(temp_wav)
+            
+            # Get file information
+            file_info = self._get_audio_info(output_path)
+            
+            return {
+                'success': True,
+                'provider': 'gemini',
+                'file_path': output_path,
+                'file_size': file_info['file_size'],
+                'duration': file_info['duration'],
+                'format': 'mp3' if output_path.endswith('.mp3') else 'wav',
+                'voice': voice,
+                'model': model,
+                'generation_time': datetime.now().isoformat()
+            }
+            
+        except ImportError:
+            raise Exception("Google GenAI SDK not installed. Install with: pip install google-genai")
+        except Exception as e:
+            raise Exception(f"Gemini TTS error: {str(e)}")
     
     def _openai_tts(
         self,
@@ -306,6 +430,120 @@ class AudioProcessor:
             raise Exception("Azure Speech SDK not installed. Install with: pip install azure-cognitiveservices-speech")
         except Exception as e:
             raise Exception(f"Azure TTS error: {str(e)}")
+    
+    def _deepinfra_tts(
+        self,
+        text: str,
+        output_path: str,
+        model: Optional[str] = None,
+        api_key: Optional[str] = None,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """DeepInfra TTS implementation with support for multiple open-source models."""
+        try:
+            import requests
+            import base64
+            
+            # Get API key from environment if not provided
+            api_key = api_key or os.getenv('DEEPINFRA_API_KEY')
+            if not api_key:
+                raise ValueError("DeepInfra API key is required. Set DEEPINFRA_API_KEY environment variable or pass api_key parameter.")
+            
+            # Set default model
+            model = model or 'hexgrad/Kokoro-82M'
+            
+            # Validate model
+            if model not in self.deepinfra_models:
+                raise ValueError(f"Invalid DeepInfra model. Choose from: {', '.join(self.deepinfra_models)}")
+            
+            # API endpoint
+            url = f"https://api.deepinfra.com/v1/inference/{model}"
+            
+            # Prepare headers
+            headers = {
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json'
+            }
+            
+            # Prepare payload based on model
+            payload = {
+                'text': text,
+            }
+            
+            # Add model-specific parameters
+            if 'voice' in kwargs:
+                payload['voice'] = kwargs['voice']
+            if 'speed' in kwargs:
+                payload['speed'] = kwargs['speed']
+            if 'language' in kwargs:
+                payload['language'] = kwargs['language']
+            
+            # Make API request
+            response = requests.post(url, headers=headers, json=payload, timeout=120)
+            response.raise_for_status()
+            
+            # Handle response based on content type
+            content_type = response.headers.get('Content-Type', '')
+            
+            if 'audio' in content_type or 'octet-stream' in content_type:
+                # Direct audio response
+                audio_data = response.content
+            else:
+                # JSON response with audio data
+                result = response.json()
+                
+                if 'audio' in result:
+                    # Base64 encoded audio
+                    if isinstance(result['audio'], str):
+                        audio_data = base64.b64decode(result['audio'])
+                    else:
+                        audio_data = result['audio']
+                elif 'data' in result:
+                    # Alternative format
+                    if isinstance(result['data'], str):
+                        audio_data = base64.b64decode(result['data'])
+                    else:
+                        audio_data = result['data']
+                else:
+                    raise Exception(f"Unexpected response format from DeepInfra: {result}")
+            
+            # Determine output format and save
+            if output_path.endswith('.mp3'):
+                # Save as temporary WAV first, then convert to MP3
+                temp_wav = output_path.replace('.mp3', '_temp.wav')
+                with open(temp_wav, 'wb') as f:
+                    f.write(audio_data)
+                
+                # Convert to MP3 using pydub
+                audio = AudioSegment.from_file(temp_wav)
+                audio.export(output_path, format='mp3')
+                
+                # Clean up temp file
+                if os.path.exists(temp_wav):
+                    os.remove(temp_wav)
+            else:
+                # Save directly
+                with open(output_path, 'wb') as f:
+                    f.write(audio_data)
+            
+            # Get file information
+            file_info = self._get_audio_info(output_path)
+            
+            return {
+                'success': True,
+                'provider': 'deepinfra',
+                'file_path': output_path,
+                'file_size': file_info['file_size'],
+                'duration': file_info['duration'],
+                'format': 'mp3' if output_path.endswith('.mp3') else 'wav',
+                'model': model,
+                'generation_time': datetime.now().isoformat()
+            }
+            
+        except ImportError:
+            raise Exception("Requests package not installed. Install with: pip install requests")
+        except Exception as e:
+            raise Exception(f"DeepInfra TTS error: {str(e)}")
     
     def enhance_audio(
         self,

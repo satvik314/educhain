@@ -9,9 +9,11 @@ Educhain now supports multiple Text-to-Speech (TTS) providers for podcast genera
 | Provider | Quality | Languages | Voices | Cost | Best For |
 |----------|---------|-----------|--------|------|----------|
 | **Google TTS** | Good | 40+ | Multiple accents | Free | Testing, demos |
+| **Gemini TTS** | Excellent | 24+ | 30 voices | Pay-as-you-go | AI-powered speech |
 | **OpenAI TTS** | Excellent | 50+ | 6 premium voices | $15/1M chars | Production podcasts |
 | **ElevenLabs** | Outstanding | 29+ | 100+ voices | Pay-as-you-go | Professional content |
 | **Azure TTS** | Excellent | 100+ | 400+ voices | Pay-as-you-go | Enterprise |
+| **DeepInfra** | Good-Excellent | Varies | 6 models | $0.62-$10/1M chars | Open-source models |
 
 ---
 
@@ -53,7 +55,159 @@ voice_settings = {
 
 ---
 
-## 2. OpenAI TTS
+## 2. Gemini TTS (Google AI)
+
+### Features
+- ✅ Powered by Gemini 2.5 models
+- ✅ 30 high-quality voice options
+- ✅ 24+ languages with auto-detection
+- ✅ Natural, expressive speech
+- ✅ Multi-speaker support
+- ✅ Style control with prompts
+
+### Setup
+
+```bash
+# Install Google GenAI SDK
+pip install google-genai
+
+# Set API key
+export GOOGLE_API_KEY="your-google-api-key"
+# OR
+export GEMINI_API_KEY="your-gemini-api-key"
+```
+
+### Available Models
+
+| Model | Description | Best For |
+|-------|-------------|----------|
+| `gemini-2.5-flash-preview-tts` | Fast, efficient | Quick generation, testing |
+| `gemini-2.5-pro-preview-tts` | High quality | Production content |
+
+### Popular Voices
+
+**Base Voices (US English):**
+- `Puck` - Energetic, youthful
+- `Charon` - Deep, authoritative
+- `Kore` - Clear, professional (default)
+- `Fenrir` - Warm, friendly
+- `Aoede` - Smooth, melodic
+- `Orbit` - Neutral, versatile
+
+**Regional Variants:**
+- `Puck-en-IN`, `Kore-en-IN` - Indian English
+- `Charon-en-GB`, `Kore-en-GB` - British English
+- `Fenrir-en-AU`, `Aoede-en-AU` - Australian English
+- `Orbit-en-SG` - Singapore English
+
+### Usage
+
+```python
+from educhain import Educhain
+
+client = Educhain()
+
+# Using Gemini TTS
+podcast = client.content_engine.generate_complete_podcast(
+    topic="Artificial Intelligence Basics",
+    output_path="ai_podcast.mp3",
+    tts_provider='gemini',
+    tts_model='gemini-2.5-flash-preview-tts',
+    tts_voice='Kore'
+)
+```
+
+### Advanced Examples
+
+#### Different Voice Styles
+
+```python
+# Professional tone
+podcast = client.content_engine.generate_podcast_from_script(
+    script="Welcome to our technical podcast",
+    output_path="professional.mp3",
+    tts_provider='gemini',
+    tts_voice='Kore',
+    tts_model='gemini-2.5-pro-preview-tts'
+)
+
+# Energetic presentation
+podcast = client.content_engine.generate_podcast_from_script(
+    script="Hey everyone! Let's dive into this exciting topic!",
+    output_path="energetic.mp3",
+    tts_provider='gemini',
+    tts_voice='Puck'
+)
+
+# British accent
+podcast = client.content_engine.generate_podcast_from_script(
+    script="Good day, let's explore this fascinating subject",
+    output_path="british.mp3",
+    tts_provider='gemini',
+    tts_voice='Charon-en-GB'
+)
+```
+
+#### Multi-Language Support
+
+```python
+# Automatic language detection
+# Supports: Arabic, German, English, Spanish, French, Hindi, Indonesian,
+# Italian, Japanese, Korean, Portuguese, Russian, Dutch, Polish, Thai,
+# Turkish, Vietnamese, Romanian, Ukrainian, Bengali, Marathi, Tamil, Telugu
+
+podcast = client.content_engine.generate_podcast_from_script(
+    script="Bonjour! Bienvenue à notre podcast",  # French
+    output_path="french.mp3",
+    tts_provider='gemini',
+    tts_voice='Aoede'
+)
+```
+
+### Supported Languages
+
+Gemini TTS automatically detects and supports:
+- **ar-EG** - Arabic (Egypt)
+- **de-DE** - German
+- **en-US** - English (US)
+- **es-US** - Spanish (US)
+- **fr-FR** - French
+- **hi-IN** - Hindi
+- **id-ID** - Indonesian
+- **it-IT** - Italian
+- **ja-JP** - Japanese
+- **ko-KR** - Korean
+- **pt-BR** - Portuguese (Brazil)
+- **ru-RU** - Russian
+- **nl-NL** - Dutch
+- **pl-PL** - Polish
+- **th-TH** - Thai
+- **tr-TR** - Turkish
+- **vi-VN** - Vietnamese
+- **ro-RO** - Romanian
+- **uk-UA** - Ukrainian
+- **bn-BD** - Bengali
+- **mr-IN** - Marathi
+- **ta-IN** - Tamil
+- **te-IN** - Telugu
+
+### Pricing
+- Pay-as-you-go based on usage
+- Competitive pricing with other premium TTS services
+- Free tier available for testing
+- Check [Google AI Pricing](https://ai.google.dev/pricing) for current rates
+
+### Advantages
+- ✅ Latest Gemini AI technology
+- ✅ Natural, expressive voices
+- ✅ Automatic language detection
+- ✅ Multiple regional accents
+- ✅ Fast generation with Flash model
+- ✅ High quality with Pro model
+
+---
+
+## 3. OpenAI TTS
 
 ### Features
 - ✅ High-quality, natural voices
@@ -220,6 +374,132 @@ podcast = client.content_engine.generate_complete_podcast(
 
 ---
 
+## 5. DeepInfra
+
+### Features
+- ✅ 6 open-source TTS models
+- ✅ Cost-effective pricing ($0.62-$10/1M chars)
+- ✅ State-of-the-art models (Kokoro, Orpheus, Zonos, etc.)
+- ✅ Emotion control (Chatterbox)
+- ✅ Multilingual support (Zonos)
+- ✅ MIT licensed models available
+
+### Setup
+
+```bash
+# No additional package needed (uses requests)
+pip install requests
+
+# Set API key
+export DEEPINFRA_API_KEY="your-deepinfra-api-key"
+```
+
+### Available Models
+
+| Model | Quality | Cost | Description |
+|-------|---------|------|-------------|
+| `hexgrad/Kokoro-82M` | Good | $0.62/1M | Lightweight, fast, Apache-licensed |
+| `canopylabs/orpheus-3b-0.1-ft` | Excellent | $7.00/1M | Empathetic, human-level synthesis |
+| `sesame/csm-1b` | Good | $7.00/1M | Conversational speech model |
+| `ResembleAI/chatterbox` | Excellent | $10.00/1M | Emotion control, MIT-licensed |
+| `Zyphra/Zonos-v0.1-hybrid` | Excellent | $7.00/1M | Multilingual, 44kHz output |
+| `Zyphra/Zonos-v0.1-transformer` | Excellent | $7.00/1M | Transformer-based, multilingual |
+
+### Usage
+
+```python
+from educhain import Educhain
+
+client = Educhain()
+
+# Using DeepInfra with Kokoro (lightweight, fast)
+podcast = client.content_engine.generate_complete_podcast(
+    topic="Quick Tutorial",
+    output_path="tutorial.mp3",
+    tts_provider='deepinfra',
+    tts_model='hexgrad/Kokoro-82M'
+)
+```
+
+### Model-Specific Examples
+
+#### Kokoro-82M (Lightweight & Fast)
+
+```python
+# Best for: Cost-effective, fast generation
+podcast = client.content_engine.generate_podcast_from_script(
+    script="Welcome to our quick tutorial on Python basics.",
+    output_path="kokoro.mp3",
+    tts_provider='deepinfra',
+    tts_model='hexgrad/Kokoro-82M'
+)
+```
+
+#### Orpheus (Empathetic Speech)
+
+```python
+# Best for: Emotional, human-like speech
+podcast = client.content_engine.generate_podcast_from_script(
+    script="I'm so excited to share this amazing discovery with you!",
+    output_path="orpheus.mp3",
+    tts_provider='deepinfra',
+    tts_model='canopylabs/orpheus-3b-0.1-ft'
+)
+```
+
+#### Chatterbox (Emotion Control)
+
+```python
+# Best for: Content with varied emotions
+podcast = client.content_engine.generate_podcast_from_script(
+    script="This is incredible! Let me explain why this matters.",
+    output_path="chatterbox.mp3",
+    tts_provider='deepinfra',
+    tts_model='ResembleAI/chatterbox',
+    voice='default'  # Model supports emotion exaggeration
+)
+```
+
+#### Zonos (Multilingual, High Quality)
+
+```python
+# Best for: Multilingual content, high-quality 44kHz output
+podcast = client.content_engine.generate_podcast_from_script(
+    script="Bonjour! Welcome to our multilingual podcast.",
+    output_path="zonos.mp3",
+    tts_provider='deepinfra',
+    tts_model='Zyphra/Zonos-v0.1-hybrid',
+    speed=1.0  # Control speaking rate
+)
+```
+
+### Pricing Comparison
+
+| Model | Cost per 1M chars | Best Use Case |
+|-------|-------------------|---------------|
+| Kokoro-82M | $0.62 | Budget-friendly, fast |
+| Orpheus | $7.00 | Empathetic speech |
+| CSM-1b | $7.00 | Conversational |
+| Chatterbox | $10.00 | Emotion control |
+| Zonos (both) | $7.00 | Multilingual, premium |
+
+### Advantages
+- ✅ Most cost-effective option ($0.62/1M)
+- ✅ Open-source models with permissive licenses
+- ✅ State-of-the-art quality (Orpheus, Zonos)
+- ✅ Emotion control capabilities
+- ✅ High-resolution audio (44kHz with Zonos)
+- ✅ Multilingual support
+
+### When to Use DeepInfra
+- **Budget projects** - Kokoro at $0.62/1M chars
+- **Emotional content** - Orpheus or Chatterbox
+- **Multilingual podcasts** - Zonos models
+- **Open-source preference** - MIT/Apache licensed models
+- **High-quality audio** - Zonos (44kHz output)
+
+---
+
 ## Comparison Examples
 
 ### Example 1: Quick Test (Google)
@@ -233,7 +513,20 @@ podcast = client.content_engine.generate_complete_podcast(
 )
 ```
 
-### Example 2: Production Quality (OpenAI)
+### Example 2: AI-Powered Speech (Gemini)
+
+```python
+# Latest Gemini AI with natural voices
+podcast = client.content_engine.generate_complete_podcast(
+    topic="AI Technology",
+    output_path="ai_tech.mp3",
+    tts_provider='gemini',
+    tts_model='gemini-2.5-flash-preview-tts',
+    tts_voice='Kore'
+)
+```
+
+### Example 3: Production Quality (OpenAI)
 
 ```python
 # High quality, natural voices
@@ -246,7 +539,7 @@ podcast = client.content_engine.generate_complete_podcast(
 )
 ```
 
-### Example 3: Premium Quality (ElevenLabs)
+### Example 4: Premium Quality (ElevenLabs)
 
 ```python
 # Best quality, most natural
@@ -268,6 +561,30 @@ podcast = client.content_engine.generate_complete_podcast(
     tts_provider='azure',
     tts_voice='es-ES-ElviraNeural',  # Spanish
     language='es-ES'
+)
+```
+
+### Example 5: Budget-Friendly (DeepInfra)
+
+```python
+# Most cost-effective option
+podcast = client.content_engine.generate_complete_podcast(
+    topic="Budget Tutorial",
+    output_path="budget.mp3",
+    tts_provider='deepinfra',
+    tts_model='hexgrad/Kokoro-82M'  # Only $0.62 per 1M chars
+)
+```
+
+### Example 6: Emotional Speech (DeepInfra)
+
+```python
+# High-quality emotional content
+podcast = client.content_engine.generate_complete_podcast(
+    topic="Inspiring Story",
+    output_path="inspiring.mp3",
+    tts_provider='deepinfra',
+    tts_model='canopylabs/orpheus-3b-0.1-ft'  # Empathetic speech
 )
 ```
 
@@ -324,29 +641,45 @@ except Exception as e:
 
 ### For Testing & Development
 **Use Google TTS**
-- Free
-- No setup required
-- Good enough for testing
+- ✅ Free
+- ✅ No setup required
+- ✅ Good enough for testing
+
+### For AI-Powered Speech
+**Use Gemini TTS**
+- ✅ Latest Gemini 2.5 technology
+- ✅ 30 natural voices
+- ✅ 24+ languages with auto-detection
+- ✅ Fast (Flash) and high-quality (Pro) models
+- ✅ Multiple regional accents
 
 ### For Production Podcasts
 **Use OpenAI TTS**
-- Excellent quality
-- Natural voices
-- Reasonable pricing
-- Easy integration
+- ✅ Excellent quality
+- ✅ Natural voices
+- ✅ Reasonable pricing
+- ✅ Easy integration
 
 ### For Professional Content
 **Use ElevenLabs**
-- Best voice quality
-- Most natural sounding
-- Great for monetized content
+- ✅ Best voice quality
+- ✅ Most natural sounding
+- ✅ Great for monetized content
 
 ### For Enterprise/Multi-Language
 **Use Azure TTS**
-- 400+ voices
-- 100+ languages
-- Enterprise support
-- Custom voices available
+- ✅ 400+ voices
+- ✅ 100+ languages
+- ✅ Enterprise support
+- ✅ Custom voices available
+
+### For Budget-Friendly/Open-Source
+**Use DeepInfra**
+- ✅ Most affordable ($0.62-$10/1M)
+- ✅ Open-source models (MIT/Apache)
+- ✅ Emotion control capabilities
+- ✅ High-quality options (Orpheus, Zonos)
+- ✅ Multilingual support
 
 ---
 
@@ -357,9 +690,11 @@ except Exception as e:
 pip install educhain gtts pydub mutagen
 
 # Optional TTS providers
+pip install google-genai        # For Gemini TTS
 pip install openai              # For OpenAI TTS
 pip install elevenlabs          # For ElevenLabs
 pip install azure-cognitiveservices-speech  # For Azure TTS
+pip install requests            # For DeepInfra (usually already installed)
 
 # Audio processing (required for pydub)
 # macOS
@@ -377,6 +712,11 @@ sudo apt-get install ffmpeg
 ## Environment Variables
 
 ```bash
+# Gemini TTS
+export GOOGLE_API_KEY="your-google-api-key"
+# OR
+export GEMINI_API_KEY="your-gemini-api-key"
+
 # OpenAI
 export OPENAI_API_KEY="sk-..."
 
@@ -386,6 +726,9 @@ export ELEVENLABS_API_KEY="..."
 # Azure
 export AZURE_SPEECH_KEY="..."
 export AZURE_SPEECH_REGION="eastus"
+
+# DeepInfra
+export DEEPINFRA_API_KEY="..."
 ```
 
 ---
