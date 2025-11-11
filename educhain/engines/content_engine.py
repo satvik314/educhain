@@ -1,4 +1,4 @@
-from typing import Optional, Type, Any
+from typing import Optional, Type, Any, Dict
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
@@ -1212,7 +1212,11 @@ class ContentEngine:
         output_path: str,
         language: str = 'en',
         enhance_audio: bool = True,
-        voice_settings: Optional[Dict[str, Any]] = None
+        voice_settings: Optional[Dict[str, Any]] = None,
+        tts_provider: str = 'google',
+        tts_voice: Optional[str] = None,
+        tts_model: Optional[str] = None,
+        api_key: Optional[str] = None
     ) -> PodcastContent:
         """
         Generate podcast audio from a script string.
@@ -1223,6 +1227,10 @@ class ContentEngine:
             language (str): Language code for TTS (default: 'en')
             enhance_audio (bool): Whether to enhance audio quality
             voice_settings (dict, optional): Voice and audio settings
+            tts_provider (str): TTS provider ('google', 'openai', 'elevenlabs', 'azure')
+            tts_voice (str, optional): Voice name/ID for the TTS provider
+            tts_model (str, optional): Model name for the TTS provider (e.g., 'tts-1', 'tts-1-hd' for OpenAI)
+            api_key (str, optional): API key for the TTS provider
         
         Returns:
             PodcastContent: Complete podcast content with audio file
@@ -1231,8 +1239,8 @@ class ContentEngine:
         import os
         from datetime import datetime
         
-        # Initialize audio processor
-        audio_processor = AudioProcessor()
+        # Initialize audio processor with specified provider
+        audio_processor = AudioProcessor(default_provider=tts_provider)
         
         # Set default voice settings
         default_settings = {
@@ -1241,19 +1249,30 @@ class ContentEngine:
             'volume_adjustment': 0.0,
             'fade_in': 1000,  # 1 second fade in
             'fade_out': 1000,  # 1 second fade out
-            'normalize': True
+            'normalize': True,
+            'provider': tts_provider
         }
         
         if voice_settings:
             default_settings.update(voice_settings)
+        
+        # Add provider-specific settings
+        if tts_voice:
+            default_settings['voice'] = tts_voice
+        if tts_model:
+            default_settings['model'] = tts_model
         
         # Generate TTS audio
         tts_result = audio_processor.text_to_speech(
             text=script,
             output_path=output_path,
             language=language,
-            slow=default_settings['slow'],
-            tld=default_settings['tld']
+            slow=default_settings.get('slow', False),
+            tld=default_settings.get('tld', 'com'),
+            provider=tts_provider,
+            voice=tts_voice,
+            model=tts_model,
+            api_key=api_key
         )
         
         if not tts_result['success']:
@@ -1309,6 +1328,10 @@ class ContentEngine:
         enhance_audio: bool = True,
         voice_settings: Optional[Dict[str, Any]] = None,
         custom_instructions: Optional[str] = None,
+        tts_provider: str = 'google',
+        tts_voice: Optional[str] = None,
+        tts_model: Optional[str] = None,
+        api_key: Optional[str] = None,
         **kwargs
     ) -> PodcastContent:
         """
@@ -1324,6 +1347,10 @@ class ContentEngine:
             enhance_audio (bool): Whether to enhance audio quality
             voice_settings (dict, optional): Voice and audio settings
             custom_instructions (str, optional): Additional instructions
+            tts_provider (str): TTS provider ('google', 'openai', 'elevenlabs', 'azure')
+            tts_voice (str, optional): Voice name/ID for the TTS provider
+            tts_model (str, optional): Model name for the TTS provider
+            api_key (str, optional): API key for the TTS provider
         
         Returns:
             PodcastContent: Complete podcast with script and audio
@@ -1349,7 +1376,11 @@ class ContentEngine:
             output_path=output_path,
             language=language,
             enhance_audio=enhance_audio,
-            voice_settings=voice_settings
+            voice_settings=voice_settings,
+            tts_provider=tts_provider,
+            tts_voice=tts_voice,
+            tts_model=tts_model,
+            api_key=api_key
         )
         
         # Step 4: Update podcast content with the generated script
