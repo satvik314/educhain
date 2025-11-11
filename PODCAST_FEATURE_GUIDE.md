@@ -184,11 +184,14 @@ voice_settings = {
 
 | Code | Language   | Code | Language   |
 |------|------------|------|------------|
-| en   | English    | es   | Spanish    |
+| en   | English    | hi   | Hindi      |
+| mr   | Marathi    | es   | Spanish    |
 | fr   | French     | de   | German     |
 | it   | Italian    | pt   | Portuguese |
 | ru   | Russian    | ja   | Japanese   |
 | ko   | Korean     | zh   | Chinese    |
+| bn   | Bengali    | ta   | Tamil      |
+| te   | Telugu     | ar   | Arabic     |
 
 ## Data Models
 
@@ -262,6 +265,84 @@ script = content_engine.generate_podcast_script(
     target_audience="beginners",
     duration="15 minutes",
     tone="inspiring"
+)
+```
+
+### Hindi & Marathi Podcasts
+
+Generate podcasts in Hindi and Marathi using different TTS providers:
+
+#### Using Google TTS (Free)
+
+```python
+# Hindi podcast
+hindi_podcast = content_engine.generate_complete_podcast(
+    topic="कृत्रिम बुद्धिमत्ता का परिचय",  # Introduction to AI in Hindi
+    output_path="hindi_podcast.mp3",
+    language='hi',
+    tts_provider='google',
+    target_audience="छात्र",  # Students
+    duration="10 मिनट"
+)
+
+# Marathi podcast
+marathi_podcast = content_engine.generate_complete_podcast(
+    topic="मशीन लर्निंगचे मूलभूत तत्त्वे",  # Machine Learning Basics in Marathi
+    output_path="marathi_podcast.mp3",
+    language='mr',
+    tts_provider='google',
+    target_audience="विद्यार्थी",  # Students
+    duration="10 मिनिटे"
+)
+```
+
+#### Using Gemini TTS (AI-Powered, Auto Language Detection)
+
+```python
+# Hindi podcast with Gemini (automatic language detection)
+hindi_gemini = content_engine.generate_complete_podcast(
+    topic="भारत में तकनीकी क्रांति",  # Tech Revolution in India
+    output_path="hindi_gemini.mp3",
+    tts_provider='gemini',
+    tts_model='gemini-2.5-flash-preview-tts',
+    tts_voice='Kore'  # Gemini auto-detects Hindi
+)
+
+# Marathi podcast with Gemini
+marathi_gemini = content_engine.generate_complete_podcast(
+    topic="महाराष्ट्रातील नवीन तंत्रज्ञान",  # New Technology in Maharashtra
+    output_path="marathi_gemini.mp3",
+    tts_provider='gemini',
+    tts_model='gemini-2.5-flash-preview-tts',
+    tts_voice='Aoede'  # Gemini auto-detects Marathi
+)
+```
+
+#### Using Azure TTS (Premium Quality)
+
+```python
+# Hindi podcast with Azure Neural voices
+hindi_azure = content_engine.generate_complete_podcast(
+    topic="डिजिटल भारत",  # Digital India
+    output_path="hindi_azure.mp3",
+    language='hi-IN',
+    tts_provider='azure',
+    tts_voice='hi-IN-SwaraNeural',  # Hindi female voice
+    api_key='your-azure-key',
+    region='centralindia'
+)
+```
+
+#### Mixed Language Support
+
+```python
+# Bilingual podcast (Hindi-English)
+bilingual_podcast = content_engine.generate_complete_podcast(
+    topic="AI और Machine Learning: एक परिचय",  # AI and ML: An Introduction
+    output_path="bilingual.mp3",
+    language='hi',
+    tts_provider='gemini',  # Best for mixed language
+    tts_model='gemini-2.5-pro-preview-tts'
 )
 ```
 

@@ -21,6 +21,8 @@ class AudioProcessor:
         self.default_provider = default_provider
         self.supported_languages = {
             'en': 'English',
+            'hi': 'Hindi',
+            'mr': 'Marathi',
             'es': 'Spanish', 
             'fr': 'French',
             'de': 'German',
@@ -29,7 +31,11 @@ class AudioProcessor:
             'ru': 'Russian',
             'ja': 'Japanese',
             'ko': 'Korean',
-            'zh': 'Chinese'
+            'zh': 'Chinese',
+            'bn': 'Bengali',
+            'ta': 'Tamil',
+            'te': 'Telugu',
+            'ar': 'Arabic'
         }
         
         # Provider-specific voice mappings
@@ -442,7 +448,6 @@ class AudioProcessor:
         """DeepInfra TTS implementation with support for multiple open-source models."""
         try:
             import requests
-            import base64
             
             # Get API key from environment if not provided
             api_key = api_key or os.getenv('DEEPINFRA_API_KEY')
@@ -456,8 +461,8 @@ class AudioProcessor:
             if model not in self.deepinfra_models:
                 raise ValueError(f"Invalid DeepInfra model. Choose from: {', '.join(self.deepinfra_models)}")
             
-            # API endpoint
-            url = f"https://api.deepinfra.com/v1/inference/{model}"
+            # API endpoint - use OpenAI-compatible format
+            url = f"https://api.deepinfra.com/v1/openai/audio/speech"
             
             # Prepare headers
             headers = {
@@ -465,66 +470,55 @@ class AudioProcessor:
                 'Content-Type': 'application/json'
             }
             
-            # Prepare payload based on model
+            # Prepare payload in OpenAI format
             payload = {
-                'text': text,
+                'model': model,
+                'input': text,
+                'voice': kwargs.get('voice', 'default'),
+                'response_format': 'mp3'
             }
             
-            # Add model-specific parameters
-            if 'voice' in kwargs:
-                payload['voice'] = kwargs['voice']
+            # Add optional parameters
             if 'speed' in kwargs:
                 payload['speed'] = kwargs['speed']
-            if 'language' in kwargs:
-                payload['language'] = kwargs['language']
             
             # Make API request
             response = requests.post(url, headers=headers, json=payload, timeout=120)
-            response.raise_for_status()
             
-            # Handle response based on content type
-            content_type = response.headers.get('Content-Type', '')
+            # Check for errors
+            if response.status_code != 200:
+                error_msg = f"API returned status {response.status_code}"
+                try:
+                    error_data = response.json()
+                    error_msg = error_data.get('error', {}).get('message', error_msg)
+                except:
+                    error_msg = response.text[:200]
+                raise Exception(f"DeepInfra API error: {error_msg}")
             
-            if 'audio' in content_type or 'octet-stream' in content_type:
-                # Direct audio response
-                audio_data = response.content
-            else:
-                # JSON response with audio data
-                result = response.json()
-                
-                if 'audio' in result:
-                    # Base64 encoded audio
-                    if isinstance(result['audio'], str):
-                        audio_data = base64.b64decode(result['audio'])
-                    else:
-                        audio_data = result['audio']
-                elif 'data' in result:
-                    # Alternative format
-                    if isinstance(result['data'], str):
-                        audio_data = base64.b64decode(result['data'])
-                    else:
-                        audio_data = result['data']
-                else:
-                    raise Exception(f"Unexpected response format from DeepInfra: {result}")
+            # Get audio data directly from response
+            audio_data = response.content
             
-            # Determine output format and save
+            if not audio_data or len(audio_data) == 0:
+                raise Exception("Received empty audio data from DeepInfra")
+            
+            # Save audio file
             if output_path.endswith('.mp3'):
-                # Save as temporary WAV first, then convert to MP3
-                temp_wav = output_path.replace('.mp3', '_temp.wav')
-                with open(temp_wav, 'wb') as f:
-                    f.write(audio_data)
-                
-                # Convert to MP3 using pydub
-                audio = AudioSegment.from_file(temp_wav)
-                audio.export(output_path, format='mp3')
-                
-                # Clean up temp file
-                if os.path.exists(temp_wav):
-                    os.remove(temp_wav)
-            else:
-                # Save directly
+                # Direct MP3 output
                 with open(output_path, 'wb') as f:
                     f.write(audio_data)
+            else:
+                # Convert to requested format
+                temp_mp3 = output_path.replace('.wav', '_temp.mp3')
+                with open(temp_mp3, 'wb') as f:
+                    f.write(audio_data)
+                
+                # Convert using pydub
+                audio = AudioSegment.from_mp3(temp_mp3)
+                audio.export(output_path, format='wav')
+                
+                # Clean up temp file
+                if os.path.exists(temp_mp3):
+                    os.remove(temp_mp3)
             
             # Get file information
             file_info = self._get_audio_info(output_path)

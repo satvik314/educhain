@@ -417,9 +417,16 @@ podcast = client.content_engine.generate_complete_podcast(
     topic="Quick Tutorial",
     output_path="tutorial.mp3",
     tts_provider='deepinfra',
-    tts_model='hexgrad/Kokoro-82M'
+    tts_model='hexgrad/Kokoro-82M',
+    api_key='your-deepinfra-api-key'  # Or set DEEPINFRA_API_KEY env var
 )
 ```
+
+**Important Notes:**
+- DeepInfra uses OpenAI-compatible API format
+- All models return MP3 audio by default
+- Voice parameter is optional (defaults to 'default')
+- Speed parameter can be adjusted (0.25 to 4.0)
 
 ### Model-Specific Examples
 
@@ -781,6 +788,74 @@ try:
         print("❌ Set AZURE_SPEECH_KEY and AZURE_SPEECH_REGION")
 except ImportError:
     print("❌ Install: pip install azure-cognitiveservices-speech")
+```
+
+### DeepInfra Issues
+
+```python
+# Check API key
+import os
+if os.getenv('DEEPINFRA_API_KEY'):
+    print("✅ DeepInfra API key found")
+else:
+    print("❌ Set DEEPINFRA_API_KEY environment variable")
+
+# Test DeepInfra connection
+import requests
+
+api_key = os.getenv('DEEPINFRA_API_KEY')
+headers = {'Authorization': f'Bearer {api_key}'}
+
+# Test with Kokoro model (fastest)
+response = requests.post(
+    'https://api.deepinfra.com/v1/openai/audio/speech',
+    headers=headers,
+    json={
+        'model': 'hexgrad/Kokoro-82M',
+        'input': 'Test audio generation',
+        'voice': 'default',
+        'response_format': 'mp3'
+    }
+)
+
+if response.status_code == 200:
+    print("✅ DeepInfra API working")
+else:
+    print(f"❌ Error: {response.status_code} - {response.text}")
+```
+
+**Common DeepInfra Issues:**
+
+1. **"Incorrect padding" error** - Fixed in latest version (uses OpenAI-compatible endpoint)
+2. **Empty audio data** - Check API key and model availability
+3. **Timeout errors** - Increase timeout or use faster model (Kokoro-82M)
+4. **Model not found** - Verify model name matches exactly
+
+**Supported Models:**
+- `hexgrad/Kokoro-82M` ✅ (Fastest, most reliable)
+- `canopylabs/orpheus-3b-0.1-ft` ✅
+- `sesame/csm-1b` ✅
+- `ResembleAI/chatterbox` ✅
+- `Zyphra/Zonos-v0.1-hybrid` ✅
+- `Zyphra/Zonos-v0.1-transformer` ✅
+
+### Gemini Issues
+
+```python
+# Check Gemini installation
+try:
+    from google import genai
+    print("✅ Google GenAI installed")
+except ImportError:
+    print("❌ Install: pip install google-genai")
+
+# Verify API key
+import os
+api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
+if api_key:
+    print("✅ Gemini API key found")
+else:
+    print("❌ Set GOOGLE_API_KEY or GEMINI_API_KEY")
 ```
 
 ---
