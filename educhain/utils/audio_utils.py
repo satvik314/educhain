@@ -502,10 +502,18 @@ class AudioProcessor:
             
             # Get audio data from response
             if 'audio' in result and result['audio']:
-                # Audio is base64 encoded
-                audio_data = base64.b64decode(result['audio'])
+                try:
+                    # Audio is base64 encoded
+                    audio_b64 = result['audio']
+                    # Add padding if needed
+                    missing_padding = len(audio_b64) % 4
+                    if missing_padding:
+                        audio_b64 += '=' * (4 - missing_padding)
+                    audio_data = base64.b64decode(audio_b64)
+                except Exception as decode_error:
+                    raise Exception(f"Failed to decode audio data: {str(decode_error)}. Audio field type: {type(result['audio'])}")
             else:
-                raise Exception(f"No audio data in response. Response: {str(result)[:200]}")
+                raise Exception(f"No audio data in response. Response keys: {list(result.keys())}, Response: {str(result)[:200]}")
             
             if not audio_data or len(audio_data) == 0:
                 raise Exception("Received empty audio data from DeepInfra")

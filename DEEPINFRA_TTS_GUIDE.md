@@ -231,6 +231,25 @@ The implementation now uses the correct DeepInfra inference endpoint:
 
 ---
 
+### Issue: "Incorrect padding" Error
+
+**Solution:** This is fixed in the latest version. The implementation now automatically adds padding to base64 strings if needed.
+
+**What it does:**
+```python
+# Automatically fixes base64 padding
+missing_padding = len(audio_b64) % 4
+if missing_padding:
+    audio_b64 += '=' * (4 - missing_padding)
+```
+
+**If you still see this error:**
+1. Update to the latest version
+2. Check that the response contains valid base64 data
+3. Verify API key is correct
+
+---
+
 ### Issue: Empty Audio Data
 
 **Check:**

@@ -824,10 +824,11 @@ else:
 **Common DeepInfra Issues:**
 
 1. **404 Error** - Fixed in latest version (uses correct inference endpoint)
-2. **Empty audio data** - Check API key and model availability
-3. **Base64 decode errors** - Ensure response contains 'audio' field
-4. **Timeout errors** - Increase timeout or use faster model (Kokoro-82M)
-5. **Model not found** - Verify model name matches exactly
+2. **"Incorrect padding" error** - Fixed in latest version (auto-adds padding to base64)
+3. **Empty audio data** - Check API key and model availability
+4. **Base64 decode errors** - Ensure response contains 'audio' field
+5. **Timeout errors** - Increase timeout or use faster model (Kokoro-82M)
+6. **Model not found** - Verify model name matches exactly
 
 **Supported Models:**
 - `hexgrad/Kokoro-82M` ✅ (Fastest, most reliable)
