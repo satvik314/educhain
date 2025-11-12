@@ -448,6 +448,7 @@ class AudioProcessor:
         """DeepInfra TTS implementation with support for multiple open-source models."""
         try:
             import requests
+            import base64
             
             # Get API key from environment if not provided
             api_key = api_key or os.getenv('DEEPINFRA_API_KEY')
@@ -461,8 +462,8 @@ class AudioProcessor:
             if model not in self.deepinfra_models:
                 raise ValueError(f"Invalid DeepInfra model. Choose from: {', '.join(self.deepinfra_models)}")
             
-            # API endpoint - use OpenAI-compatible format
-            url = f"https://api.deepinfra.com/v1/openai"
+            # API endpoint - DeepInfra inference endpoint
+            url = f"https://api.deepinfra.com/v1/inference/{model}"
             
             # Prepare headers
             headers = {
@@ -470,15 +471,14 @@ class AudioProcessor:
                 'Content-Type': 'application/json'
             }
             
-            # Prepare payload in OpenAI format
+            # Prepare payload - DeepInfra format
             payload = {
-                'model': model,
-                'input': text,
-                'voice': kwargs.get('voice', 'default'),
-                'response_format': 'mp3'
+                'text': text
             }
             
             # Add optional parameters
+            if 'voice' in kwargs:
+                payload['voice'] = kwargs['voice']
             if 'speed' in kwargs:
                 payload['speed'] = kwargs['speed']
             
@@ -490,35 +490,44 @@ class AudioProcessor:
                 error_msg = f"API returned status {response.status_code}"
                 try:
                     error_data = response.json()
-                    error_msg = error_data.get('error', {}).get('message', error_msg)
+                    error_msg = error_data.get('error', error_msg)
+                    if isinstance(error_msg, dict):
+                        error_msg = error_msg.get('message', str(error_msg))
                 except:
                     error_msg = response.text[:200]
                 raise Exception(f"DeepInfra API error: {error_msg}")
             
-            # Get audio data directly from response
-            audio_data = response.content
+            # Parse JSON response
+            result = response.json()
+            
+            # Get audio data from response
+            if 'audio' in result and result['audio']:
+                # Audio is base64 encoded
+                audio_data = base64.b64decode(result['audio'])
+            else:
+                raise Exception(f"No audio data in response. Response: {str(result)[:200]}")
             
             if not audio_data or len(audio_data) == 0:
                 raise Exception("Received empty audio data from DeepInfra")
             
-            # Save audio file
+            # DeepInfra returns WAV format, convert if needed
             if output_path.endswith('.mp3'):
-                # Direct MP3 output
-                with open(output_path, 'wb') as f:
-                    f.write(audio_data)
-            else:
-                # Convert to requested format
-                temp_mp3 = output_path.replace('.wav', '_temp.mp3')
-                with open(temp_mp3, 'wb') as f:
+                # Save as temp WAV first
+                temp_wav = output_path.replace('.mp3', '_temp.wav')
+                with open(temp_wav, 'wb') as f:
                     f.write(audio_data)
                 
-                # Convert using pydub
-                audio = AudioSegment.from_mp3(temp_mp3)
-                audio.export(output_path, format='wav')
+                # Convert to MP3 using pydub
+                audio = AudioSegment.from_wav(temp_wav)
+                audio.export(output_path, format='mp3')
                 
                 # Clean up temp file
-                if os.path.exists(temp_mp3):
-                    os.remove(temp_mp3)
+                if os.path.exists(temp_wav):
+                    os.remove(temp_wav)
+            else:
+                # Save directly as WAV
+                with open(output_path, 'wb') as f:
+                    f.write(audio_data)
             
             # Get file information
             file_info = self._get_audio_info(output_path)

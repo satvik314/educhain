@@ -217,7 +217,7 @@ for i, topic in enumerate(topics):
 
 ## 🐛 Troubleshooting
 
-### Issue: "Incorrect padding" Error
+### Issue: 404 Error
 
 **Solution:** This is fixed in the latest version. Update educhain:
 
@@ -225,7 +225,9 @@ for i, topic in enumerate(topics):
 pip install --upgrade educhain
 ```
 
-The implementation now uses OpenAI-compatible API endpoint.
+The implementation now uses the correct DeepInfra inference endpoint:
+- Correct: `https://api.deepinfra.com/v1/inference/{model}`
+- Incorrect: `https://api.deepinfra.com/v1/openai/audio/speech`
 
 ---
 
@@ -294,19 +296,20 @@ api_key = os.getenv('DEEPINFRA_API_KEY')
 headers = {'Authorization': f'Bearer {api_key}'}
 
 response = requests.post(
-    'https://api.deepinfra.com/v1/openai/audio/speech',
+    'https://api.deepinfra.com/v1/inference/hexgrad/Kokoro-82M',
     headers=headers,
     json={
-        'model': 'hexgrad/Kokoro-82M',
-        'input': 'Test audio',
-        'voice': 'default',
-        'response_format': 'mp3'
+        'text': 'Test audio'
     }
 )
 
 if response.status_code == 200:
     print("✅ DeepInfra API working!")
-    print(f"Audio size: {len(response.content)} bytes")
+    result = response.json()
+    if 'audio' in result:
+        print(f"Audio data received (base64 encoded)")
+    else:
+        print(f"Response: {result}")
 else:
     print(f"❌ Error: {response.status_code}")
     print(response.text)

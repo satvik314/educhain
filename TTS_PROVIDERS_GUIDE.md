@@ -423,10 +423,10 @@ podcast = client.content_engine.generate_complete_podcast(
 ```
 
 **Important Notes:**
-- DeepInfra uses OpenAI-compatible API format
-- All models return MP3 audio by default
-- Voice parameter is optional (defaults to 'default')
-- Speed parameter can be adjusted (0.25 to 4.0)
+- DeepInfra uses its own inference API endpoint
+- Models return WAV audio (automatically converted to MP3 if needed)
+- Audio is base64 encoded in the response
+- Voice and speed parameters are model-dependent
 
 ### Model-Specific Examples
 
@@ -808,13 +808,10 @@ headers = {'Authorization': f'Bearer {api_key}'}
 
 # Test with Kokoro model (fastest)
 response = requests.post(
-    'https://api.deepinfra.com/v1/openai/audio/speech',
+    'https://api.deepinfra.com/v1/inference/hexgrad/Kokoro-82M',
     headers=headers,
     json={
-        'model': 'hexgrad/Kokoro-82M',
-        'input': 'Test audio generation',
-        'voice': 'default',
-        'response_format': 'mp3'
+        'text': 'Test audio generation'
     }
 )
 
@@ -826,10 +823,11 @@ else:
 
 **Common DeepInfra Issues:**
 
-1. **"Incorrect padding" error** - Fixed in latest version (uses OpenAI-compatible endpoint)
+1. **404 Error** - Fixed in latest version (uses correct inference endpoint)
 2. **Empty audio data** - Check API key and model availability
-3. **Timeout errors** - Increase timeout or use faster model (Kokoro-82M)
-4. **Model not found** - Verify model name matches exactly
+3. **Base64 decode errors** - Ensure response contains 'audio' field
+4. **Timeout errors** - Increase timeout or use faster model (Kokoro-82M)
+5. **Model not found** - Verify model name matches exactly
 
 **Supported Models:**
 - `hexgrad/Kokoro-82M` ✅ (Fastest, most reliable)
