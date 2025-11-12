@@ -1076,7 +1076,6 @@ class ContentEngine:
         topic: str,
         target_audience: Optional[str] = None,
         duration: Optional[str] = None,
-        word_count: Optional[int] = None,
         tone: Optional[str] = None,
         num_segments: int = 3,
         prompt_template: Optional[str] = None,
@@ -1092,8 +1091,6 @@ class ContentEngine:
             topic (str): The main topic for the podcast
             target_audience (str, optional): Target audience (e.g., "Students", "Professionals")
             duration (str, optional): Estimated duration (e.g., "10-15 minutes")
-            word_count (int, optional): Target word count for the script (e.g., 1500 for ~10 min podcast)
-                                       Note: ~150 words per minute is typical speaking rate
             tone (str, optional): Tone of the podcast (e.g., "conversational", "formal")
             num_segments (int): Number of main segments (default: 3)
             prompt_template (str, optional): Custom prompt template
@@ -1110,25 +1107,12 @@ class ContentEngine:
         parser = PydanticOutputParser(pydantic_object=response_model)
         format_instructions = parser.get_format_instructions()
         
-        # Handle word_count and duration
-        length_specification = ""
-        if word_count:
-            estimated_minutes = word_count / 150  # ~150 words per minute
-            length_specification = f"Target Word Count: {word_count} words (approximately {estimated_minutes:.1f} minutes at 150 words/minute)"
-            if not duration:
-                duration = f"{estimated_minutes:.0f} minutes"
-        elif duration:
-            length_specification = f"Estimated Duration: {duration}"
-        else:
-            duration = "10-15 minutes"
-            length_specification = "Estimated Duration: 10-15 minutes"
-        
         if prompt_template is None:
             prompt_template = """
             Create an engaging and educational podcast script for the following topic:
             Topic: {topic}
             Target Audience: {target_audience}
-            {length_specification}
+            Estimated Duration: {duration}
             Tone: {tone}
             Number of Segments: {num_segments}
             
@@ -1184,7 +1168,7 @@ class ContentEngine:
             prompt_template = prompt_template.replace("{custom_instructions}", "")
         
         podcast_prompt = PromptTemplate(
-            input_variables=["topic", "target_audience", "length_specification", "tone", "num_segments"],
+            input_variables=["topic", "target_audience", "duration", "tone", "num_segments"],
             template=prompt_template,
             partial_variables={"format_instructions": format_instructions}
         )
@@ -1196,7 +1180,7 @@ class ContentEngine:
         results = podcast_chain.invoke({
             "topic": topic,
             "target_audience": target_audience or "General audience",
-            "length_specification": length_specification,
+            "duration": duration or "10-15 minutes",
             "tone": tone or "conversational",
             "num_segments": num_segments,
             **kwargs
@@ -1339,7 +1323,6 @@ class ContentEngine:
         output_path: str,
         target_audience: Optional[str] = None,
         duration: Optional[str] = None,
-        word_count: Optional[int] = None,
         tone: Optional[str] = None,
         language: str = 'en',
         enhance_audio: bool = True,
@@ -1359,8 +1342,6 @@ class ContentEngine:
             output_path (str): Path where audio file will be saved
             target_audience (str, optional): Target audience
             duration (str, optional): Estimated duration (e.g., "10 minutes")
-            word_count (int, optional): Target word count for accurate length control
-                                       (e.g., 1500 words = ~10 minutes at 150 words/min)
             tone (str, optional): Tone of the podcast
             language (str): Language code for TTS
             enhance_audio (bool): Whether to enhance audio quality
@@ -1380,7 +1361,6 @@ class ContentEngine:
             topic=topic,
             target_audience=target_audience,
             duration=duration,
-            word_count=word_count,
             tone=tone,
             custom_instructions=custom_instructions,
             **kwargs

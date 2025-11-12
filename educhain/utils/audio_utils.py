@@ -462,7 +462,7 @@ class AudioProcessor:
                 raise ValueError(f"Invalid DeepInfra model. Choose from: {', '.join(self.deepinfra_models)}")
             
             # API endpoint - use OpenAI-compatible format
-            url = f"https://api.deepinfra.com/v1/openai/audio/speech"
+            url = f"https://api.deepinfra.com/v1/openai"
             
             # Prepare headers
             headers = {
