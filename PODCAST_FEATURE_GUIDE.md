@@ -35,27 +35,53 @@ export OPENAI_API_KEY="your-openai-api-key-here"
 
 ## Quick Start
 
-### Example 1: Generate Complete Podcast (Script + Audio)
+### 1. Generate Complete Podcast (Script + Audio)
 
 ```python
 from educhain import Educhain
 
-# Initialize educhain
-educhain = Educhain()
-content_engine = educhain.get_content_engine()
+client = Educhain()
 
-# Generate complete podcast
-podcast = content_engine.generate_complete_podcast(
-    topic="Introduction to Python Programming",
-    output_path="python_intro_podcast.mp3",
-    target_audience="Complete beginners",
+# Generate a complete podcast from a topic
+podcast = client.content_engine.generate_complete_podcast(
+    topic="Introduction to Machine Learning",
+    output_path="ml_podcast.mp3",
+    target_audience="Beginners",
     duration="10-15 minutes",
-    tone="friendly and encouraging"
+    tone="conversational"
 )
 
-# Display results
-podcast.show()
-print(f"Podcast saved to: {podcast.audio_file_path}")
+print(f"Podcast created: {podcast.audio_file_path}")
+print(f"Script title: {podcast.script.title}")
+```
+
+### 1b. Generate Podcast with Word Count (More Accurate)
+
+```python
+# Use word_count for precise control over podcast length
+# Rule of thumb: ~150 words per minute of speech
+
+# 10-minute podcast
+podcast = client.content_engine.generate_complete_podcast(
+    topic="Python Programming Basics",
+    output_path="python_podcast.mp3",
+    word_count=1500,  # 1500 words = ~10 minutes
+    target_audience="Beginners"
+)
+
+# 5-minute podcast
+short_podcast = client.content_engine.generate_complete_podcast(
+    topic="Quick AI Overview",
+    output_path="ai_short.mp3",
+    word_count=750,  # 750 words = ~5 minutes
+)
+
+# 20-minute podcast
+long_podcast = client.content_engine.generate_complete_podcast(
+    topic="Deep Dive into Neural Networks",
+    output_path="neural_networks.mp3",
+    word_count=3000,  # 3000 words = ~20 minutes
+)
 ```
 
 ### Example 2: Generate Script Only
@@ -130,13 +156,26 @@ Generate a complete podcast (script + audio) from a topic.
 - `output_path` (str): Path where audio file will be saved
 - `target_audience` (str, optional): Target audience (e.g., "Students", "Professionals")
 - `duration` (str, optional): Estimated duration (e.g., "10-15 minutes")
+- `word_count` (int, optional): **Target word count for accurate length** (e.g., 1500 = ~10 min)
+  - Rule: ~150 words per minute of speech
+  - More precise than duration
 - `tone` (str, optional): Tone of the podcast (e.g., "conversational", "formal")
 - `language` (str): Language code for TTS (default: 'en')
 - `enhance_audio` (bool): Whether to enhance audio quality (default: True)
 - `voice_settings` (dict, optional): Voice and audio settings
+- `tts_provider` (str): TTS provider ('google', 'gemini', 'openai', 'elevenlabs', 'azure', 'deepinfra')
+- `tts_voice` (str, optional): Voice name for the provider
+- `tts_model` (str, optional): Model name for the provider
+- `api_key` (str, optional): API key for the TTS provider
 - `custom_instructions` (str, optional): Additional instructions for script generation
 
 **Returns:** `PodcastContent` object with script and audio information
+
+**Word Count Guide:**
+- 5 minutes = 750 words
+- 10 minutes = 1500 words
+- 15 minutes = 2250 words
+- 20 minutes = 3000 words
 
 ### ContentEngine.generate_podcast_script()
 
@@ -146,6 +185,7 @@ Generate only a podcast script from a topic.
 - `topic` (str): The main topic for the podcast
 - `target_audience` (str, optional): Target audience
 - `duration` (str, optional): Estimated duration
+- `word_count` (int, optional): **Target word count** (~150 words/min)
 - `tone` (str, optional): Tone of the podcast
 - `num_segments` (int): Number of main segments (default: 3)
 - `custom_instructions` (str, optional): Additional instructions
