@@ -1273,8 +1273,10 @@ class ContentEngine:
         
         from pydub import AudioSegment
         import tempfile
-
+      
+       
         chunks = OutputFormatter.split_text_for_tts(script)
+        
 
         # SHORT SCRIPT → EXACT OLD BEHAVIOR
         if len(chunks) == 1:
@@ -1303,6 +1305,7 @@ class ContentEngine:
             temp_files = []
 
             for idx, chunk in enumerate(chunks):
+               
               
                 
 

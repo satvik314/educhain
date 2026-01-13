@@ -29,6 +29,7 @@ setup(
         "gtts",  # Google Text-to-Speech
         "pydub",  # Audio processing
         "mutagen",  # Audio metadata handling
+        "python-magic-bin",
     ],
     extras_require={
         "dev": [
