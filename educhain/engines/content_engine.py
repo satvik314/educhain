@@ -1078,8 +1078,10 @@ class ContentEngine:
         duration: Optional[str] = None,
         tone: Optional[str] = None,
         num_segments: int = 3,
+        
         prompt_template: Optional[str] = None,
         custom_instructions: Optional[str] = None,
+        language: Optional[str] = "en",
         response_model: Optional[Type[Any]] = None,
         llm: Optional[Any] = None,
         **kwargs
@@ -1115,6 +1117,8 @@ class ContentEngine:
             Estimated Duration: {duration}
             Tone: {tone}
             Number of Segments: {num_segments}
+            Response in the Given Language:
+            Language: {language}
             
             The podcast should be informative, engaging, and well-structured for audio consumption.
             
@@ -1157,6 +1161,7 @@ class ContentEngine:
             - Make sure the tone is consistent throughout
             - Ensure content is educational and valuable
             
+            
             {custom_instructions}
             
             {format_instructions}
@@ -1168,7 +1173,7 @@ class ContentEngine:
             prompt_template = prompt_template.replace("{custom_instructions}", "")
         
         podcast_prompt = PromptTemplate(
-            input_variables=["topic", "target_audience", "duration", "tone", "num_segments"],
+            input_variables=["topic", "target_audience", "duration", "tone", "num_segments"," language"],
             template=prompt_template,
             partial_variables={"format_instructions": format_instructions}
         )
@@ -1183,6 +1188,7 @@ class ContentEngine:
             "duration": duration or "10-15 minutes",
             "tone": tone or "conversational",
             "num_segments": num_segments,
+            "language": language,
             **kwargs
         })
         
@@ -1236,6 +1242,7 @@ class ContentEngine:
             PodcastContent: Complete podcast content with audio file
         """
         from educhain.utils.audio_utils import AudioProcessor
+        from educhain.utils.output_formatter import OutputFormatter
         import os
         from datetime import datetime
         
@@ -1263,20 +1270,86 @@ class ContentEngine:
             default_settings['model'] = tts_model
         
         # Generate TTS audio
-        tts_result = audio_processor.text_to_speech(
-            text=script,
-            output_path=output_path,
-            language=language,
-            slow=default_settings.get('slow', False),
-            tld=default_settings.get('tld', 'com'),
-            provider=tts_provider,
-            voice=tts_voice,
-            model=tts_model,
-            api_key=api_key
-        )
         
-        if not tts_result['success']:
-            raise Exception(f"TTS generation failed: {tts_result.get('error', 'Unknown error')}")
+        from pydub import AudioSegment
+        import tempfile
+      
+       
+        chunks = OutputFormatter.split_text_for_tts(script)
+        
+
+        # SHORT SCRIPT → EXACT OLD BEHAVIOR
+        if len(chunks) == 1:
+            tts_result = audio_processor.text_to_speech(
+                text=script,
+                output_path=output_path,
+                language=language,
+                slow=default_settings.get('slow', False),
+                tld=default_settings.get('tld', 'com'),
+                provider=tts_provider,
+                voice=tts_voice,
+                model=tts_model,
+                api_key=api_key
+            )
+
+            if not tts_result['success']:
+                raise Exception(
+                    f"TTS generation failed: {tts_result.get('error', 'Unknown error')}"
+                )
+
+        # LONG SCRIPT → SAFE CHUNKED MODE
+        else:
+            print("Script too long , may take time")
+            
+            audio_segments = []
+            temp_files = []
+
+            for idx, chunk in enumerate(chunks):
+               
+              
+                
+
+                tmp = tempfile.NamedTemporaryFile(
+                    suffix=".mp3", delete=False
+                ).name
+                temp_files.append(tmp)
+
+                result = audio_processor.text_to_speech(
+                    text=chunk,
+                    output_path=tmp,
+                    language=language,
+                    slow=default_settings.get('slow', False),
+                    tld=default_settings.get('tld', 'com'),
+                    provider=tts_provider,
+                    voice=tts_voice,
+                    model=tts_model,
+                    api_key=api_key
+                )
+
+                if not result['success']:
+                    raise Exception(
+                        f"TTS generation failed: {result.get('error', 'Unknown error')}"
+                    )
+
+                audio_segments.append(AudioSegment.from_mp3(tmp))
+                print(f"{((idx + 1) / len(chunks)) * 100:.2f}% completed")
+
+            # Merge chunks
+            final_audio = AudioSegment.empty()
+            for seg in audio_segments:
+                final_audio += seg
+
+            final_audio.export(output_path, format="mp3")
+
+            for f in temp_files:
+                os.remove(f)
+
+            # Mimic original tts_result
+            tts_result = {
+                "success": True,
+                "file_size": os.path.getsize(output_path)
+            }
+        
         
         # Enhance audio if requested
         if enhance_audio:
@@ -1363,6 +1436,7 @@ class ContentEngine:
             duration=duration,
             tone=tone,
             custom_instructions=custom_instructions,
+            language=language,
             **kwargs
         )
         

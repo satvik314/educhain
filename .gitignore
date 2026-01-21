@@ -170,3 +170,7 @@ cython_debug/
 
 Desktop.ini
 .vscode
+
+notebook/
+.env
+eduvevv/

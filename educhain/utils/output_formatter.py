@@ -164,3 +164,24 @@ class OutputFormatter:
         # Generate the PDF
         doc.build(elements)
         return filename
+    
+    @staticmethod
+    def split_text_for_tts(text: str, max_chars: int = 4000):
+        chunks = []
+        current = ""
+
+        for sentence in text.split(". "):
+            sentence = sentence.strip()
+            if not sentence:
+                continue
+
+            if len(current) + len(sentence) + 2 <= max_chars:
+                current += sentence + ". "
+            else:
+                chunks.append(current.strip())
+                current = sentence + ". "
+
+        if current:
+            chunks.append(current.strip())
+
+        return chunks
