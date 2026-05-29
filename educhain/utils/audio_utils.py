@@ -1,11 +1,29 @@
 import os
 import tempfile
-from typing import Optional, Dict, Any, Literal
+from typing import Optional, Dict, Any
 from datetime import datetime
-from gtts import gTTS
-from pydub import AudioSegment
-from mutagen.mp3 import MP3
-import io
+
+# The audio stack (gtts / pydub / mutagen) is optional. Importing it lazily
+# keeps the base Educhain install light; methods that need it call
+# _require_audio() first.
+try:
+    from gtts import gTTS
+    from pydub import AudioSegment
+    from mutagen.mp3 import MP3
+    _AUDIO_AVAILABLE = True
+except ImportError:  # pragma: no cover - exercised only without the extra
+    gTTS = None  # type: ignore
+    AudioSegment = None  # type: ignore
+    MP3 = None  # type: ignore
+    _AUDIO_AVAILABLE = False
+
+
+def _require_audio() -> None:
+    if not _AUDIO_AVAILABLE:
+        raise ImportError(
+            "Audio/TTS support requires extra dependencies. "
+            "Install with:  pip install educhain[audio]"
+        )
 
 
 class AudioProcessor:
@@ -94,8 +112,9 @@ class AudioProcessor:
         Returns:
             Dict containing audio file information
         """
+        _require_audio()
         provider = provider or self.default_provider
-        
+
         try:
             if provider == 'google':
                 return self._google_tts(text, output_path, language, slow, tld)
@@ -579,6 +598,7 @@ class AudioProcessor:
         Returns:
             Dict containing processing results
         """
+        _require_audio()
         try:
             # Load audio
             audio = AudioSegment.from_mp3(input_path)
@@ -642,6 +662,7 @@ class AudioProcessor:
         Returns:
             Dict containing mixing results
         """
+        _require_audio()
         try:
             # Load audio files
             speech = AudioSegment.from_mp3(speech_path)

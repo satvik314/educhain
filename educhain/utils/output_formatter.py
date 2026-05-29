@@ -1,15 +1,30 @@
 # educhain/utils/output_formatter.py
 
 from typing import Any, Optional, List, Dict
-import pandas as pd
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 import json
 from datetime import datetime
+
+
+def _require_reportlab():
+    try:
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.platypus import (
+            SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+        )
+    except ImportError:
+        raise ImportError(
+            "reportlab is required for PDF export. "
+            "Install with:  pip install educhain[pdf]"
+        )
+    return {
+        "colors": colors, "letter": letter,
+        "getSampleStyleSheet": getSampleStyleSheet, "ParagraphStyle": ParagraphStyle,
+        "SimpleDocTemplate": SimpleDocTemplate, "Paragraph": Paragraph,
+        "Spacer": Spacer, "Table": Table, "TableStyle": TableStyle,
+    }
+
 
 class OutputFormatter:
     @staticmethod
@@ -31,9 +46,16 @@ class OutputFormatter:
         if filename is None:
             filename = f"questions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError(
+                "pandas is required for CSV export. "
+                "Install with:  pip install educhain[visual]"
+            )
         dict_list = OutputFormatter._convert_to_dict_list(data)
         df = pd.DataFrame(dict_list)
-        
+
         # Handle nested structures (like options in MCQs)
         for col in df.columns:
             if isinstance(df[col].iloc[0], (list, dict)):
@@ -45,10 +67,12 @@ class OutputFormatter:
     @staticmethod
     def _format_question(question: Dict, styles: Dict) -> List:
         """Format a single question for PDF output"""
+        from reportlab.platypus import Paragraph, Spacer
+
         elements = []
-        
+
         # Question number and text
-        question_text = Paragraph(f"Q{question.get('id', '')}: {question.get('question', '')}", 
+        question_text = Paragraph(f"Q{question.get('id', '')}: {question.get('question', '')}",
                                 styles['Question'])
         elements.append(question_text)
         elements.append(Spacer(1, 12))
@@ -94,6 +118,15 @@ class OutputFormatter:
     @staticmethod
     def to_pdf(data: Any, filename: Optional[str] = None) -> str:
         """Convert data to PDF format using ReportLab"""
+        rl = _require_reportlab()
+        colors = rl["colors"]
+        letter = rl["letter"]
+        getSampleStyleSheet = rl["getSampleStyleSheet"]
+        ParagraphStyle = rl["ParagraphStyle"]
+        SimpleDocTemplate = rl["SimpleDocTemplate"]
+        Paragraph = rl["Paragraph"]
+        Spacer = rl["Spacer"]
+
         if filename is None:
             filename = f"questions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
 

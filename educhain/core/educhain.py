@@ -1,53 +1,96 @@
-from typing import Optional, Any, Dict, List
+"""
+The :class:`Educhain` client - the main entry point to the library.
+
+``Educhain`` ties a single :class:`~educhain.core.client.LLMClient` to the two
+engines that do the work:
+
+* ``client.qna``     - :class:`~educhain.engines.qna_engine.QnAEngine`
+* ``client.content`` - :class:`~educhain.engines.content_engine.ContentEngine`
+
+Quick start::
+
+    from educhain import Educhain
+
+    client = Educhain()                       # uses OPENAI_API_KEY
+    mcqs = client.qna.generate("Photosynthesis", num=5)
+    mcqs.show()
+
+Other providers::
+
+    client = Educhain.from_provider("groq", model="llama-3.3-70b-versatile")
+    client = Educhain.from_client(my_openai_client, model="gpt-4o")
+"""
+
+from __future__ import annotations
+
+from typing import Any, Optional
+
+from educhain.core.client import LLMClient
 from educhain.core.config import LLMConfig
-from educhain.engines.qna_engine import QnAEngine
 from educhain.engines.content_engine import ContentEngine
+from educhain.engines.qna_engine import QnAEngine
+
 
 class Educhain:
+    """The Educhain client: a configured LLM plus the QnA and content engines."""
+
     def __init__(self, config: Optional[LLMConfig] = None):
-        if config is None:
-            config = LLMConfig()
-        self.llm_config = config
-        self.qna_engine = QnAEngine(config)
-        self.content_engine = ContentEngine(config)
-        self.components: Dict[str, Any] = {
-            "qna_engine": self.qna_engine,
-            "content_engine": self.content_engine
-        }
+        self.config = config or LLMConfig()
+        self.client = LLMClient(self.config)
+        self.qna = QnAEngine(client=self.client)
+        self.content = ContentEngine(client=self.client)
 
-    def get_qna_engine(self) -> QnAEngine:
-        return self.qna_engine
+    # ------------------------------------------------------------------ #
+    # Convenience constructors
+    # ------------------------------------------------------------------ #
+    @classmethod
+    def from_provider(
+        cls,
+        provider: str,
+        model: Optional[str] = None,
+        api_key: Optional[str] = None,
+        **kwargs: Any,
+    ) -> "Educhain":
+        """Build a client for a named provider preset (e.g. ``"groq"``)."""
+        return cls(LLMConfig(provider=provider, model=model, api_key=api_key, **kwargs))
 
-    def get_content_engine(self) -> ContentEngine:
-        return self.content_engine
+    @classmethod
+    def from_client(cls, client: Any, model: str = "gpt-4o-mini", **kwargs: Any) -> "Educhain":
+        """Build from a pre-configured ``openai.OpenAI``-compatible client."""
+        return cls(LLMConfig(client=client, model=model, **kwargs))
 
+    # ------------------------------------------------------------------ #
+    # Config management
+    # ------------------------------------------------------------------ #
     def get_config(self) -> LLMConfig:
-        return self.llm_config
+        return self.config
 
     def update_config(self, new_config: LLMConfig) -> None:
-        self.llm_config = new_config
-        self.qna_engine = QnAEngine(new_config)
-        self.content_engine = ContentEngine(new_config)
-        self.components["qna_engine"] = self.qna_engine
-        self.components["content_engine"] = self.content_engine
+        """Swap in a new configuration and rebuild the client and engines."""
+        self.config = new_config
+        self.client = LLMClient(self.config)
+        self.qna = QnAEngine(client=self.client)
+        self.content = ContentEngine(client=self.client)
 
-    def add_component(self, component_name: str, component: Any) -> None:
-        self.components[component_name] = component
-        setattr(self, component_name, component)
+    # ------------------------------------------------------------------ #
+    # Backwards-compatibility shims for the pre-1.0 API
+    # ------------------------------------------------------------------ #
+    @property
+    def qna_engine(self) -> QnAEngine:
+        return self.qna
 
-    def get_component(self, component_name: str) -> Any:
-        return self.components.get(component_name)
+    @property
+    def content_engine(self) -> ContentEngine:
+        return self.content
 
-    def remove_component(self, component_name: str) -> None:
-        if component_name in self.components:
-            del self.components[component_name]
-            delattr(self, component_name)
+    def get_qna_engine(self) -> QnAEngine:
+        return self.qna
 
-    def get_available_components(self) -> List[str]:
-        return list(self.components.keys())
+    def get_content_engine(self) -> ContentEngine:
+        return self.content
 
-    def __str__(self) -> str:
-        return f"Educhain(config={self.llm_config}, components={self.get_available_components()})"
+    def __repr__(self) -> str:  # pragma: no cover - cosmetic
+        return f"Educhain({self.config!r})"
 
-    def __repr__(self) -> str:
-        return self.__str__()
+
+__all__ = ["Educhain"]

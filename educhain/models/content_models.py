@@ -1,7 +1,5 @@
-from typing import Optional, Type, Any ,List, Dict
+from typing import Optional, Any ,List, Dict
 from pydantic import BaseModel, Field
-from rich.console import Console
-from rich.markdown import Markdown
 
 class ContentElement(BaseModel):
     type: str = Field(..., description="The type of content element (e.g., definition, example, activity).")
@@ -97,9 +95,6 @@ class FlashcardSet(BaseModel):
             if flashcard.explanation:
                 print(f"   Explanation: {flashcard.explanation}")
         print("\n" + "=" * 80)
-        print("\nLearning Adaptations: ", self.learning_adaptations or "None")
-        print("Real-World Applications: ", self.real_world_applications or "None")
-        print("Ethical Considerations: ", self.ethical_considerations or "None")
 
 class CaseStudy(BaseModel):
     title: str
@@ -153,6 +148,9 @@ class StudyGuide(BaseModel):
         if format == "markdown":
             return self._generate_markdown()
         elif format == "rich":
+            from rich.console import Console
+            from rich.markdown import Markdown
+
             console = Console()
             console.print(Markdown(self._generate_markdown()))
         else:
@@ -465,7 +463,7 @@ class PodcastScript(BaseModel):
                 print(f"- {takeaway}")
         
         if self.call_to_action:
-            print(f"\nCALL TO ACTION:")
+            print("\nCALL TO ACTION:")
             print(self.call_to_action)
         
         print("=" * 80)
